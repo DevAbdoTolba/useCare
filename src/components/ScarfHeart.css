@@ -1,0 +1,66 @@
+/* Stage = a positioned band that holds the floating video AND the title.
+   The video sits absolutely behind; the children (title) sit on top. */
+.heart-stage {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* min-height grows with viewport so the video has room to breathe */
+  min-height: 240px;
+  overflow: hidden;
+}
+
+@media (min-width: 600px) {
+  .heart-stage { min-height: 300px; }
+}
+
+@media (min-width: 900px) {
+  .heart-stage { min-height: 380px; }
+}
+
+@media (min-width: 1200px) {
+  .heart-stage { min-height: 440px; }
+}
+
+/* Video: floats absolutely, fills the stage, centered, behind everything.
+   object-fit:contain preserves the 16:9 aspect ratio inside the stage. */
+.heart-trail-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Content (e.g. the "Why useCare?" title) sits on top, centered. */
+.heart-stage-content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  text-align: center;
+  padding: 0 16px;
+  /* Let the video's heart be the focal point — the title shouldn't block clicks
+     to anything behind it, but the title itself is text only here. */
+  pointer-events: none;
+}
+
+/* Make the title still readable when the heart line passes behind it.
+   Subtle radial fade gives the text some contrast without an ugly box. */
+.heart-stage-content::before {
+  content: '';
+  position: absolute;
+  inset: -20px -40px;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 255, 255, 0.85) 0%,
+    rgba(255, 255, 255, 0.6) 50%,
+    rgba(255, 255, 255, 0) 80%
+  );
+  z-index: -1;
+  pointer-events: none;
+}
