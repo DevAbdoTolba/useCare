@@ -1,0 +1,145 @@
+%% useCare — wireframe & navigation flow
+%% Source of truth: docs/useCare.excalidraw (the sketch)
+%% This file mirrors the sketch as a Mermaid flowchart so it is diffable,
+%% renderable in GitHub/Notion/VSCode, and readable by humans and LLMs.
+
+flowchart TD
+    Login["🔐 Login / Register
+    -----------------
+    • email
+    • password
+    • [Login] [Register]"]
+
+    Login -->|role = ADMIN| AdminHome
+    Login -->|role = DOCTOR| DoctorCalendar
+    Login -->|role = PATIENT| PatientHome
+
+    %% =============================================================
+    subgraph ADMIN["👑 ADMIN"]
+        direction TB
+
+        AdminHome["Admin Dashboard
+        -----------------
+        Side menu:
+          • user CRUD (approval also)
+          • specialties
+          • Appointments
+          • System settings"]
+
+        AdminUsers["Users List  [X close]
+        -----------------
+        | Name | Role | ? |
+        | Name | Role | ? |
+        | ...                |
+        (? = pending-approval badge)"]
+
+        AdminApprove["Approve User
+        -----------------
+        Name:  ____________
+        Role:  ____________
+        Desc:  ____________
+        [ Approve ]   [ X ]"]
+
+        AdminSpecialties["Specialties
+        -----------------
+        list + add / edit / delete"]
+
+        AdminAppointments["Appointments
+        -----------------
+        global table of all appointments"]
+
+        AdminSettings["System Settings"]
+
+        AdminHome --> AdminUsers
+        AdminUsers -->|click pending ?| AdminApprove
+        AdminHome --> AdminSpecialties
+        AdminHome --> AdminAppointments
+        AdminHome --> AdminSettings
+    end
+
+    %% =============================================================
+    subgraph DOCTOR["🩺 DOCTOR"]
+        direction TB
+
+        DoctorCalendar["Doctor Calendar  (month view)
+        -----------------
+        MUI DateCalendar + dynamic-data
+        https://mui.com/x/react-date-pickers/date-calendar/#dynamic-data
+
+        Each day cell shows:
+          # of appointments that day
+          (replaces the ⏱︎ icon — see sketch note)
+        [ + ] on a day = set day as available"]
+
+        DoctorConfirmAvailable{{"Confirm
+        -----------------
+        'Set as available for appointments?'
+        [ Confirm ]   [ Cancel ]"}}
+
+        DoctorDaySchedule["Day Schedule  (00H → 24H)
+        -----------------
+        Hour grid with patient slots:
+          ⏱︎ 16:30  patient: samir
+          ⏱︎ 17:00  patient: …
+        Click a slot → appointment detail"]
+
+        DoctorAppointment["Appointment Detail (doctor view)
+        -----------------
+        2026/26/65    16:30 PM
+        status  ▼   (dropdown)
+        patient info
+        doctor info
+        Appointment info
+        Doctor's Notes: __________
+        [ Save ]"]
+
+        DoctorCalendar -->|click + on a day| DoctorConfirmAvailable
+        DoctorConfirmAvailable -->|confirm| DoctorDaySchedule
+        DoctorCalendar -->|click a day| DoctorDaySchedule
+        DoctorDaySchedule -->|click slot| DoctorAppointment
+    end
+
+    %% =============================================================
+    subgraph PATIENT["🧑 PATIENT"]
+        direction TB
+
+        PatientHome["Patient Home
+        -----------------
+        'Select Doctor from the table below'
+        | Doctor | Specialty | ? |
+        | samir  | …         | ? |
+        | samir  | …         | ? |"]
+
+        PatientWeek["Week Picker
+        -----------------
+        MUI WeekPicker
+        https://mui.com/x/react-date-pickers/date-calendar/#week-picker
+        pick a week → see availability"]
+
+        PatientAvailable["Available Appointments
+        -----------------
+        ⏱︎ 2026/26/65  16:30 PM  Doctor
+        ⏱︎ 2026/26/65  16:30 PM  Doctor
+        ⏱︎ 2026/26/65  16:30 PM  Doctor
+        click slot → book"]
+
+        PatientMyAppointments["My Appointments
+        -----------------
+        | date | time | status | edit/delete |
+        | …    | …    | …      | edit/delete |
+        | …    | …    | …      | edit/delete |"]
+
+        PatientHome -->|pick doctor| PatientWeek
+        PatientWeek --> PatientAvailable
+        PatientAvailable -->|book| PatientMyAppointments
+        PatientHome --> PatientMyAppointments
+    end
+
+    %% =============================================================
+    %% Cross-role notes pulled from the sketch:
+    %% • All 3 roles share the same nav stubs in the sketch
+    %%   (user CRUD / specialties / appointments / system settings)
+    %%   — but in practice only ADMIN exercises all four.
+    %% • '?' badges in tables = pending-approval / status indicator.
+    %% • The clock icon ⏱︎ in day cells is replaced by the
+    %%   appointment count (sketch annotation).
