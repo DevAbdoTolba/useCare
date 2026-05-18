@@ -1,9 +1,9 @@
-import { specialties } from '../schema/fixtures.js';
+import { getDb, warnReadOnly } from './client.js';
 
-// TODO: replace fixture reads with apiGet/apiPost/etc. once backend exists.
+export async function listSpecialties()           { return (await getDb()).specialties; }
+export async function getSpecialty(id)            { return (await getDb()).specialties.find((s) => s.id === Number(id)); }
 
-export async function listSpecialties()           { return specialties; }
-export async function getSpecialty(id)            { return specialties.find((s) => s.id === Number(id)); }
-export async function createSpecialty(payload)    { return { id: Date.now(), ...payload }; }
-export async function updateSpecialty(id, patch)  { return { id, ...patch }; }
-export async function deleteSpecialty(id)         { return { id, deleted: true }; }
+// Read-only on npoint — mutations are local-only.
+export async function createSpecialty(payload)    { warnReadOnly('createSpecialty'); return { id: Date.now(), ...payload }; }
+export async function updateSpecialty(id, patch)  { warnReadOnly('updateSpecialty'); return { id, ...patch }; }
+export async function deleteSpecialty(id)         { warnReadOnly('deleteSpecialty'); return { id, deleted: true }; }
