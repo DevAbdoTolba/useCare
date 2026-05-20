@@ -1,4 +1,4 @@
-import { Container, Typography , Button} from '@mui/material';
+import { Container, Typography , Button ,TextField} from '@mui/material';
 import { listSpecialties , createSpecialty , updateSpecialty , deleteSpecialty } from '../../api/specialties';
 import LoadingSpinner  from '../../components/common/LoadingSpinner'; 
 import  EmptyState from '../../components/common/EmptyState'; 
@@ -6,18 +6,24 @@ import ConfirmDialog  from '../../components/common/ConfirmDialog';
 import { DataGrid } from '@mui/x-data-grid';
 import { useEffect, useState } from 'react';
 
+
 export default function SpecialtiesPage() {
   // TODO: implement per wireframe (docs/useCare.excalidraw).
   // CRUD: list specialties, add, edit, delete (with ConfirmDialog).
   const [rows , setRows] = useState([]);
   const [loading , setLoading] = useState(true);
   const [selectedRow , setSelectedRow] = useState(null);
+  const [newData , setNewData] = useState({
+    name : '',
+    description : '' , });
   const [confirmOpen , setConfirmOpen] = useState(false);
+  const [add , setAdd] = useState(false);
   
   useEffect(()=>{
     listSpecialties().then(data=>{
       setRows(data);
       setLoading(false);
+      console.log(data)
     })
     }
     ,[])
@@ -47,6 +53,21 @@ export default function SpecialtiesPage() {
     selectedRow(row);
   }
 
+  const handleAddButton = () => {
+      setAdd(true);
+  }
+
+  const handleAddingTofield = (e) => {
+    if(e.target.name === 'name')
+        setNewData({
+          ...newData , 
+          name: e.target.value});
+      else
+        setNewData({
+          ...newData , 
+          description: e.target.value});
+  }
+
   const handleConfirmDelete = () => {
     deleteSpecialty(selectedRow.id).then(() => {
       setRows(rows.filter(r => r.id !== selectedRow.id ));
@@ -55,12 +76,26 @@ export default function SpecialtiesPage() {
     }).catch((err)=> console.log(err));
   }
 
+
+
+  const handleConfirmAdd = () => {
+    createSpecialty(newData).then((data)=> {
+      setRows([...rows , data]);
+      setAdd(false);
+      setNewData({name:'' , description : ''});
+    }).catch((err)=>{
+      console.log(err);
+    })
+  }
+
+  
   return (
     <Container maxWidth="lg">
       <Typography variant="h4" gutterBottom marginTop={4}>Specialties</Typography>
       {
         loading ? <LoadingSpinner/> : (
         <div>
+          <Button variant="contained" onClick={handleAddButton}>Add Specialties</Button>
           <DataGrid rows={rows} columns={columns}></DataGrid>
         </div>
       )}
@@ -72,6 +107,16 @@ export default function SpecialtiesPage() {
         message={`Are you sure you want to delete "${selectedRow?.name}"?`}
       />
 
+      <ConfirmDialog open={add}
+        onCancel={()=> {setAdd(false);  setNewData({name:'' , description : ''});}}
+        onConfirm={handleConfirmAdd}
+        message={
+          <>
+          <TextField id="filled-basic" label="Name" variant="filled" value={newData.name} name='name' onChange={handleAddingTofield}/>
+          <TextField id="filled-basic" label="Description" variant="filled" value={newData.description} name='description' onChange={handleAddingTofield}/>
+          </>
+        }
+        />
     </Container>
   );
 }
