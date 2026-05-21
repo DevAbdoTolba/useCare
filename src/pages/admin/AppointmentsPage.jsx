@@ -1,164 +1,190 @@
-import { Container, Typography ,Button , Chip, Card , CardContent , Snackbar , Alert} from '@mui/material';
-import { DataGrid } from '@mui/x-data-grid';
-import {listAppointments, cancelAppointment} from '../../api/appointments';
-import {listUsers} from '../../api/users';
-import { listSpecialties } from '../../api/specialties';
-import {APPOINTMENT_STATUSES} from '../../schema/schema';
-import ConfirmDialog from '../../components/common/ConfirmDialog';
-import LoadingSpinner from '../../components/common/LoadingSpinner';
-import { useEffect, useState } from 'react';
-import {jsPDF} from 'jspdf';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  Container,
+  Stack,
+  Box,
+  Typography,
+  Avatar,
+  Chip,
+  Divider,
+  TextField,
+  MenuItem,
+  Button,
+} from '@mui/material';
+import DownloadIcon from '@mui/icons-material/Download';
+import { listAppointments } from '../../api/appointments.js';
+import { listUsers } from '../../api/users.js';
+import { listSpecialties } from '../../api/specialties.js';
+import { APPOINTMENT_STATUSES } from '../../schema/schema.js';
+import MasterDetailBrowser from '../../components/common/MasterDetailBrowser.jsx';
+import LoadingSpinner from '../../components/common/LoadingSpinner.jsx';
+import { initialOf, timeLabel, ageFromDob, STATUS_COLOR } from '../../lib/format.js';
+import { exportAppointmentsPdf, exportSingleAppointmentPdf } from '../../lib/exportAppointmentsPdf.js';
+
+const ALL = 'all';
 
 export default function AppointmentsPage() {
-  const [rows, setRows] = useState([]);
+  const [appointments, setAppointments] = useState([]);
+  const [userById, setUserById] = useState({});
+  const [specialtyById, setSpecialtyById] = useState({});
   const [loading, setLoading] = useState(true);
-  const [selectedRow , setSelectedRow] = useState(null);
-  const [confirmOpen , setConfirmOpen] = useState(false);
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
-  const [cancelFlag , SetCancelFlag] = useState(false);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState(ALL);
+  const [selectedId, setSelectedId] = useState(null);
+
+  useEffect(() => {
+    let mounted = true;
+    Promise.all([listAppointments(), listUsers(), listSpecialties()])
+      .then(([appts, users, specs]) => {
+        if (!mounted) return;
+        setAppointments(Array.isArray(appts) ? appts : []);
+        const u = {};
+        (users ?? []).forEach((x) => { u[x.id] = x; });
+        setUserById(u);
+        const s = {};
+        (specs ?? []).forEach((x) => { s[x.id] = x; });
+        setSpecialtyById(s);
+      })
+      .finally(() => { if (mounted) setLoading(false); });
+    return () => { mounted = false; };
+  }, []);
+
+  const nameOf = (id) => userById[id]?.name ?? `#${id}`;
+  const specialtyOf = (doctorId) => specialtyById[userById[doctorId]?.specialty_id]?.name ?? '—';
+
+  const rows = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    return appointments.filter((a) => {
+      const matchesName = !term
+        || nameOf(a.patient_id).toLowerCase().includes(term)
+        || nameOf(a.doctor_id).toLowerCase().includes(term);
+      const matchesStatus = statusFilter === ALL || a.status === statusFilter;
+      return matchesName && matchesStatus;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [appointments, search, statusFilter, userById]);
+
+  const selected = appointments.find((a) => a.id === selectedId) ?? null;
+
+  if (loading) {
+    return (
+      <Container maxWidth="lg">
+        <LoadingSpinner />
+      </Container>
+    );
+  }
 
   const columns = [
-    { field: 'date', headerName: 'Date', width: 150 },
-    { field: 'time', headerName: 'Time', width: 150 },
-    { field: 'patient', headerName: 'Patient', width: 150 },
-    { field: 'doctor', headerName: 'Doctor', width: 150 },
-    { field: 'specialty', headerName: 'Specialty', width: 150 },
-    {
-      field: 'status',
-      headerName: 'Status',
-      width: 150,
-      renderCell : (params) => {
-        const colorMap = {
-          pending : {color : 'warning'},
-          confirmed : {color : 'success'},
-          cancelled : {color : 'error'},
-          completed : {color : 'info'}, 
-        };
-        const {color} = colorMap[params.value] ?? {color : 'default'};
-        return <Chip label={params.value} color={color} size='small'/>;
-      }
-    },
-   
+    { key: 'date', label: 'Date' },
+    { key: 'time', label: 'Time', render: (a) => timeLabel(a.time) },
+    { key: 'patient', label: 'Patient', render: (a) => nameOf(a.patient_id) },
+    { key: 'doctor', label: 'Doctor', render: (a) => nameOf(a.doctor_id) },
+    { key: 'status', label: 'Status', render: (a) => <Chip size="small" label={a.status} color={STATUS_COLOR[a.status] ?? 'default'} /> },
   ];
 
-useEffect(() => {
-  const fetchAll = async () => {
-    const [appointments, users, specialties] = await Promise.all([
-      listAppointments(),
-      listUsers(),
-      listSpecialties(),
-    ]);
+  const renderDetail = (a) => {
+    const patient = userById[a.patient_id];
+    const doctor = userById[a.doctor_id];
+    const age = ageFromDob(patient?.date_of_birth);
+    return (
+      <Stack spacing={2}>
+        {/* Section 1: Patient | Doctor */}
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+          <Box flexGrow={1}>
+            <Typography variant="overline" color="text.secondary">Patient</Typography>
+            <Stack direction="row" spacing={2} alignItems="center">
+              <Avatar>{initialOf(patient?.name ?? '?')}</Avatar>
+              <Box>
+                <Typography variant="subtitle1">{patient?.name ?? `#${a.patient_id}`}</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {[patient?.phone_number, age != null ? `${age} yrs` : null].filter(Boolean).join(' · ')}
+                </Typography>
+              </Box>
+            </Stack>
+          </Box>
+          <Box flexGrow={1}>
+            <Typography variant="overline" color="text.secondary">Doctor</Typography>
+            <Stack direction="row" spacing={2} alignItems="center">
+              <Avatar>{initialOf(doctor?.name ?? '?')}</Avatar>
+              <Box>
+                <Typography variant="subtitle1">{doctor?.name ?? `#${a.doctor_id}`}</Typography>
+                <Typography variant="body2" color="text.secondary">{specialtyOf(a.doctor_id)}</Typography>
+              </Box>
+            </Stack>
+          </Box>
+        </Stack>
 
-    setRows(appointments.map(item => {
-      const patient = users.find(u => u.id === item.patient_id);
-      const doctor = users.find(u => u.id === item.doctor_id);
-      const specialty = specialties.find(s => s.id === doctor?.specialty_id);
+        <Divider />
 
-      return {
-        id: item.id,
-        date: item.date,
-        time: item.time,
-        patient: patient?.name ?? 'Unknown',
-        doctor: doctor?.name ?? 'Unknown',
-        specialty: specialty?.name ?? 'Unknown',
-        status: item.status,
-      };
-    }));
+        {/* Section 2: appointment info + doctor's note */}
+        <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+          <Chip label={a.date} />
+          <Chip label={timeLabel(a.time)} variant="outlined" />
+          <Chip label={a.status} color={STATUS_COLOR[a.status] ?? 'default'} />
+        </Stack>
+        <Box>
+          <Typography variant="overline" color="text.secondary">Doctor&apos;s note</Typography>
+          <Typography variant="body2" color={a.notes?.trim() ? 'text.primary' : 'text.secondary'}>
+            {a.notes?.trim() ? a.notes : 'No note recorded.'}
+          </Typography>
+        </Box>
 
-    setLoading(false);
-  };
-
-  fetchAll();
-}, []);
-
-  console.log(selectedRow);
-
-  const handleCancel = () => {
-  setConfirmOpen(true);
-  };
-
-  const handleConfirmDelete = () => {
-    cancelAppointment(selectedRow.id).then(() => {
-    setRows(rows.map(r => r.id === selectedRow.id ? { ...r, status: 'cancelled' } : r));
-      setConfirmOpen(false);
-      setSelectedRow(null);
-      setSnackbar({ open: true, message: 'Canceled', severity: 'warning' });
-      setSelectedRow({ ...selectedRow, status: 'cancelled' });
-    }).catch((err) => console.log(err));
-   };
-
-  const printReport = () => {
-    const doc = new jsPDF();
-    doc.setFontSize(18);
-    doc.text('Appointment Report', 10, 10);
-    doc.setFontSize(12);
-
-    doc.text(`Date:      ${selectedRow.date}`, 10, 30);
-    doc.text(`Time:      ${selectedRow.time}`, 10, 40);
-    doc.text(`Patient:   ${selectedRow.patient}`, 10, 50);
-    doc.text(`Doctor:    ${selectedRow.doctor}`, 10, 60);
-    doc.text(`Specialty: ${selectedRow.specialty}`, 10, 70);
-    doc.text(`Status:    ${selectedRow.status}`, 10, 80);
-
-    doc.save(`Appointment_${selectedRow.id}.pdf`);
-  };
-  return (
-    <Container maxWidth="lg">
-      <Typography variant="h4" gutterBottom marginTop={4}>Appointments</Typography>
-      {
-        loading ? <LoadingSpinner/> : 
-          <>
-            <Card>
-              {
-                selectedRow ? <CardContent>
-                  <Typography variant="h6">Date: {selectedRow?.date} </Typography>
-                  <br />
-                  <Typography variant="h6">At: {selectedRow?.time}</Typography>
-                  <br />
-                  <Typography variant="h6">Patient Name: {selectedRow?.patient}</Typography>
-                  <br/>
-                  <Typography variant="h6">Doctor Name: {selectedRow?.doctor}</Typography>
-                  <br />
-                  <Typography variant="h6">Doctor's Specialty: {selectedRow?.specialty}</Typography>
-                  <br />
-                  <Typography variant="h6">Appointment Status: {selectedRow?.status}</Typography>
-                  <br/>
-                  {selectedRow && (
-                    <Button variant="outlined" onClick={printReport}>Print Report</Button>
-                  )}
-                  <br />
-                  {(selectedRow?.status === 'confirmed' ||selectedRow?.status ===  'pending' ) && <> <Button variant="outlined" onClick={() => handleCancel() }>Cancel</Button> </>}
-                  <br />
-                </CardContent> :
-
-                <CardContent>
-                  <Typography variant="h6">Click on a recored to view it's details</Typography>
-                  <br />
-                  <br />
-                </CardContent>
-
-              }
-              
-            </Card>
-            <DataGrid rows={rows} columns={columns} sx={{ mt: 2 }} getRowId={(row) => row.id} colorr onRowClick={params=> setSelectedRow(params.row)} />
-          </>
-      }
-      <ConfirmDialog open={confirmOpen} message='This Appointment will be Canceled, ARE YOU SURE' 
-        onCancel={()=> setConfirmOpen(false)} onConfirm={handleConfirmDelete}></ConfirmDialog>
-
-        <Snackbar
-          open={snackbar.open}
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
-          autoHideDuration={1200}
-        >
-          <Alert
-            onClose={() => setSnackbar({ ...snackbar, open: false })}
-            severity={snackbar.severity}
-            variant="filled"
+        <Box>
+          <Button
+            variant="contained"
+            disableElevation
+            startIcon={<DownloadIcon />}
+            onClick={() => exportSingleAppointmentPdf(a, {
+              patientName: nameOf(a.patient_id),
+              doctorName: nameOf(a.doctor_id),
+              specialtyName: specialtyOf(a.doctor_id),
+            })}
           >
-            {snackbar.message}
-          </Alert>
-        </Snackbar>
-    </Container>
+            Export this appointment
+          </Button>
+        </Box>
+      </Stack>
+    );
+  };
+
+  return (
+    <MasterDetailBrowser
+      title="Appointments"
+      placeholderTitle="No appointment selected"
+      placeholderMessage="Pick an appointment from the table below to see its full details."
+      selected={selected}
+      selectedId={selectedId}
+      onSelectRow={(a) => setSelectedId(a ? a.id : null)}
+      renderDetail={renderDetail}
+      columns={columns}
+      rows={rows}
+      searchValue={search}
+      onSearchChange={setSearch}
+      searchLabel="Search by patient or doctor"
+      emptyMessage="No appointments match your filters"
+      actions={(
+        <Button
+          variant="outlined"
+          startIcon={<DownloadIcon />}
+          onClick={() => exportAppointmentsPdf(rows, nameOf)}
+          disabled={rows.length === 0}
+        >
+          Export PDF
+        </Button>
+      )}
+      filters={(
+        <TextField
+          select
+          label="Status"
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+        >
+          <MenuItem value={ALL}>All</MenuItem>
+          {APPOINTMENT_STATUSES.map((s) => (
+            <MenuItem key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</MenuItem>
+          ))}
+        </TextField>
+      )}
+    />
   );
 }

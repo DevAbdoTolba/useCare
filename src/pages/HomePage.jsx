@@ -1,6 +1,4 @@
 import {
-  AppBar,
-  Toolbar,
   Typography,
   Button,
   Container,
@@ -12,29 +10,21 @@ import {
   Divider,
 } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
-import FavoriteIcon from '@mui/icons-material/Favorite';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
 import ScarfHeart from '../components/ScarfHeart.jsx';
+import AppHeader from '../components/layout/AppHeader.jsx';
 
 export default function HomePage() {
   return (
     <>
-      <AppBar position="sticky" color="default" elevation={0}>
-        <Toolbar>
-          <FavoriteIcon color="primary" />
-          <Typography variant="h6" component="div" marginLeft={1} flexGrow={1}>
-            useCare
-          </Typography>
-          <Button color="inherit" component={RouterLink} to="/login">Login</Button>
-          <Button variant="contained" disableElevation component={RouterLink} to="/register">Register</Button>
-        </Toolbar>
-      </AppBar>
+      <AppHeader />
 
-      {/* SECTION 1 — HERO */}
-      <Container maxWidth="md">
-        <Box paddingY={12} textAlign="center">
+      {/* SECTION 1 — HERO (full viewport) */}
+      <Box minHeight="100vh" display="flex" alignItems="center">
+        <Container maxWidth="md">
+          <Box textAlign="center">
           <Typography variant="overline" color="primary" gutterBottom>
             Appointments that just work
           </Typography>
@@ -53,13 +43,14 @@ export default function HomePage() {
               Learn more
             </Button>
           </Stack>
-        </Box>
-      </Container>
+          </Box>
+        </Container>
+      </Box>
 
       <Divider />
 
-      {/* SECTION 2 — Title sits centered inside the heart-trail video */}
-      <Box paddingTop={8} paddingBottom={12}>
+      {/* SECTION 2 — full viewport so the scroll animation triggers AFTER scrolling */}
+      <Box minHeight="100vh" display="flex" flexDirection="column" justifyContent="center" paddingY={8}>
         <ScarfHeart>
           <Typography variant="h3" component="h2" gutterBottom>
             Why useCare?

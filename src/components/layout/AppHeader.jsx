@@ -12,28 +12,30 @@ import {
   Divider,
 } from '@mui/material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import FavoriteIcon from '@mui/icons-material/Favorite';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useAuth } from '../../hooks/useAuth.js';
+import { getNavItems, HOME_BY_ROLE } from '../../lib/navConfig.jsx';
 
-/** First letter of the user's name, for the Avatar. */
 function initialOf(name) {
   return (name?.trim()?.[0] ?? '?').toUpperCase();
 }
 
 /**
- * Shared top-of-page header. Used by per-role layouts.
- * When signed in, the Login/Register buttons are replaced by an avatar
- * menu showing the user name + role and a Logout item.
+ * Shared header. When signed in, the wordmark links to the user's dashboard
+ * (not the public landing), and the avatar opens a menu that mirrors the side
+ * drawer's nav items plus Logout.
  */
 export default function AppHeader() {
-  const { user, logout } = useAuth();
+  const { user, role, logout } = useAuth();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
   const menuOpen = Boolean(anchorEl);
+  const closeMenu = () => setAnchorEl(null);
+
+  const homeTo = user ? (HOME_BY_ROLE[role] ?? '/') : '/';
 
   function handleLogout() {
-    setAnchorEl(null);
+    closeMenu();
     logout();
     navigate('/');
   }
@@ -41,8 +43,7 @@ export default function AppHeader() {
   return (
     <AppBar position="sticky" color="default" elevation={0}>
       <Toolbar>
-        <FavoriteIcon color="primary" />
-        <Typography variant="h6" component={RouterLink} to="/" marginLeft={1} flexGrow={1} color="inherit">
+        <Typography variant="h6" component={RouterLink} to={homeTo} flexGrow={1} color="inherit">
           useCare
         </Typography>
 
@@ -51,20 +52,28 @@ export default function AppHeader() {
             <IconButton onClick={(e) => setAnchorEl(e.currentTarget)} size="small">
               <Avatar>{initialOf(user.name)}</Avatar>
             </IconButton>
-            <Menu anchorEl={anchorEl} open={menuOpen} onClose={() => setAnchorEl(null)}>
+            <Menu anchorEl={anchorEl} open={menuOpen} onClose={closeMenu}>
               <MenuItem disabled>
                 <Typography variant="subtitle2">{user.name}</Typography>
               </MenuItem>
               <MenuItem disabled>
-                <Typography variant="caption" color="text.secondary">
-                  {user.role}
-                </Typography>
+                <Typography variant="caption" color="text.secondary">{role}</Typography>
               </MenuItem>
               <Divider />
+              {getNavItems(role).map((item) => (
+                <MenuItem
+                  key={item.to}
+                  component={RouterLink}
+                  to={item.to}
+                  onClick={closeMenu}
+                >
+                  <ListItemIcon>{item.icon}</ListItemIcon>
+                  {item.label}
+                </MenuItem>
+              ))}
+              <Divider />
               <MenuItem onClick={handleLogout}>
-                <ListItemIcon>
-                  <LogoutIcon fontSize="small" />
-                </ListItemIcon>
+                <ListItemIcon><LogoutIcon fontSize="small" /></ListItemIcon>
                 Logout
               </MenuItem>
             </Menu>

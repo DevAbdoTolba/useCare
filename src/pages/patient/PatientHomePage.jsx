@@ -36,6 +36,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
 import { PickersDay } from '@mui/x-date-pickers/PickersDay';
+import { styled } from '@mui/material/styles';
 
 import { listDoctors } from '../../api/users.js';
 import { listSpecialties } from '../../api/specialties.js';
@@ -50,11 +51,50 @@ const ALL_SPECIALTIES = 'all';
 const SLOT_MINUTES = 30;
 const SLOT_PAGE_OPTIONS = [5, 10, 25];
 
-/** A calendar day that highlights every day in the selected week. */
-function WeekDay({ selectedWeekStart, day, ...other }) {
-  const inWeek =
-    selectedWeekStart != null && day.startOf('week').isSame(selectedWeekStart, 'day');
-  return <PickersDay {...other} day={day} selected={inWeek} />;
+// Week picker (MUI docs pattern): a styled day that paints the whole hovered /
+// selected week as a connected strip. All colors come from the MUI theme
+// palette, so it re-themes via the theme config — and uses no `sx` prop.
+const CustomPickersDay = styled(PickersDay, {
+  shouldForwardProp: (prop) => prop !== 'isSelected' && prop !== 'isHovered',
+})(({ theme, isSelected, isHovered, day }) => ({
+  borderRadius: 0,
+  paddingLeft: theme.spacing(2.5),
+  paddingRight: theme.spacing(2.5),
+  ...(isSelected && {
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.primary.contrastText,
+    '&:hover, &:focus': { backgroundColor: theme.palette.primary.main },
+  }),
+  ...(isHovered && {
+    backgroundColor: theme.palette.primary.light,
+    '&:hover, &:focus': { backgroundColor: theme.palette.primary.light },
+  }),
+  ...(day.day() === 0 && {
+    borderTopLeftRadius: '50%',
+    borderBottomLeftRadius: '50%',
+  }),
+  ...(day.day() === 6 && {
+    borderTopRightRadius: '50%',
+    borderBottomRightRadius: '50%',
+  }),
+}));
+
+const isInSameWeek = (a, b) => {
+  if (b == null) return false;
+  return a.startOf('week').isSame(b.startOf('week'), 'day');
+};
+
+function Day({ day, selectedDay, hoveredDay, ...other }) {
+  return (
+    <CustomPickersDay
+      {...other}
+      day={day}
+      disableMargin
+      selected={false}
+      isSelected={isInSameWeek(day, selectedDay)}
+      isHovered={isInSameWeek(day, hoveredDay)}
+    />
+  );
 }
 
 /** Build 30-minute slots from a doctor's available days, skipping booked times. */
@@ -107,11 +147,11 @@ export default function PatientHomePage() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [draftSpecialty, setDraftSpecialty] = useState(ALL_SPECIALTIES);
   const [draftDay, setDraftDay] = useState(null);
+  const [hoveredDay, setHoveredDay] = useState(null);
 
   // Selected doctor card
+  const [slotsByDoctor, setSlotsByDoctor] = useState({}); // doctorId -> slots[]
   const [selectedDoctor, setSelectedDoctor] = useState(null);
-  const [slots, setSlots] = useState([]);
-  const [slotsLoading, setSlotsLoading] = useState(false);
   const [requested, setRequested] = useState(() => new Set()); // slot ids with a pending request
   const [slotPage, setSlotPage] = useState(0);
   const [slotsPerPage, setSlotsPerPage] = useState(SLOT_PAGE_OPTIONS[0]);
@@ -132,12 +172,27 @@ export default function PatientHomePage() {
   }
 
   useEffect(() => {
+    let mounted = true;
     Promise.all([listDoctors(), listSpecialties()])
-      .then(([docs, specs]) => {
+      .then(async ([docs, specs]) => {
+        if (!mounted) return;
         setDoctors(docs);
         setSpecialties(specs);
+        // Preload every doctor's open slots so the week filter can narrow the
+        // doctor list (not just the selected card).
+        const entries = await Promise.all(
+          docs.map(async (d) => {
+            const [avail, appts] = await Promise.all([
+              listAvailabilityForDoctor(d.id),
+              listAppointmentsForDoctor(d.id),
+            ]);
+            return [d.id, buildSlots(avail, appts)];
+          }),
+        );
+        if (mounted) setSlotsByDoctor(Object.fromEntries(entries));
       })
-      .finally(() => setLoading(false));
+      .finally(() => { if (mounted) setLoading(false); });
+    return () => { mounted = false; };
   }, []);
 
   const specialtyNameById = useMemo(() => {
@@ -146,17 +201,26 @@ export default function PatientHomePage() {
     return map;
   }, [specialties]);
 
+  const slotsInWeek = (doctorId, ws) =>
+    (slotsByDoctor[doctorId] ?? []).some((s) => dayjs(s.date).startOf('week').isSame(ws, 'day'));
+
   const filteredDoctors = useMemo(() => {
     const term = search.trim().toLowerCase();
     return doctors.filter((d) => {
       const matchesName = !term || d.name.toLowerCase().includes(term);
       const matchesSpecialty =
         specialtyFilter === ALL_SPECIALTIES || d.specialty_id === specialtyFilter;
-      return matchesName && matchesSpecialty;
+      const matchesWeek = !weekStart || slotsInWeek(d.id, weekStart);
+      return matchesName && matchesSpecialty && matchesWeek;
     });
-  }, [doctors, search, specialtyFilter]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [doctors, search, specialtyFilter, weekStart, slotsByDoctor]);
 
   // Slots for the selected doctor, narrowed to the chosen week if any.
+  const slots = useMemo(
+    () => (selectedDoctor ? (slotsByDoctor[selectedDoctor.id] ?? []) : []),
+    [selectedDoctor, slotsByDoctor],
+  );
   const visibleSlots = useMemo(() => {
     if (!weekStart) return slots;
     return slots.filter((s) => dayjs(s.date).startOf('week').isSame(weekStart, 'day'));
@@ -171,7 +235,7 @@ export default function PatientHomePage() {
   );
 
   // Reset the table to the first page whenever the filtered set changes.
-  useEffect(() => { setDocPage(0); }, [search, specialtyFilter, docsPerPage]);
+  useEffect(() => { setDocPage(0); }, [search, specialtyFilter, weekStart, docsPerPage]);
 
   const pagedDoctors = useMemo(
     () => filteredDoctors.slice(docPage * docsPerPage, docPage * docsPerPage + docsPerPage),
@@ -182,10 +246,6 @@ export default function PatientHomePage() {
     setSelectedDoctor(doctor);
     setRequested(new Set());
     setSlotPage(0);
-    setSlotsLoading(true);
-    Promise.all([listAvailabilityForDoctor(doctor.id), listAppointmentsForDoctor(doctor.id)])
-      .then(([avail, appts]) => setSlots(buildSlots(avail, appts)))
-      .finally(() => setSlotsLoading(false));
   }
 
   function openFilters() {
@@ -266,9 +326,7 @@ export default function PatientHomePage() {
                   </Typography>
                 </Divider>
 
-                {slotsLoading ? (
-                  <LoadingSpinner />
-                ) : visibleSlots.length === 0 ? (
+                {visibleSlots.length === 0 ? (
                   <EmptyState
                     title="No open slots"
                     message={weekLabel ? 'Nothing free in the selected week — try another week.' : 'This doctor has no available appointments right now.'}
@@ -409,8 +467,17 @@ export default function PatientHomePage() {
               <DateCalendar
                 value={draftDay}
                 onChange={(value) => setDraftDay(value)}
-                slots={{ day: WeekDay }}
-                slotProps={{ day: { selectedWeekStart: draftDay ? draftDay.startOf('week') : null } }}
+                showDaysOutsideCurrentMonth
+                displayWeekNumber
+                slots={{ day: Day }}
+                slotProps={{
+                  day: (ownerState) => ({
+                    selectedDay: draftDay,
+                    hoveredDay,
+                    onPointerEnter: () => setHoveredDay(ownerState.day),
+                    onPointerLeave: () => setHoveredDay(null),
+                  }),
+                }}
               />
             </LocalizationProvider>
           </Stack>
