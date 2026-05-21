@@ -1,12 +1,79 @@
-import { Container, Typography } from '@mui/material';
+import { Container, Typography ,Button} from '@mui/material';
+import { DataGrid } from '@mui/x-data-grid';
+import {listAppointments, cancelAppointment} from '../../api/appointments';
+import {listUsers} from '../../api/users';
+import { listSpecialties } from '../../api/specialties';
+import {APPOINTMENT_STATUSES} from '../../schema/schema';
+import ConfirmDialog from '../../components/common/ConfirmDialog';
+import LoadingSpinner from '../../components/common/LoadingSpinner';
+import { useEffect, useState } from 'react';
+
 
 export default function AppointmentsPage() {
-  // TODO: implement per wireframe (docs/useCare.excalidraw).
-  // Global table of all appointments: Date | Time | Patient | Doctor | Status | Actions.
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const columns = [
+    { field: 'date', headerName: 'Date', width: 150 },
+    { field: 'time', headerName: 'Time', width: 150 },
+    { field: 'patient', headerName: 'Patient', width: 150 },
+    { field: 'doctor', headerName: 'Doctor', width: 150 },
+    { field: 'specialty', headerName: 'Specialty', width: 150 },
+    { field: 'status', headerName: 'Status', width: 150 },
+    {
+      field: 'actions',
+      headerName: 'Actions',
+      width: 250,
+      renderCell: (params) => (
+        <>
+          <Button variant="outlined" onClick={() => handleView(params.row)}>View</Button>
+          <Button variant="outlined" onClick={() => handleCancel(params.row)}>Cancel</Button>
+        </>
+      ),
+    },
+  ];
+
+useEffect(() => {
+  const fetchAll = async () => {
+    const [appointments, users, specialties] = await Promise.all([
+      listAppointments(),
+      listUsers(),
+      listSpecialties(),
+    ]);
+
+    setRows(appointments.map(item => {
+      const patient = users.find(u => u.id === item.patient_id);
+      const doctor = users.find(u => u.id === item.doctor_id);
+      const specialty = specialties.find(s => s.id === doctor?.specialty_id);
+
+      return {
+        id: item.id,
+        date: item.date,
+        time: item.time,
+        patient: patient?.name ?? 'Unknown',
+        doctor: doctor?.name ?? 'Unknown',
+        specialty: specialty?.name ?? 'Unknown',
+        status: item.status,
+      };
+    }));
+
+    setLoading(false);
+  };
+
+  fetchAll();
+}, []);
+
+  if (loading) return <LoadingSpinner />;
+
   return (
     <Container maxWidth="lg">
       <Typography variant="h4" gutterBottom marginTop={4}>Appointments</Typography>
-      <Typography color="text.secondary">TODO: implement.</Typography>
+      {
+        loading ? <LoadingSpinner/> : 
+          <>
+            <DataGrid rows={rows} columns={columns} sx={{ mt: 2 }} getRowId={(row) => row.id} />
+          </>
+      }
     </Container>
   );
 }
