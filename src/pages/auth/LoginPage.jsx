@@ -22,6 +22,10 @@ const HOME_BY_ROLE = {
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// Non-breaking space: keeps the helperText line reserved so showing/clearing
+// a validation message never shifts the layout below the field.
+const HELPER_PLACEHOLDER = ' ';
+
 export default function LoginPage() {
   const navigate = useNavigate();
   const { login: setAuthUser } = useAuth();
@@ -75,7 +79,7 @@ export default function LoginPage() {
               autoComplete="email"
               autoFocus
               error={Boolean(errors.email)}
-              helperText={errors.email?.message}
+              helperText={errors.email?.message || HELPER_PLACEHOLDER}
             />
           )}
         />
@@ -95,7 +99,7 @@ export default function LoginPage() {
               fullWidth
               autoComplete="current-password"
               error={Boolean(errors.password)}
-              helperText={errors.password?.message}
+              helperText={errors.password?.message || HELPER_PLACEHOLDER}
             />
           )}
         />
