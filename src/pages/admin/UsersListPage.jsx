@@ -1,81 +1,74 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Container, Typography, Box, Button, ToggleButtonGroup, ToggleButton, Table, TableHead, TableBody, TableRow, TableCell, TableContainer, TablePagination, Paper, Chip } from '@mui/material';
-import LoadingSpinner from '../../components/common/LoadingSpinner.jsx';
-import { listUsers } from '../../api/users.js';
+import {
+  Container,
+  Stack,
+  Box,
+  Typography,
+  Avatar,
+  Chip,
+  Button,
+  TextField,
+  MenuItem,
+  Divider,
+  Snackbar,
+  Alert,
+} from '@mui/material';
+import { listUsers, approveUser, rejectUser } from '../../api/users.js';
+import { listSpecialties } from '../../api/specialties.js';
 import { USER_STATUSES } from '../../schema/schema.js';
-import ApproveUserDialog from './ApproveUserDialog.jsx';
+import MasterDetailBrowser from '../../components/common/MasterDetailBrowser.jsx';
+import LoadingSpinner from '../../components/common/LoadingSpinner.jsx';
+import { initialOf } from '../../lib/format.js';
+
+const STATUS_CHIP = { pending: 'warning', approved: 'success', rejected: 'default' };
+const ALL = 'all';
 
 export default function UsersListPage() {
-  const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState([]);
-  const [error, setError] = useState(null);
-
-  // UI prep state required by the task
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [filter, setFilter] = useState('all');
-  const [dialogOpen, setDialogOpen] = useState(false);
-
-  // Pagination
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [specialties, setSpecialties] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState(ALL);
+  const [selectedId, setSelectedId] = useState(null);
+  const [toast, setToast] = useState('');
 
   useEffect(() => {
     let mounted = true;
-    setLoading(true);
-    setError(null);
-
-    listUsers()
-      .then((data) => {
+    Promise.all([listUsers(), listSpecialties()])
+      .then(([u, s]) => {
         if (!mounted) return;
-        setUsers(Array.isArray(data) ? data : []);
+        setUsers(Array.isArray(u) ? u : []);
+        setSpecialties(Array.isArray(s) ? s : []);
       })
-      .catch(() => {
-        if (mounted) setError('Failed to load users');
-      })
-      .finally(() => {
-        if (mounted) setLoading(false);
-      });
-
+      .finally(() => { if (mounted) setLoading(false); });
     return () => { mounted = false; };
   }, []);
 
-  const filteredUsers = useMemo(() => {
-    if (filter === 'all') return users.slice();
-    return users.filter((u) => u.status === filter);
-  }, [users, filter]);
+  const specialtyName = (id) => specialties.find((s) => s.id === id)?.name ?? '—';
 
-  const pagedUsers = useMemo(
-    () => filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
-    [filteredUsers, page, rowsPerPage],
-  );
+  const rows = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    return users.filter((u) => {
+      const matchesName = !term || u.name?.toLowerCase().includes(term) || u.email?.toLowerCase().includes(term);
+      const matchesStatus = statusFilter === ALL || u.status === statusFilter;
+      return matchesName && matchesStatus;
+    });
+  }, [users, search, statusFilter]);
 
-  const openApproveDialog = (user) => {
-    setSelectedUser(user);
-    setDialogOpen(true);
-  };
+  const selected = users.find((u) => u.id === selectedId) ?? null;
 
-  const closeApproveDialog = () => {
-    setDialogOpen(false);
-    setSelectedUser(null);
-  };
-
-  const refreshUsers = async () => {
-    try {
-      const data = await listUsers();
-      setUsers(Array.isArray(data) ? data : []);
-    } catch (_) {
-      setError('Failed to refresh users');
-    }
-  };
-
-  const handleActionUpdated = (update) => {
-    // optimistic update for immediate UI feedback
-    if (update && update.id) {
-      setUsers((prev) => prev.map((u) => (u.id === update.id ? { ...u, ...update } : u)));
-    }
-    // fetch fresh list in background
-    refreshUsers();
-  };
+  function applyStatus(id, status, label) {
+    setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, status } : u)));
+    setToast(label);
+  }
+  async function handleApprove(id) {
+    await approveUser(id);
+    applyStatus(id, 'approved', 'User approved.');
+  }
+  async function handleReject(id) {
+    await rejectUser(id);
+    applyStatus(id, 'rejected', 'User rejected.');
+  }
 
   if (loading) {
     return (
@@ -85,80 +78,92 @@ export default function UsersListPage() {
     );
   }
 
-  return (
-    <Container maxWidth="lg">
-      <Typography variant="h4" gutterBottom marginTop={2}>Users</Typography>
+  const columns = [
+    { key: 'name', label: 'Name' },
+    { key: 'role', label: 'Role' },
+    {
+      key: 'status',
+      label: 'Status',
+      render: (u) => <Chip size="small" label={u.status} color={STATUS_CHIP[u.status] ?? 'default'} />,
+    },
+  ];
 
-      {error ? (
+  const renderDetail = (u) => (
+    <Stack spacing={2}>
+      <Stack direction="row" spacing={2} alignItems="center">
+        <Avatar>{initialOf(u.name)}</Avatar>
         <Box>
-          <Typography color="error">{error}</Typography>
+          <Typography variant="h6">{u.name}</Typography>
+          <Typography variant="body2" color="text.secondary">{u.email}</Typography>
         </Box>
-      ) : (
-        <Box>
-          {/* Filter controls: All + statuses from USER_STATUSES */}
-          <Box marginTop={1}>
-            <ToggleButtonGroup
-              value={filter}
-              exclusive
-              onChange={(_, val) => {
-                // maintain 'all' when val is falsy (deselection)
-                setFilter(val || 'all');
-                setPage(0);
-              }}
-              aria-label="user status filter"
-            >
-              <ToggleButton value="all" aria-label="all">All</ToggleButton>
-              {USER_STATUSES.map((s) => (
-                <ToggleButton key={s} value={s} aria-label={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</ToggleButton>
-              ))}
-            </ToggleButtonGroup>
-          </Box>
+      </Stack>
+      <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+        <Chip label={u.role} variant="outlined" />
+        <Chip label={u.status} color={STATUS_CHIP[u.status] ?? 'default'} />
+        {u.role === 'doctor' && <Chip label={specialtyName(u.specialty_id)} variant="outlined" />}
+      </Stack>
+      <Divider />
+      <Row label="Phone" value={u.phone_number} />
+      <Row label="Gender" value={u.gender} />
+      <Row label="Date of birth" value={u.date_of_birth} />
+      {u.role === 'doctor' && <Row label="About" value={u.description} />}
 
-          <Box marginTop={2}>
-            <TableContainer component={Paper}>
-              <Table stickyHeader aria-label="users table">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Name</TableCell>
-                    <TableCell>Role</TableCell>
-                    <TableCell>Status</TableCell>
-                    <TableCell>Actions</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {pagedUsers.map((u) => {
-                    const isPending = u.status === 'pending';
-                    const chipColor = u.status === 'pending' ? 'warning' : (u.status === 'approved' ? 'success' : 'default');
-                    return (
-                      <TableRow key={u.id} hover={isPending} onClick={() => { if (isPending) openApproveDialog(u); }} tabIndex={isPending ? 0 : -1}>
-                        <TableCell>{u.name || '—'}</TableCell>
-                        <TableCell>{u.role || 'user'}</TableCell>
-                        <TableCell>
-                          <Chip label={u.status} color={chipColor} />
-                        </TableCell>
-                        <TableCell>
-                          <Button disabled={!isPending} onClick={(e) => { e.stopPropagation(); if (isPending) openApproveDialog(u); }}>Open</Button>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-              <TablePagination
-                component="div"
-                count={filteredUsers.length}
-                page={page}
-                onPageChange={(_, p) => setPage(p)}
-                rowsPerPage={rowsPerPage}
-                onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
-                rowsPerPageOptions={[5, 10, 25]}
-              />
-            </TableContainer>
-          </Box>
-
-          <ApproveUserDialog open={dialogOpen} onClose={closeApproveDialog} user={selectedUser} onUpdated={handleActionUpdated} />
-        </Box>
+      {u.status === 'pending' && (
+        <Stack direction="row" spacing={1} justifyContent="flex-end">
+          <Button color="warning" onClick={() => handleReject(u.id)}>Reject</Button>
+          <Button variant="contained" disableElevation onClick={() => handleApprove(u.id)}>Approve</Button>
+        </Stack>
       )}
-    </Container>
+    </Stack>
+  );
+
+  return (
+    <>
+      <MasterDetailBrowser
+        title="Users"
+        placeholderTitle="No user selected"
+        placeholderMessage="Pick a user from the table below to see their details."
+        selected={selected}
+        selectedId={selectedId}
+        onSelectRow={(u) => setSelectedId(u ? u.id : null)}
+        renderDetail={renderDetail}
+        columns={columns}
+        rows={rows}
+        searchValue={search}
+        onSearchChange={setSearch}
+        searchLabel="Search by name or email"
+        emptyMessage="No users match your filters"
+        filters={(
+          <TextField
+            select
+            label="Status"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <MenuItem value={ALL}>All</MenuItem>
+            {USER_STATUSES.map((s) => (
+              <MenuItem key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</MenuItem>
+            ))}
+          </TextField>
+        )}
+      />
+      <Snackbar
+        open={Boolean(toast)}
+        autoHideDuration={3000}
+        onClose={() => setToast('')}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="success" onClose={() => setToast('')}>{toast}</Alert>
+      </Snackbar>
+    </>
+  );
+}
+
+function Row({ label, value }) {
+  return (
+    <Stack direction="row" spacing={2} justifyContent="space-between">
+      <Typography variant="body2" color="text.secondary">{label}</Typography>
+      <Typography variant="body2">{value || '—'}</Typography>
+    </Stack>
   );
 }

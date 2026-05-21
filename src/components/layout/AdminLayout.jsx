@@ -22,6 +22,7 @@ import GroupIcon from '@mui/icons-material/Group';
 import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
 import EventIcon from '@mui/icons-material/Event';
 import SettingsIcon from '@mui/icons-material/Settings';
+import PersonIcon from '@mui/icons-material/Person';
 import AppHeader from './AppHeader.jsx';
 
 const drawerWidth = 240;
@@ -32,6 +33,7 @@ const navItems = [
   { text: 'Specialties', icon: <MedicalServicesIcon />, path: '/admin/specialties' },
   { text: 'Appointments', icon: <EventIcon />, path: '/admin/appointments' },
   { text: 'Settings', icon: <SettingsIcon />, path: '/admin/settings' },
+  { text: 'My profile', icon: <PersonIcon />, path: '/admin/profile' },
 ];
 
 export default function AdminLayout() {

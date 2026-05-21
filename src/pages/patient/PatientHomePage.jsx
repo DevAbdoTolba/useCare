@@ -36,6 +36,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
 import { PickersDay } from '@mui/x-date-pickers/PickersDay';
+import { styled } from '@mui/material/styles';
 
 import { listDoctors } from '../../api/users.js';
 import { listSpecialties } from '../../api/specialties.js';
@@ -50,11 +51,50 @@ const ALL_SPECIALTIES = 'all';
 const SLOT_MINUTES = 30;
 const SLOT_PAGE_OPTIONS = [5, 10, 25];
 
-/** A calendar day that highlights every day in the selected week. */
-function WeekDay({ selectedWeekStart, day, ...other }) {
-  const inWeek =
-    selectedWeekStart != null && day.startOf('week').isSame(selectedWeekStart, 'day');
-  return <PickersDay {...other} day={day} selected={inWeek} />;
+// Week picker (MUI docs pattern): a styled day that paints the whole hovered /
+// selected week as a connected strip. All colors come from the MUI theme
+// palette, so it re-themes via the theme config — and uses no `sx` prop.
+const CustomPickersDay = styled(PickersDay, {
+  shouldForwardProp: (prop) => prop !== 'isSelected' && prop !== 'isHovered',
+})(({ theme, isSelected, isHovered, day }) => ({
+  borderRadius: 0,
+  paddingLeft: theme.spacing(2.5),
+  paddingRight: theme.spacing(2.5),
+  ...(isSelected && {
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.primary.contrastText,
+    '&:hover, &:focus': { backgroundColor: theme.palette.primary.main },
+  }),
+  ...(isHovered && {
+    backgroundColor: theme.palette.primary.light,
+    '&:hover, &:focus': { backgroundColor: theme.palette.primary.light },
+  }),
+  ...(day.day() === 0 && {
+    borderTopLeftRadius: '50%',
+    borderBottomLeftRadius: '50%',
+  }),
+  ...(day.day() === 6 && {
+    borderTopRightRadius: '50%',
+    borderBottomRightRadius: '50%',
+  }),
+}));
+
+const isInSameWeek = (a, b) => {
+  if (b == null) return false;
+  return a.startOf('week').isSame(b.startOf('week'), 'day');
+};
+
+function Day({ day, selectedDay, hoveredDay, ...other }) {
+  return (
+    <CustomPickersDay
+      {...other}
+      day={day}
+      disableMargin
+      selected={false}
+      isSelected={isInSameWeek(day, selectedDay)}
+      isHovered={isInSameWeek(day, hoveredDay)}
+    />
+  );
 }
 
 /** Build 30-minute slots from a doctor's available days, skipping booked times. */
@@ -107,6 +147,7 @@ export default function PatientHomePage() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [draftSpecialty, setDraftSpecialty] = useState(ALL_SPECIALTIES);
   const [draftDay, setDraftDay] = useState(null);
+  const [hoveredDay, setHoveredDay] = useState(null);
 
   // Selected doctor card
   const [selectedDoctor, setSelectedDoctor] = useState(null);
@@ -409,8 +450,17 @@ export default function PatientHomePage() {
               <DateCalendar
                 value={draftDay}
                 onChange={(value) => setDraftDay(value)}
-                slots={{ day: WeekDay }}
-                slotProps={{ day: { selectedWeekStart: draftDay ? draftDay.startOf('week') : null } }}
+                showDaysOutsideCurrentMonth
+                displayWeekNumber
+                slots={{ day: Day }}
+                slotProps={{
+                  day: (ownerState) => ({
+                    selectedDay: draftDay,
+                    hoveredDay,
+                    onPointerEnter: () => setHoveredDay(ownerState.day),
+                    onPointerLeave: () => setHoveredDay(null),
+                  }),
+                }}
               />
             </LocalizationProvider>
           </Stack>

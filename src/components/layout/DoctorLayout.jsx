@@ -1,63 +1,76 @@
-import { Outlet, Link as RouterLink } from 'react-router-dom';
-import { Box, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
+import { useState } from 'react';
+import { Outlet, Link as RouterLink, useLocation } from 'react-router-dom';
+import dayjs from 'dayjs';
+import {
+  Box,
+  Toolbar,
+  Drawer,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  IconButton,
+  Typography,
+  Divider,
+} from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import TodayIcon from '@mui/icons-material/Today';
+import PersonIcon from '@mui/icons-material/Person';
 import AppHeader from './AppHeader.jsx';
 
-import dayjs from 'dayjs';
-
-const drawerWidth = 240;
-
 /**
- * Doctor shell.
- * - top app bar with doctor name + logout
- * - calendar / day views render in the outlet
- * - sidebar nav: Calendar / My day — use MUI Drawer
+ * Doctor shell: shared header + a slide-in nav Drawer
+ * (My day / Day schedule / Profile). Pages render in the Outlet.
  */
 export default function DoctorLayout() {
+  const { pathname } = useLocation();
+  const [open, setOpen] = useState(false);
   const today = dayjs().format('YYYY-MM-DD');
 
+  const navItems = [
+    { label: 'My day', to: '/doctor', icon: <CalendarMonthIcon />, exact: true },
+    { label: 'Day schedule', to: `/doctor/day/${today}`, icon: <TodayIcon /> },
+    { label: 'Profile', to: '/doctor/profile', icon: <PersonIcon /> },
+  ];
+
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+    <Box>
       <AppHeader />
-      <Box sx={{ display: 'flex', flexGrow: 1, overflow: 'hidden' }}>
-        <Drawer
-          variant="permanent"
-          sx={{
-            width: drawerWidth,
-            flexShrink: 0,
-            '& .MuiDrawer-paper': {
-              width: drawerWidth,
-              boxSizing: 'border-box',
-              position: 'relative',
-            },
-          }}
-        >
-          <Box sx={{ overflow: 'auto' }}>
-            <List>
-              <ListItem disablePadding>
-                <ListItemButton component={RouterLink} to="/doctor">
-                  <ListItemIcon>
-                    <CalendarMonthIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="Calendar" />
+
+      <Toolbar variant="dense">
+        <IconButton edge="start" onClick={() => setOpen(true)} aria-label="Open doctor menu">
+          <MenuIcon />
+        </IconButton>
+        <Typography variant="overline" color="text.secondary">Doctor</Typography>
+      </Toolbar>
+      <Divider />
+
+      <Drawer open={open} onClose={() => setOpen(false)}>
+        <Box role="presentation" onClick={() => setOpen(false)}>
+          <Toolbar>
+            <Typography variant="h6">useCare</Typography>
+          </Toolbar>
+          <Divider />
+          <List>
+            {navItems.map((item) => (
+              <ListItem key={item.label} disablePadding>
+                <ListItemButton
+                  component={RouterLink}
+                  to={item.to}
+                  selected={item.exact ? pathname === item.to : pathname.startsWith('/doctor/profile') && item.to === '/doctor/profile'}
+                >
+                  <ListItemIcon>{item.icon}</ListItemIcon>
+                  <ListItemText primary={item.label} />
                 </ListItemButton>
               </ListItem>
-              <ListItem disablePadding>
-                <ListItemButton component={RouterLink} to={`/doctor/day/${today}`}>
-                  <ListItemIcon>
-                    <TodayIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="My day" />
-                </ListItemButton>
-              </ListItem>
-            </List>
-          </Box>
-        </Drawer>
-        <Box component="main" sx={{ flexGrow: 1, p: 3, overflow: 'auto' }}>
-          <Outlet />
+            ))}
+          </List>
         </Box>
-      </Box>
+      </Drawer>
+
+      <Outlet />
     </Box>
   );
 }
