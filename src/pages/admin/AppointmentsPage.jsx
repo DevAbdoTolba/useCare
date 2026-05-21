@@ -1,4 +1,4 @@
-import { Container, Typography ,Button} from '@mui/material';
+import { Container, Typography ,Button , Chip} from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import {listAppointments, cancelAppointment} from '../../api/appointments';
 import {listUsers} from '../../api/users';
@@ -19,7 +19,21 @@ export default function AppointmentsPage() {
     { field: 'patient', headerName: 'Patient', width: 150 },
     { field: 'doctor', headerName: 'Doctor', width: 150 },
     { field: 'specialty', headerName: 'Specialty', width: 150 },
-    { field: 'status', headerName: 'Status', width: 150 },
+    {
+      field: 'status',
+      headerName: 'Status',
+      width: 150,
+      renderCell : (params) => {
+        const colorMap = {
+          pending : {color : 'warning'},
+          confirmed : {color : 'success'},
+          cancelled : {color : 'error'},
+          completed : {color : 'info'}, 
+        };
+        const {color} = colorMap[params.value] ?? {color : 'default'};
+        return <Chip label={params.value} color={color} size='small'/>;
+      }
+    },
     {
       field: 'actions',
       headerName: 'Actions',
@@ -71,7 +85,7 @@ useEffect(() => {
       {
         loading ? <LoadingSpinner/> : 
           <>
-            <DataGrid rows={rows} columns={columns} sx={{ mt: 2 }} getRowId={(row) => row.id} />
+            <DataGrid rows={rows} columns={columns} sx={{ mt: 2 }} getRowId={(row) => row.id} colorr />
           </>
       }
     </Container>
