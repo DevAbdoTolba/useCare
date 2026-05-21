@@ -14,6 +14,7 @@ import {
   TableRow,
   TableCell,
   TableContainer,
+  TablePagination,
   Paper,
   Card,
   CardHeader,
@@ -47,6 +48,7 @@ import LoadingSpinner from '../../components/common/LoadingSpinner.jsx';
 
 const ALL_SPECIALTIES = 'all';
 const SLOT_MINUTES = 30;
+const SLOT_PAGE_OPTIONS = [5, 10, 25];
 
 /** A calendar day that highlights every day in the selected week. */
 function WeekDay({ selectedWeekStart, day, ...other }) {
@@ -111,6 +113,12 @@ export default function PatientHomePage() {
   const [slots, setSlots] = useState([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [requested, setRequested] = useState(() => new Set()); // slot ids with a pending request
+  const [slotPage, setSlotPage] = useState(0);
+  const [slotsPerPage, setSlotsPerPage] = useState(SLOT_PAGE_OPTIONS[0]);
+
+  // Doctor table pagination
+  const [docPage, setDocPage] = useState(0);
+  const [docsPerPage, setDocsPerPage] = useState(SLOT_PAGE_OPTIONS[0]);
 
   // Booking confirm dialog + feedback
   const [pendingSlot, setPendingSlot] = useState(null);
@@ -148,9 +156,26 @@ export default function PatientHomePage() {
     return slots.filter((s) => dayjs(s.date).startOf('week').isSame(weekStart, 'day'));
   }, [slots, weekStart]);
 
+  // Reset to the first page whenever the visible slot set changes.
+  useEffect(() => { setSlotPage(0); }, [weekStart, selectedDoctor, slotsPerPage]);
+
+  const pagedSlots = useMemo(
+    () => visibleSlots.slice(slotPage * slotsPerPage, slotPage * slotsPerPage + slotsPerPage),
+    [visibleSlots, slotPage, slotsPerPage],
+  );
+
+  // Reset the table to the first page whenever the filtered set changes.
+  useEffect(() => { setDocPage(0); }, [search, specialtyFilter, docsPerPage]);
+
+  const pagedDoctors = useMemo(
+    () => filteredDoctors.slice(docPage * docsPerPage, docPage * docsPerPage + docsPerPage),
+    [filteredDoctors, docPage, docsPerPage],
+  );
+
   function handleViewDoctor(doctor) {
     setSelectedDoctor(doctor);
     setRequested(new Set());
+    setSlotPage(0);
     setSlotsLoading(true);
     Promise.all([listAvailabilityForDoctor(doctor.id), listAppointmentsForDoctor(doctor.id)])
       .then(([avail, appts]) => setSlots(buildSlots(avail, appts)))
@@ -242,33 +267,45 @@ export default function PatientHomePage() {
                     message={weekLabel ? 'Nothing free in the selected week — try another week.' : 'This doctor has no available appointments right now.'}
                   />
                 ) : (
-                  <Stack divider={<Divider flexItem />} spacing={1}>
-                    {visibleSlots.map((slot) => {
-                      const isRequested = requested.has(slot.id);
-                      return (
-                        <Stack
-                          key={slot.id}
-                          direction="row"
-                          spacing={2}
-                          alignItems="center"
-                          justifyContent="space-between"
-                        >
-                          <Stack direction="row" spacing={2} alignItems="center">
-                            <Chip label={slot.dateLabel} />
-                            <Chip label={slot.timeLabel} variant="outlined" />
-                            {isRequested && <Chip label="Requested" color="warning" size="small" />}
+                  <>
+                    <Stack divider={<Divider flexItem />} spacing={1}>
+                      {pagedSlots.map((slot) => {
+                        const isRequested = requested.has(slot.id);
+                        return (
+                          <Stack
+                            key={slot.id}
+                            direction="row"
+                            spacing={2}
+                            alignItems="center"
+                            justifyContent="space-between"
+                          >
+                            <Stack direction="row" spacing={2} alignItems="center">
+                              <Chip label={slot.dateLabel} />
+                              <Chip label={slot.timeLabel} variant="outlined" />
+                              {isRequested && <Chip label="Requested" color="warning" size="small" />}
+                            </Stack>
+                            <Checkbox
+                              checked={false}
+                              indeterminate={isRequested}
+                              disabled={isRequested}
+                              onChange={() => setPendingSlot(slot)}
+                              inputProps={{ 'aria-label': `Book ${slot.dateLabel} at ${slot.timeLabel}` }}
+                            />
                           </Stack>
-                          <Checkbox
-                            checked={false}
-                            indeterminate={isRequested}
-                            disabled={isRequested}
-                            onChange={() => setPendingSlot(slot)}
-                            inputProps={{ 'aria-label': `Book ${slot.dateLabel} at ${slot.timeLabel}` }}
-                          />
-                        </Stack>
-                      );
-                    })}
-                  </Stack>
+                        );
+                      })}
+                    </Stack>
+                    <TablePagination
+                      component="div"
+                      count={visibleSlots.length}
+                      page={slotPage}
+                      onPageChange={(_e, next) => setSlotPage(next)}
+                      rowsPerPage={slotsPerPage}
+                      onRowsPerPageChange={(e) => setSlotsPerPage(parseInt(e.target.value, 10))}
+                      rowsPerPageOptions={SLOT_PAGE_OPTIONS}
+                      labelRowsPerPage="Slots per page"
+                    />
+                  </>
                 )}
               </Stack>
             </CardContent>
@@ -313,7 +350,7 @@ export default function PatientHomePage() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredDoctors.map((doctor) => (
+                {pagedDoctors.map((doctor) => (
                   <TableRow key={doctor.id} hover selected={selectedDoctor?.id === doctor.id}>
                     <TableCell>{doctor.name}</TableCell>
                     <TableCell>{specialtyNameById.get(doctor.specialty_id) ?? '—'}</TableCell>
@@ -327,6 +364,15 @@ export default function PatientHomePage() {
                 ))}
               </TableBody>
             </Table>
+            <TablePagination
+              component="div"
+              count={filteredDoctors.length}
+              page={docPage}
+              onPageChange={(_e, next) => setDocPage(next)}
+              rowsPerPage={docsPerPage}
+              onRowsPerPageChange={(e) => setDocsPerPage(parseInt(e.target.value, 10))}
+              rowsPerPageOptions={SLOT_PAGE_OPTIONS}
+            />
           </TableContainer>
         )}
       </Stack>
