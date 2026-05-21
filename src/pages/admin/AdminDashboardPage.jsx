@@ -51,9 +51,9 @@ export default function AdminDashboardPage() {
         <DashboardStats
           counts={counts}
           pendingCount={pendingUsers.length}
-          onPendingClick={() => navigate('/admin/users')}
+          onPendingClick={() => navigate('/admin/users?status=pending')}
         />
-        <PendingApprovalsList users={pendingUsers} onViewAll={() => navigate('/admin/users')} />
+        <PendingApprovalsList users={pendingUsers} onViewAll={() => navigate('/admin/users?status=pending')} />
       </Box>
     </Container>
   );

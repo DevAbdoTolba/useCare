@@ -20,9 +20,7 @@ import {
   Snackbar,
   Alert,
 } from '@mui/material';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
+import AppointmentCalendar from '../../components/common/AppointmentCalendar.jsx';
 import { listAppointmentsForDoctor, updateAppointment } from '../../api/appointments.js';
 import { getUser } from '../../api/users.js';
 import { useAuth } from '../../hooks/useAuth.js';
@@ -58,6 +56,7 @@ export default function DoctorCalendarPage() {
   const [openHours, setOpenHoursState] = useState([]);
 
   const [confirmHour, setConfirmHour] = useState(null);
+  const [confirmRemoveHour, setConfirmRemoveHour] = useState(null);
   const [detail, setDetail] = useState(null);
   const [editStatus, setEditStatus] = useState('pending');
   const [editNotes, setEditNotes] = useState('');
@@ -100,6 +99,13 @@ export default function DoctorCalendarPage() {
     return map;
   }, [appointments, dateStr]);
 
+  // count of appointments per date, for the calendar badges
+  const countsByDate = useMemo(() => {
+    const m = {};
+    appointments.forEach((a) => { m[a.date] = (m[a.date] || 0) + 1; });
+    return m;
+  }, [appointments]);
+
   const patientName = (id) => patientById[id]?.name ?? `Patient #${id}`;
 
   function persistOpenHours(hours) {
@@ -131,11 +137,17 @@ export default function DoctorCalendarPage() {
       return;
     }
     if (openHours.includes(hour)) {
-      persistOpenHours(openHours.filter((h) => h !== hour));
+      setConfirmRemoveHour(hour); // confirm before removing an open hour
       return;
     }
     setConfirmHour(hour);
   };
+
+  function confirmRemoveAvailable() {
+    if (confirmRemoveHour == null) return;
+    persistOpenHours(openHours.filter((h) => h !== confirmRemoveHour));
+    setConfirmRemoveHour(null);
+  }
 
   function confirmSetAvailable() {
     if (confirmHour == null) return;
@@ -183,9 +195,11 @@ export default function DoctorCalendarPage() {
           </Box>
 
           <Card variant="outlined">
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DateCalendar value={selectedDay} onChange={(v) => v && setSelectedDay(v)} />
-            </LocalizationProvider>
+            <AppointmentCalendar
+              value={selectedDay}
+              onChange={(v) => v && setSelectedDay(v)}
+              countsByDate={countsByDate}
+            />
           </Card>
         </Stack>
 
@@ -215,6 +229,22 @@ export default function DoctorCalendarPage() {
         <DialogActions>
           <Button onClick={() => setConfirmHour(null)}>Cancel</Button>
           <Button variant="contained" disableElevation onClick={confirmSetAvailable}>Set available</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Confirm "remove availability" */}
+      <Dialog open={confirmRemoveHour != null} onClose={() => setConfirmRemoveHour(null)}>
+        <DialogTitle>Close this hour?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {confirmRemoveHour != null
+              ? `Stop offering ${hourLabel(confirmRemoveHour)} on ${selectedDay.format('MMM D')} for appointments?`
+              : ''}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmRemoveHour(null)}>Cancel</Button>
+          <Button color="error" variant="contained" disableElevation onClick={confirmRemoveAvailable}>Remove</Button>
         </DialogActions>
       </Dialog>
 

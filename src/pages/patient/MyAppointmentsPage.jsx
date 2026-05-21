@@ -15,15 +15,13 @@ import {
   DialogActions,
   Button,
 } from '@mui/material';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
 import { listAppointmentsForPatient } from '../../api/appointments.js';
 import { getUser } from '../../api/users.js';
 import { useAuth } from '../../hooks/useAuth.js';
 import LoadingSpinner from '../../components/common/LoadingSpinner.jsx';
 import ProfileSummaryCard from '../../components/common/ProfileSummaryCard.jsx';
 import DayHourGrid from '../../components/common/DayHourGrid.jsx';
+import AppointmentCalendar from '../../components/common/AppointmentCalendar.jsx';
 import { initialOf, timeLabel, STATUS_COLOR } from '../../lib/format.js';
 
 export default function MyAppointmentsPage() {
@@ -65,6 +63,12 @@ export default function MyAppointmentsPage() {
       });
     return map;
   }, [appointments, dateStr]);
+
+  const countsByDate = useMemo(() => {
+    const m = {};
+    appointments.forEach((a) => { m[a.date] = (m[a.date] || 0) + 1; });
+    return m;
+  }, [appointments]);
 
   const dayHasAppointments = Object.keys(apptByHour).length > 0;
   const doctorName = (id) => doctorById[id]?.name ?? `Doctor #${id}`;
@@ -108,9 +112,11 @@ export default function MyAppointmentsPage() {
           </Box>
 
           <Card variant="outlined">
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DateCalendar value={selectedDay} onChange={(v) => v && setSelectedDay(v)} />
-            </LocalizationProvider>
+            <AppointmentCalendar
+              value={selectedDay}
+              onChange={(v) => v && setSelectedDay(v)}
+              countsByDate={countsByDate}
+            />
           </Card>
         </Stack>
 

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   Container,
   Stack,
@@ -28,7 +29,11 @@ export default function UsersListPage() {
   const [specialties, setSpecialties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState(ALL);
+  const [searchParams] = useSearchParams();
+  const initialStatus = USER_STATUSES.includes(searchParams.get('status'))
+    ? searchParams.get('status')
+    : ALL;
+  const [statusFilter, setStatusFilter] = useState(initialStatus);
   const [selectedId, setSelectedId] = useState(null);
   const [toast, setToast] = useState('');
 

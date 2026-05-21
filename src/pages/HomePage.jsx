@@ -1,6 +1,4 @@
 import {
-  AppBar,
-  Toolbar,
   Typography,
   Button,
   Container,
@@ -16,19 +14,12 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
 import ScarfHeart from '../components/ScarfHeart.jsx';
+import AppHeader from '../components/layout/AppHeader.jsx';
 
 export default function HomePage() {
   return (
     <>
-      <AppBar position="sticky" color="default" elevation={0}>
-        <Toolbar>
-          <Typography variant="h6" component="div" flexGrow={1}>
-            useCare
-          </Typography>
-          <Button color="inherit" component={RouterLink} to="/login">Login</Button>
-          <Button variant="contained" disableElevation component={RouterLink} to="/register">Register</Button>
-        </Toolbar>
-      </AppBar>
+      <AppHeader />
 
       {/* SECTION 1 — HERO (full viewport) */}
       <Box minHeight="100vh" display="flex" alignItems="center">

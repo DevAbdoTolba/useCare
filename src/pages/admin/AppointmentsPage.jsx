@@ -19,7 +19,7 @@ import { APPOINTMENT_STATUSES } from '../../schema/schema.js';
 import MasterDetailBrowser from '../../components/common/MasterDetailBrowser.jsx';
 import LoadingSpinner from '../../components/common/LoadingSpinner.jsx';
 import { initialOf, timeLabel, ageFromDob, STATUS_COLOR } from '../../lib/format.js';
-import { exportAppointmentsPdf } from '../../lib/exportAppointmentsPdf.js';
+import { exportAppointmentsPdf, exportSingleAppointmentPdf } from '../../lib/exportAppointmentsPdf.js';
 
 const ALL = 'all';
 
@@ -127,6 +127,21 @@ export default function AppointmentsPage() {
           <Typography variant="body2" color={a.notes?.trim() ? 'text.primary' : 'text.secondary'}>
             {a.notes?.trim() ? a.notes : 'No note recorded.'}
           </Typography>
+        </Box>
+
+        <Box>
+          <Button
+            variant="contained"
+            disableElevation
+            startIcon={<DownloadIcon />}
+            onClick={() => exportSingleAppointmentPdf(a, {
+              patientName: nameOf(a.patient_id),
+              doctorName: nameOf(a.doctor_id),
+              specialtyName: specialtyOf(a.doctor_id),
+            })}
+          >
+            Export this appointment
+          </Button>
         </Box>
       </Stack>
     );

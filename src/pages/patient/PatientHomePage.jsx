@@ -150,9 +150,8 @@ export default function PatientHomePage() {
   const [hoveredDay, setHoveredDay] = useState(null);
 
   // Selected doctor card
+  const [slotsByDoctor, setSlotsByDoctor] = useState({}); // doctorId -> slots[]
   const [selectedDoctor, setSelectedDoctor] = useState(null);
-  const [slots, setSlots] = useState([]);
-  const [slotsLoading, setSlotsLoading] = useState(false);
   const [requested, setRequested] = useState(() => new Set()); // slot ids with a pending request
   const [slotPage, setSlotPage] = useState(0);
   const [slotsPerPage, setSlotsPerPage] = useState(SLOT_PAGE_OPTIONS[0]);
@@ -173,12 +172,27 @@ export default function PatientHomePage() {
   }
 
   useEffect(() => {
+    let mounted = true;
     Promise.all([listDoctors(), listSpecialties()])
-      .then(([docs, specs]) => {
+      .then(async ([docs, specs]) => {
+        if (!mounted) return;
         setDoctors(docs);
         setSpecialties(specs);
+        // Preload every doctor's open slots so the week filter can narrow the
+        // doctor list (not just the selected card).
+        const entries = await Promise.all(
+          docs.map(async (d) => {
+            const [avail, appts] = await Promise.all([
+              listAvailabilityForDoctor(d.id),
+              listAppointmentsForDoctor(d.id),
+            ]);
+            return [d.id, buildSlots(avail, appts)];
+          }),
+        );
+        if (mounted) setSlotsByDoctor(Object.fromEntries(entries));
       })
-      .finally(() => setLoading(false));
+      .finally(() => { if (mounted) setLoading(false); });
+    return () => { mounted = false; };
   }, []);
 
   const specialtyNameById = useMemo(() => {
@@ -187,17 +201,26 @@ export default function PatientHomePage() {
     return map;
   }, [specialties]);
 
+  const slotsInWeek = (doctorId, ws) =>
+    (slotsByDoctor[doctorId] ?? []).some((s) => dayjs(s.date).startOf('week').isSame(ws, 'day'));
+
   const filteredDoctors = useMemo(() => {
     const term = search.trim().toLowerCase();
     return doctors.filter((d) => {
       const matchesName = !term || d.name.toLowerCase().includes(term);
       const matchesSpecialty =
         specialtyFilter === ALL_SPECIALTIES || d.specialty_id === specialtyFilter;
-      return matchesName && matchesSpecialty;
+      const matchesWeek = !weekStart || slotsInWeek(d.id, weekStart);
+      return matchesName && matchesSpecialty && matchesWeek;
     });
-  }, [doctors, search, specialtyFilter]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [doctors, search, specialtyFilter, weekStart, slotsByDoctor]);
 
   // Slots for the selected doctor, narrowed to the chosen week if any.
+  const slots = useMemo(
+    () => (selectedDoctor ? (slotsByDoctor[selectedDoctor.id] ?? []) : []),
+    [selectedDoctor, slotsByDoctor],
+  );
   const visibleSlots = useMemo(() => {
     if (!weekStart) return slots;
     return slots.filter((s) => dayjs(s.date).startOf('week').isSame(weekStart, 'day'));
@@ -212,7 +235,7 @@ export default function PatientHomePage() {
   );
 
   // Reset the table to the first page whenever the filtered set changes.
-  useEffect(() => { setDocPage(0); }, [search, specialtyFilter, docsPerPage]);
+  useEffect(() => { setDocPage(0); }, [search, specialtyFilter, weekStart, docsPerPage]);
 
   const pagedDoctors = useMemo(
     () => filteredDoctors.slice(docPage * docsPerPage, docPage * docsPerPage + docsPerPage),
@@ -223,10 +246,6 @@ export default function PatientHomePage() {
     setSelectedDoctor(doctor);
     setRequested(new Set());
     setSlotPage(0);
-    setSlotsLoading(true);
-    Promise.all([listAvailabilityForDoctor(doctor.id), listAppointmentsForDoctor(doctor.id)])
-      .then(([avail, appts]) => setSlots(buildSlots(avail, appts)))
-      .finally(() => setSlotsLoading(false));
   }
 
   function openFilters() {
@@ -307,9 +326,7 @@ export default function PatientHomePage() {
                   </Typography>
                 </Divider>
 
-                {slotsLoading ? (
-                  <LoadingSpinner />
-                ) : visibleSlots.length === 0 ? (
+                {visibleSlots.length === 0 ? (
                   <EmptyState
                     title="No open slots"
                     message={weekLabel ? 'Nothing free in the selected week — try another week.' : 'This doctor has no available appointments right now.'}
