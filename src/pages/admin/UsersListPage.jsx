@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Container, Typography, Box, Button, ToggleButtonGroup, ToggleButton, Table, TableHead, TableBody, TableRow, TableCell, TableContainer, Paper, Chip } from '@mui/material';
+import { Container, Typography, Box, Button, ToggleButtonGroup, ToggleButton, Table, TableHead, TableBody, TableRow, TableCell, TableContainer, TablePagination, Paper, Chip } from '@mui/material';
 import LoadingSpinner from '../../components/common/LoadingSpinner.jsx';
 import { listUsers } from '../../api/users.js';
 import { USER_STATUSES } from '../../schema/schema.js';
@@ -14,6 +14,10 @@ export default function UsersListPage() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [filter, setFilter] = useState('all');
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  // Pagination
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
 
   useEffect(() => {
     let mounted = true;
@@ -39,6 +43,11 @@ export default function UsersListPage() {
     if (filter === 'all') return users.slice();
     return users.filter((u) => u.status === filter);
   }, [users, filter]);
+
+  const pagedUsers = useMemo(
+    () => filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
+    [filteredUsers, page, rowsPerPage],
+  );
 
   const openApproveDialog = (user) => {
     setSelectedUser(user);
@@ -78,7 +87,7 @@ export default function UsersListPage() {
 
   return (
     <Container maxWidth="lg">
-      <Typography variant="h4" gutterBottom marginTop={4}>Users</Typography>
+      <Typography variant="h4" gutterBottom marginTop={2}>Users</Typography>
 
       {error ? (
         <Box>
@@ -86,17 +95,15 @@ export default function UsersListPage() {
         </Box>
       ) : (
         <Box>
-          <Typography color="text.secondary">Loaded {users.length} users.</Typography>
-
           {/* Filter controls: All + statuses from USER_STATUSES */}
-          <Box marginTop={2}>
+          <Box marginTop={1}>
             <ToggleButtonGroup
               value={filter}
               exclusive
               onChange={(_, val) => {
                 // maintain 'all' when val is falsy (deselection)
-                if (!val) setFilter('all');
-                else setFilter(val);
+                setFilter(val || 'all');
+                setPage(0);
               }}
               aria-label="user status filter"
             >
@@ -105,10 +112,6 @@ export default function UsersListPage() {
                 <ToggleButton key={s} value={s} aria-label={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</ToggleButton>
               ))}
             </ToggleButtonGroup>
-          </Box>
-
-          <Box marginTop={2}>
-            <Typography color="text.secondary">Showing {filteredUsers.length} users.</Typography>
           </Box>
 
           <Box marginTop={2}>
@@ -123,7 +126,7 @@ export default function UsersListPage() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {filteredUsers.map((u) => {
+                  {pagedUsers.map((u) => {
                     const isPending = u.status === 'pending';
                     const chipColor = u.status === 'pending' ? 'warning' : (u.status === 'approved' ? 'success' : 'default');
                     return (
@@ -141,6 +144,15 @@ export default function UsersListPage() {
                   })}
                 </TableBody>
               </Table>
+              <TablePagination
+                component="div"
+                count={filteredUsers.length}
+                page={page}
+                onPageChange={(_, p) => setPage(p)}
+                rowsPerPage={rowsPerPage}
+                onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
+                rowsPerPageOptions={[5, 10, 25]}
+              />
             </TableContainer>
           </Box>
 
