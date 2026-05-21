@@ -1,4 +1,4 @@
-import { Container, Typography, Button, TextField, Box, Card, CardContent, Snackbar } from '@mui/material';
+import { Container, Typography, Button, TextField, Box, Card, CardContent, Snackbar , Alert} from '@mui/material';
 import { listSpecialties, createSpecialty, updateSpecialty, deleteSpecialty } from '../../api/specialties';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import EmptyState from '../../components/common/EmptyState';
@@ -17,7 +17,7 @@ export default function SpecialtiesPage() {
   const [add, setAdd] = useState(false);
   const [view, setView] = useState(false);
   const [edit, setEdit] = useState(false);
-  const [snackbar, setSnackbar] = useState({ open: false, message: '' });
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
   useEffect(() => {
     listSpecialties().then(data => {
@@ -91,7 +91,7 @@ export default function SpecialtiesPage() {
       setRows(rows.filter(r => r.id !== selectedRow.id));
       setConfirmOpen(false);
       setSelectedRow(null);
-      setSnackbar({ open: true, message: 'Deleted permanently' });
+      setSnackbar({ open: true, message: 'Deleted permanently', severity: 'warning' });
     }).catch((err) => console.log(err));
   };
 
@@ -101,7 +101,7 @@ export default function SpecialtiesPage() {
       setAdd(false);
       setNewData({ name: '', description: '' });
       setView(false);
-      setSnackbar({ open: true, message: 'Added successfully' });
+      setSnackbar({ open: true, message: 'Added successfully', severity: 'success' });
     }).catch((err) => console.log(err));
   };
 
@@ -112,7 +112,7 @@ export default function SpecialtiesPage() {
       setEdit(false);
       setSelectedRow(null);
       setNewData({ name: '', description: '' });
-      setSnackbar({ open: true, message: 'Edited successfully' });
+      setSnackbar({ open: true, message: 'Edited successfully', severity: 'success' });
     }).catch((err) => console.log(err));
   };
 
@@ -188,11 +188,18 @@ export default function SpecialtiesPage() {
       />
 
       <Snackbar
-        open={snackbar.open}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-        message={snackbar.message}
-        autoHideDuration={1200}
-      />
+          open={snackbar.open}
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          autoHideDuration={1200}
+        >
+          <Alert
+            onClose={() => setSnackbar({ ...snackbar, open: false })}
+            severity={snackbar.severity}
+            variant="filled"
+          >
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
     </Container>
   );
 }
