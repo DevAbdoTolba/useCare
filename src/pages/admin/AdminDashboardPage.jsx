@@ -105,7 +105,7 @@ export default function AdminDashboardPage() {
                       <Avatar>{(u.first_name || u.name || '?')[0] || '?'}</Avatar>
                     </ListItemAvatar>
                     <ListItemText
-                      primary={u.name ?? `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email || ('User ' + u.id)}
+                      primary={(u.name ?? `${u.first_name || ''} ${u.last_name || ''}`.trim()) || u.email || ('User ' + u.id)}
                       secondary={u.email ? `${u.email} · ${u.role || ''}`.trim() : (u.role || '')}
                     />
                   </ListItem>
