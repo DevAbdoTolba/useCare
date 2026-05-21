@@ -7,7 +7,7 @@ import {APPOINTMENT_STATUSES} from '../../schema/schema';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import { useEffect, useState } from 'react';
-
+import {jsPDF} from 'jspdf';
 
 export default function AppointmentsPage() {
   const [rows, setRows] = useState([]);
@@ -86,6 +86,22 @@ useEffect(() => {
       setSelectedRow({ ...selectedRow, status: 'cancelled' });
     }).catch((err) => console.log(err));
    };
+
+  const printReport = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(18);
+    doc.text('Appointment Report', 10, 10);
+    doc.setFontSize(12);
+
+    doc.text(`Date:      ${selectedRow.date}`, 10, 30);
+    doc.text(`Time:      ${selectedRow.time}`, 10, 40);
+    doc.text(`Patient:   ${selectedRow.patient}`, 10, 50);
+    doc.text(`Doctor:    ${selectedRow.doctor}`, 10, 60);
+    doc.text(`Specialty: ${selectedRow.specialty}`, 10, 70);
+    doc.text(`Status:    ${selectedRow.status}`, 10, 80);
+
+    doc.save(`Appointment_${selectedRow.id}.pdf`);
+  };
   return (
     <Container maxWidth="lg">
       <Typography variant="h4" gutterBottom marginTop={4}>Appointments</Typography>
@@ -106,6 +122,10 @@ useEffect(() => {
                   <Typography variant="h6">Doctor's Specialty: {selectedRow?.specialty}</Typography>
                   <br />
                   <Typography variant="h6">Appointment Status: {selectedRow?.status}</Typography>
+                  <br/>
+                  {selectedRow && (
+                    <Button variant="outlined" onClick={printReport}>Print Report</Button>
+                  )}
                   <br />
                   {(selectedRow?.status === 'confirmed' ||selectedRow?.status ===  'pending' ) && <> <Button variant="outlined" onClick={() => handleCancel() }>Cancel</Button> </>}
                   <br />
