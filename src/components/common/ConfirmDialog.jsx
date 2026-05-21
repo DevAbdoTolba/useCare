@@ -16,7 +16,7 @@ export default function ConfirmDialog({
     <Dialog open={open} onClose={onCancel}>
       <DialogTitle>{title}</DialogTitle>
       <DialogContent>
-        <Box>{message}</Box>
+        {message}
       </DialogContent>
       <DialogActions>
         <Button onClick={onCancel}>{cancelLabel}</Button>

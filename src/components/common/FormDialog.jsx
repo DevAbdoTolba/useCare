@@ -9,7 +9,7 @@ export default function FormDialog({
     <Dialog open={open} onClose={onCancel}>
       <DialogTitle>{title}</DialogTitle>
       <DialogContent>
-        <Box sx={{ pt: 1 }}>{message}</Box>
+        {message}
       </DialogContent>
       <DialogActions>
         <Button onClick={onCancel}>{cancelLabel}</Button>
