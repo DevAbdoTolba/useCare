@@ -122,8 +122,14 @@ export default function PatientHomePage() {
 
   // Booking confirm dialog + feedback
   const [pendingSlot, setPendingSlot] = useState(null);
+  const [notes, setNotes] = useState(''); // "Reason for visit" (optional)
   const [booking, setBooking] = useState(false);
   const [toast, setToast] = useState('');
+
+  function closeBookingDialog() {
+    setPendingSlot(null);
+    setNotes('');
+  }
 
   useEffect(() => {
     Promise.all([listDoctors(), listSpecialties()])
@@ -208,15 +214,16 @@ export default function PatientHomePage() {
         doctor_id: selectedDoctor.id,
         date: pendingSlot.date,
         time: pendingSlot.time24,
+        notes: notes.trim(),
         status: 'pending',
       });
       // Mark the slot as "requested" — keeps it visible with an indeterminate
       // (in-progress) checkbox rather than removing it.
       setRequested((prev) => new Set(prev).add(pendingSlot.id));
       setToast(`Requested ${pendingSlot.dateLabel} at ${pendingSlot.timeLabel} with ${selectedDoctor.name}.`);
+      closeBookingDialog();
     } finally {
       setBooking(false);
-      setPendingSlot(null);
     }
   }
 
@@ -416,17 +423,27 @@ export default function PatientHomePage() {
       </Dialog>
 
       {/* ---- Booking confirm dialog ---- */}
-      <Dialog open={Boolean(pendingSlot)} onClose={() => setPendingSlot(null)}>
+      <Dialog open={Boolean(pendingSlot)} onClose={closeBookingDialog} fullWidth maxWidth="xs">
         <DialogTitle>Confirm appointment</DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            {pendingSlot && selectedDoctor
-              ? `Book ${selectedDoctor.name} on ${pendingSlot.dateLabel} at ${pendingSlot.timeLabel}?`
-              : ''}
-          </DialogContentText>
+          <Stack spacing={2}>
+            <DialogContentText>
+              {pendingSlot && selectedDoctor
+                ? `Book ${selectedDoctor.name} on ${pendingSlot.dateLabel} at ${pendingSlot.timeLabel}?`
+                : ''}
+            </DialogContentText>
+            <TextField
+              label="Reason for visit (optional)"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              fullWidth
+              multiline
+              minRows={2}
+            />
+          </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setPendingSlot(null)}>Cancel</Button>
+          <Button onClick={closeBookingDialog}>Cancel</Button>
           <Button variant="contained" disableElevation onClick={confirmBooking} disabled={booking}>
             Confirm
           </Button>
