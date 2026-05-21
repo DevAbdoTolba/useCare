@@ -1,0 +1,1000 @@
+ 1068  cd .. 
+ 1069  cd day1
+ 1070  ls
+ 1071  cd task1/
+ 1072  ls
+ 1073  code .
+ 1074  npm install @mui/material @emotion/react @emotion/styled
+ 1075  npm install @fontsource/roboto
+ 1076  npm install @mui/icons-material
+ 1077  npm install -D  @mui/icons-material
+ 1078  [200~npm install @mui/icons-material @mui/material @emotion/styled @emotion/react~
+ 1079  npm install @mui/icons-material @mui/material @emotion/styled @emotion/react
+ 1080  npm install @mui/material @emotion/react @emotion/styled
+ 1081  npm install @mui/icons-material @mui/material @emotion/styled @emotion/react
+ 1082  cls
+ 1083  npm i
+ 1084  cd ../..
+ 1085  cd day2
+ 1086  cd task2/
+ 1087  import AcUnitIcon from '@mui/icons-material/AcUnit';
+ 1088  npm install @mui/material @emotion/react @emotion/styled
+ 1089  npm install @mui/icons-material @mui/material @emotion/styled @emotion/react
+ 1090  git log
+ 1091  git add .
+ 1092  git commit -m "the first task  DONE"
+ 1093  git log 
+ 1094  npm i -D redux react-redux 
+ 1095  npm i -D redux redux-devtools-extension
+ 1096  npm i -D redux-devtools-extension
+ 1097  npm i -D redux-devtools-extension --legacy-peer-deps
+ 1098  ls
+ 1099  mkdir src/Redux
+ 1100  mkdir src/Redux/Reducers
+ 1101  mkdir src/Redux/Actions
+ 1102  git add .
+ 1103  git commit -m "the third task DONE"
+ 1104  git log 
+ 1105  git reset --haed 560faeb484d3e2a
+ 1106  git reset --hard 560faeb484d3e2a
+ 1107  cd task1/
+ 1108  ls
+ 1109  npm run dev
+ 1110  ls
+ 1111  php install 
+ 1112  composer install 
+ 1113  npm install 
+ 1114  composer install 
+ 1115  sudo add-apt-repository ppa:ondrej/php
+ 1116  sudo apt update
+ 1117  sudo apt install php8.4 php8.4-cli php8.4-mbstring php8.4-xml php8.4-curl php8.4-zip php8.4-bcmath php8.4-tokenizer
+ 1118  php -v
+ 1119  composer install
+ 1120  php artisan serve
+ 1121  npm run dev
+ 1122  git log
+ 1123  git status 
+ 1124  git branch 
+ 1125  git add .
+ 1126  php artisan migrate
+ 1127  docker ps 
+ 1128  git log
+ 1129  git add . 
+ 1130  git commit -m "FEAT: added the admin-endpoints and fixed some related bugs"
+ 1131  git log
+ 1132  git push origin admin-features
+ 1133  git push -u origin admin-endpoints  
+ 1134  git switch -c employer-analytics
+ 1135  add . 
+ 1136  git add . 
+ 1137  commit -m "FEAT : added the employer-analytics, candidates and search for candidates  enpoints "
+ 1138  git commit -m "FEAT : added the employer-analytics, candidates and search for candidates  enpoints "
+ 1139  git push -u origin employer-analytics  
+ 1140  git branch 
+ 1141  git switch -c payment-analytics
+ 1142  php artisan test tests/Feature/PaymentTest.php
+ 1143  docker ps 
+ 1144  git add . 
+ 1145  git commit -m "FEAT : implement payment initiation and confirmation endpoints"
+ 1146  git push -u origin payment-analytics  
+ 1147  cd ITI/Laravel/day2
+ 1148  ls
+ 1149  zed .
+ 1150  docker start xamp 
+ 1151  cd ..
+ 1152  cd React/
+ 1153  mkdir mo7drat
+ 1154  cd mo7drat/
+ 1155  git pull git@github.com:masterhady/React_46.git
+ 1156  git init 
+ 1157  git pull git@github.com:masterhady/React_46.git
+ 1158  zed .
+ 1159  ls
+ 1160  git pull https://github.com/masterhady/React_46
+ 1161  code .
+ 1162  cd ..
+ 1163  cd Laravel/
+ 1164  la
+ 1165  mkdir project 
+ 1166  cd project/
+ 1167  git init 
+ 1168  git pull git@github.com:GeorgeSadek01/hirestack-laravel.git
+ 1169  git fetch --all 
+ 1170  ls
+ 1171  git branch 
+ 1172  git log
+ 1173  code .
+ 1174  ls
+ 1175  npm install -g @openai/codex
+ 1176  ```
+ 1177  q
+ 1178  codex
+ 1179  exit
+ 1180  quit
+ 1181  codex 
+ 1182  codex
+ 1183  npm install -g @anthropic-ai/claude-code
+ 1184  claude 
+ 1185  npm install -g @google/gemini-cli
+ 1186  gemini 
+ 1187  cd ITI/React/
+ 1188  cl
+ 1189  ls
+ 1190  mkdir day2/
+ 1191  cd ..
+ 1192  cd React/
+ 1193  cd day1
+ 1194  ls
+ 1195  cd task1/
+ 1196  ls
+ 1197  cl
+ 1198  code .
+ 1199  git log
+ 1200  git add .
+ 1201  git commit -m "the first task DONE"
+ 1202  git switch -c task2
+ 1203  cd .. 
+ 1204  cd ..
+ 1205  mkdir next
+ 1206  cd next/
+ 1207  mkdir day1 
+ 1208  cd day1/
+ 1209  cl
+ 1210  code .
+ 1211  npx create-next-app@latest
+ 1212  cd .. 
+ 1213  cd ..
+ 1214  cd React/
+ 1215  ls
+ 1216  cd day2/
+ 1217  ls
+ 1218  ls task2/
+ 1219  cd task2/
+ 1220  cd ..
+ 1221  code .
+ 1222  docker ps 
+ 1223  docker inspect a38a0b4de6f8
+ 1224  npm run dev
+ 1225  cd ..
+ 1226  ls
+ 1227  python -m http.server 8080
+ 1228  sudo apt install python3
+ 1229  python -m http.server 8080
+ 1230  sudo apt install python3-pip python3-venv
+ 1231  python --
+ 1232  python3 -m http.server 8080
+ 1233  apache2 --v
+ 1234  sudo apt install apache2 
+ 1235  sudo systemctl status apache2
+ 1236  sudo systemctl start apache2
+ 1237  sudo systemctl enable apache2
+ 1238  sudo systemctl start apache2
+ 1239  cl
+ 1240  python -m http.server 8080
+ 1241  cl
+ 1242  python3 -m http.server 8080
+ 1243  export SSLKEYLOGFILE=/tmp/tls_keys.log
+ 1244  export SSLKEYLOGFILE=/tmp/apache_tls_keys.log
+ 1245  sudo systemctl restart apache2
+ 1246  php artisan serve
+ 1247  npm run dev
+ 1248  cd ITI/React/redux/redux/
+ 1249  code .
+ 1250  npm install tailwindcss @tailwindcss/vite
+ 1251  npm install @reduxjs/toolkit
+ 1252  npm install redux
+ 1253  cd ..
+ 1254  cd .. 
+ 1255  cd ..
+ 1256  mkdir ApplicationSecurity
+ 1257  cd ApplicationSecurity/
+ 1258  mkdir lab1
+ 1259  cd lab1/
+ 1260  code .
+ 1261  docker ps 
+ 1262  docker ps -a
+ 1263  docker start xamp
+ 1264  cd .. 
+ 1265  cd ..
+ 1266  cd Laravel/
+ 1267  cd day2/
+ 1268  ls
+ 1269  code .
+ 1270  docker start xamp-old-day2 
+ 1271  docker stop xamp 
+ 1272  docker start xamp-old-day2 
+ 1273  sudo systemctl stop apache2.service 
+ 1274  sudo systemctl disable apache2.service 
+ 1275  docker ps -a
+ 1276  docker ps 
+ 1277  docker inspect xamp-old-day2
+ 1278  docker ps 
+ 1279  docker stop xamp-old-day2 
+ 1280  cl
+ 1281  sudo apt install apache2 php libapache2-mod-php mysql-server php-mysql -y
+ 1282  sudo mysql -u root
+ 1283  sudo systemctl start mysql
+ 1284  sudo mysql -u root
+ 1285  sudo nvim  /var/www/html/search.php
+ 1286  sudo systemctl restart apache2
+ 1287  sudo nvim  /var/www/html/search.php
+ 1288  sudo apt install sqlmap -y
+ 1289  sqlmap -u "http://localhost/search.php?id=1" --dbs --batch
+ 1290  sqlmap -u "http://localhost/search.php?id=1" --banner --batch
+ 1291  sqlmap -u "http://localhost/search.php?id=1" -D testdb -T users --dump --batch
+ 1292  sudo apt install libapache2-mod-security2 -y
+ 1293  sudo a2enmod security2
+ 1294  sudo cp /etc/modsecurity/modsecurity.conf-recommended /etc/modsecurity/modsecurity.conf
+ 1295  sudo nano /etc/modsecurity/modsecurity.conf
+ 1296  sudo nvim  /etc/modsecurity/modsecurity.conf
+ 1297  sudo apt install modsecurity-crs -y
+ 1298  sudo ln -s /usr/share/modsecurity-crs /etc/modsecurity/crs
+ 1299  sudo nano /etc/apache2/mods-enabled/security2.conf
+ 1300  sudo nvim  /etc/apache2/mods-enabled/security2.conf
+ 1301  sudo systemctl restart apache2
+ 1302  ls /usr/share/modsecurity-crs/owasp-crs.load
+ 1303  sudo systemctl status apache2.service
+ 1304  grep -r "modsecurity-crs\|owasp-crs\|crs-setup\|crs/rules" /etc/apache2/mods-enabled/ /etc/apache2/conf-enabled/ 2>/dev/null
+ 1305  sudo cat /etc/apache2/mods-enabled/security2.conf
+ 1306  sudo nvim /etc/apache2/mods-enabled/security2.conf
+ 1307  sudo apache2ctl configtest      # Must say: Syntax OK
+ 1308  sudo systemctl restart apache2
+ 1309  sudo systemctl status apache2
+ 1310  sqlmap -u "http://localhost/search.php?id=1" --dbs --batch
+ 1311  sudo nvim  /etc/apache2/mods-enabled/security2.conf
+ 1312  sudo nvim  /etc/modsecurity/modsecurity.conf
+ 1313  cd .. /..
+ 1314  cd ..
+ 1315  cd..
+ 1316  cd ..
+ 1317  cd ITI/
+ 1318  cd React/
+ 1319  ls
+ 1320  mkdir redux
+ 1321  cd redux/
+ 1322  npx create-next-app@latest
+ 1323  cd redux/
+ 1324  ls
+ 1325  npx create-react-router@latest
+ 1326  code .
+ 1327  cd ..
+ 1328  rm -rf redux/
+ 1329  cl
+ 1330  npm create vite@latest
+ 1331  npm i react-router
+ 1332  npm run dev
+ 1333  npm i -D react-redux@latest
+ 1334  npm install react-redux
+ 1335  npm i -D data-fns
+ 1336  npm install redux-persist
+ 1337  npm i -D redux-thunk
+ 1338  npm run dev
+ 1339  ls
+ 1340  cd task2/
+ 1341  ls
+ 1342  npm run dev
+ 1343  npm start
+ 1344  npm i -D redux/toolkit
+ 1345  npm install @reduxjs/toolkit
+ 1346  git init 
+ 1347  git add . 
+ 1348  cd task2/
+ 1349  git init 
+ 1350  git add .
+ 1351  git commit -m "Done base"
+ 1352  git add .
+ 1353  git commit -m "FEATS : language Changes using context api , redux Thunk when fetching the api "
+ 1354  git log
+ 1355  npm run dev
+ 1356  npm i -D react-router
+ 1357  npm run dev
+ 1358  npm i -D react-router/dev
+ 1359  npm run dev
+ 1360  npm i react-router
+ 1361  npm i -D @react-router/dev vite @vitejs/plugin-react
+ 1362  npm run dev
+ 1363  ls
+ 1364  npm run dev
+ 1365  cl
+ 1366  npm run dev
+ 1367  npm i -D axios
+ 1368  git init 
+ 1369  git add .
+ 1370  git commit -m "Done : redux fetching posts using THUNK "
+ 1371  npm i dotent
+ 1372  npm i dotenv
+ 1373  ls
+ 1374  touch .env
+ 1375  cl
+ 1376  ls
+ 1377  touch src/app/features/axiosInstance.js
+ 1378  npm install @reduxjs/toolkit
+ 1379  cd ITI/python/tasks/
+ 1380  ls
+ 1381  python3 task1.py 
+ 1382  touch task2.py
+ 1383  code task2.py 
+ 1384  python3 task2.py 
+ 1385  code task2.py 
+ 1386  python3 task2.py 
+ 1387  cl
+ 1388  python3 task2.py 
+ 1389  cl
+ 1390  python3 task2.py 
+ 1391  cl
+ 1392  python3 task2.py 
+ 1393  cl
+ 1394  touch task3.py
+ 1395  code task3.py 
+ 1396  cl
+ 1397  git init 
+ 1398  ls 
+ 1399  ls -a
+ 1400  code .gitignore
+ 1401  ls
+ 1402  ls -a
+ 1403  git add .
+ 1404  git commit -m "python tasks num 1 , 2 , 3 "
+ 1405  git branch 
+ 1406  git switch -c main
+ 1407  git branch 
+ 1408  gemini 
+ 1409  cd ..
+ 1410  cd..
+ 1411  cd .. 
+ 1412  mkdir repos
+ 1413  cd repos/
+ 1414  mkdir itiTasks
+ 1415  cd itiTasks/
+ 1416  git init
+ 1417  git pull git@github.com:AhmedSamirKhalaf/ITI_Tasks.git
+ 1418  ls
+ 1419  mkdir python
+ 1420  cd python/
+ 1421  mkdir tasks
+ 1422  cd tasks/
+ 1423  ls
+ 1424  code . 
+ 1425  git add .
+ 1426  git log
+ 1427  git commit -m "Python : tasks 1 , 2 and 3 "
+ 1428  git remote add origin git@github.com:AhmedSamirKhalaf/ITI_Tasks.git
+ 1429  git branch 
+ 1430  git switch -c main 
+ 1431  git log
+ 1432  git push origin main 
+ 1433  cd ITI/python/tasks/
+ 1434  ls
+ 1435  cp task1.py task2.py task3.py ~/repos/itiTasks/python/tasks/
+ 1436  cd /var/www/html/
+ 1437  ls
+ 1438  code .
+ 1439  sudo rm -rf * 
+ 1440  sudo touch index.html
+ 1441  code index.html 
+ 1442  sudo code index.html 
+ 1443  sudo nvim index.html 
+ 1444  sudo touch example.html
+ 1445  nvim example.html 
+ 1446  sudo nvim example.html 
+ 1447  user
+ 1448  ls
+ 1449  sudo mv example.html example.com.html 
+ 1450  sudo nvim example.com/404.html 
+ 1451  ls
+ 1452  sudo mkdir errors
+ 1453  cd errors/
+ 1454  sudo nvim 404.html
+ 1455  cd ..
+ 1456  sudo mkdir example.com
+ 1457  ls
+ 1458  sudo mv index.html example.com/ 
+ 1459  sudo mv -r errors/ example.com/ 
+ 1460  sudo mv  errors/ example.com/ 
+ 1461  ls
+ 1462  ls example.com
+ 1463  cd example.com/
+ 1464  ls
+ 1465  ls -a
+ 1466  lls
+ 1467  ls -h
+ 1468  ls --help
+ 1469  ls -h
+ 1470  ls -R
+ 1471  ls
+ 1472  sudo nvim index.html 
+ 1473  sudo nginx -t
+ 1474  sudo systemctl reload nginx
+ 1475  ls /etc/nginx/sites-enabled/
+ 1476  ls /etc/nginx/sites-available/
+ 1477  curl -I http://example.com/nonexistent-page
+ 1478  sudo nginx -T | grep "server_name"
+ 1479  sudo nginx -T 
+ 1480  sudo nginx -T | grep "server_name"
+ 1481  ls
+ 1482  sudo nvim .
+ 1483  namei -om /var/www/example.com/errors/404.html
+ 1484  sudo nginx -T 
+ 1485  sudo systemctl reload nginx
+ 1486  sudo nginx -T 
+ 1487  sudo nginx -t
+ 1488  sudo systemctl reload nginx
+ 1489  ls -la /var/www/html/example.com/errors/
+ 1490  namei -om /var/www/html/example.com/errors/404.html
+ 1491  sudo tail -f /var/log/nginx/error.log
+ 1492  sudo tail  --help
+ 1493  sudo tail  -f /var/www/html/example.com/
+ 1494  sudo touch example.access.log
+ 1495  sudo touch example.error.log
+ 1496  sudo tail  -f /var/www/html/example.com/example.error.log 
+ 1497  sudo mv example.access.log test.access.log 
+ 1498  sudo mv example.error.log test.error.log 
+ 1499  sudo mv test.access.log test.error.log /var/log/nginx/
+ 1500  sudo tail  -f /var/log/nginx/test.error.log 
+ 1501  sudo tail  -f /var/log/nginx/test.access.log 
+ 1502  cd /etc/nginx/
+ 1503  ls
+ 1504  cl
+ 1505  l
+ 1506  cl
+ 1507  ls
+ 1508  nvim . 
+ 1509  sudo nvim . 
+ 1510  sudo nvim conf.d/example.com.conf
+ 1511  ls
+ 1512  sudo nvim conf.d
+ 1513  sudo nginx -t
+ 1514  sudo systemctl reload nginx
+ 1515  sudo nvim conf.d/example.com.conf
+ 1516  sudo nvim /etc/hosts 
+ 1517  nvim ~/.bashrc 
+ 1518  source ./.bashrc 
+ 1519  rel
+ 1520  cd ITI/React/redux/redux/
+ 1521  ls
+ 1522  cl
+ 1523  code .
+ 1524  cd ..
+ 1525  ls
+ 1526  cd ..
+ 1527  ls
+ 1528  cd day2
+ 1529  ls
+ 1530  ls task2/
+ 1531  code .
+ 1532  ls
+ 1533  cd task2/
+ 1534  ls
+ 1535  gemini 
+ 1536  cl
+ 1537  cd .
+ 1538  cd ..
+ 1539  mkdir python 
+ 1540  cd python/
+ 1541  ls
+ 1542  cl
+ 1543  mkdir tasks
+ 1544  cd tasks/
+ 1545  cl
+ 1546  code task1.py
+ 1547  cl
+ 1548  rm -rf *
+ 1549  ls
+ 1550  cl
+ 1551  python -m venv venv 
+ 1552  python3 -m venv venv 
+ 1553  cl
+ 1554  source venv/bin/activate
+ 1555  cl
+ 1556  deactivate 
+ 1557  source venv/bin/activate
+ 1558  cl
+ 1559  ls
+ 1560  task1.py
+ 1561  code task1.py
+ 1562  cd 
+ 1563  ls
+ 1564  cd tutorials/
+ 1565  ls
+ 1566  mkdir nginxServer
+ 1567  cd nginxServer/
+ 1568  cl
+ 1569  sudo apt install epel-release -y 
+ 1570  sudo apt install nginx
+ 1571  cl
+ 1572  sudo systemclt status nginx
+ 1573  sudo systemctl status nginx
+ 1574  firewall
+ 1575  ufw
+ 1576  sudo ufw enable 'Nginx HTTP'
+ 1577  sudo ufw allow 'Nginx HTTP'
+ 1578  sudo ufw reload 
+ 1579  ip -a
+ 1580  ip a
+ 1581  docker ps
+ 1582  deactivate
+ 1583  cl
+ 1584  sudo systemctl status apache2.service 
+ 1585  sudo systemctl stop apache2.service 
+ 1586  ip 
+ 1587  sudo systemctl stop xamp
+ 1588  namei -om /var/www/example.com/errors/404.html
+ 1589  nginx -t
+ 1590  sudo nginx -t
+ 1591  sudo systemctl status nginx
+ 1592  sudo nginx -T | grep "server_name"
+ 1593  sudo nginx -t && sudo systemctl reload nginx
+ 1594  curl http://testHostC
+ 1595  curl http://testHost
+ 1596  sudo nginx -t && sudo systemctl reload nginx
+ 1597  curl http://testHost
+ 1598  curl http://testHosts
+ 1599  curl http://testHost/s
+ 1600  sudo nginx -t && sudo systemctl reload nginx
+ 1601  curl http://testHost/s
+ 1602  curl http://testHost.local/s
+ 1603  curl http://testHost.local/
+ 1604  curl http://testHost.local/s
+ 1605  sudo nginx -t && sudo systemctl reload nginx
+ 1606  sudo systemctl reload  nginx
+ 1607  curl http://testHost.local/s
+ 1608  curl http://testHost.local
+ 1609  sudo nginx -t 
+ 1610  sudo systemctl reload nginx 
+ 1611  curl http://testHost.local
+ 1612  rel
+ 1613  sudo apt install avahi-daemon
+ 1614  sudo hostnamectl --help
+ 1615  man hostnamectl
+ 1616  sudo hostname status
+ 1617  sudo hostnamectl status
+ 1618  hostname
+ 1619  git add .
+ 1620  git commit -m "FEAT : added topRatedMoves fitler  and added createasyncadapter to improve lookup"
+ 1621  git branch 
+ 1622  git push -u origin main 
+ 1623  npm run dev 
+ 1624  ls
+ 1625  npm start 
+ 1626  git lgo
+ 1627  git log
+ 1628  git add .
+ 1629  git commit -m "FEAT: added topRatedMoves with "
+ 1630  git log
+ 1631  git reset --soft 0d0d67a14b
+ 1632  git log
+ 1633  git commit -m "FEAT: added topRatedMoves with \
+ 1634  git commit -m "FEAT: added topRatedMoves fitler  \
+ 1635  and added createasyncadapter to improve lookup"
+ 1636  git log
+ 1637  git origin 
+ 1638  ls ~/repos/
+ 1639  ls ~/repos/itiTasks/reactTasks/task5/
+ 1640  diff ~/repos/itiTasks/reactTasks/task5/ .
+ 1641  diff -r  ~/repos/itiTasks/reactTasks/task5/ .
+ 1642  git branch 
+ 1643  cp ../task5/ ~/repos/itiTasks/reactTasks/
+ 1644  rm -rf ~/repos/itiTasks/reactTasks/task5/
+ 1645  ls ~/repos/itiTasks/reactTasks/task5/
+ 1646  ls ~/repos/itiTasks/reactTasks/
+ 1647  ls ~/repos/itiTasks/
+ 1648  cp -r ../task5/ ~/repos/itiTasks/reactTasks/
+ 1649  ls ~/repos/itiTasks/reactTasks/task5/
+ 1650  cd  ~/repos/itiTasks/reactTasks/task5/
+ 1651  ls
+ 1652  git branch 
+ 1653  git log
+ 1654  cd -
+ 1655  git branch 
+ 1656  git remote -v
+ 1657  git push origin main 
+ 1658  cd ..
+ 1659  git branch 
+ 1660  git log
+ 1661  git push origin main 
+ 1662  cd ..
+ 1663  git branch 
+ 1664  git log
+ 1665  git remote -v
+ 1666  ls
+ 1667  cd reactTasks/
+ 1668  git -u push origin main 
+ 1669  git push -u  origin main 
+ 1670  git log
+ 1671  cd ~/repos/itiTasks/reactTasks/
+ 1672  ls
+ 1673  cd task5/
+ 1674  ls
+ 1675  cd ..
+ 1676  code .
+ 1677  hostname
+ 1678  sudo hostnamectl set-hostname myapp 
+ 1679  hostname
+ 1680  hostname -y
+ 1681  hostname -i
+ 1682  sudo hostnamectl myapp 
+ 1683  sudo systemctl start avahi-daemon
+ 1684  avahi-daemon 
+ 1685  sudo avahi-daemon 
+ 1686  sudo systemctl status  avahi-daemon
+ 1687  ip a
+ 1688  sudo nano /etc/avahi/avahi-daemon.conf
+ 1689  sudo nvim  /etc/avahi/avahi-daemon.conf
+ 1690  nvim /etc/nginx/sites-available/myapp
+ 1691  sudo nvim /etc/nginx/sites-available/myapp
+ 1692  sudo ln -s /etc/nginx/sites-available/myapp /etc/nginx/sites-enabled/
+ 1693  sudo nvim /etc/hosts
+ 1694  sudo systemctl restart avahi-daemon
+ 1695  sudo ln -s /etc/nginx/sites-available/myapp /etc/nginx/sites-enabled/
+ 1696  sudo nginx -t
+ 1697  sudo systemctl restart nginx
+ 1698  avahi-browse -a
+ 1699  sudo apt install avahi-utils
+ 1700  avahi-browse -a
+ 1701  ip a | grep inet
+ 1702  ipconfig
+ 1703  sudo systemctl stop avahi-daemon
+ 1704  sudo systemctl disable avahi-daemon
+ 1705  sudo systemctl start avahi-daemon
+ 1706  cd repos/itiTasks/python/tasks/
+ 1707  ls
+ 1708  python3 task4.py 
+ 1709  cd repos/itiTasks/python/tasks/
+ 1710  python3 task4.py 
+ 1711  cl
+ 1712  python3 task4.py 
+ 1713  cl
+ 1714  python3 task4.py 
+ 1715  cl
+ 1716  python3 task4.py 
+ 1717  cd ..
+ 1718  code .
+ 1719  mkdir django 
+ 1720  cd django/
+ 1721  ls
+ 1722  cl
+ 1723  python -m pip install Django==6.0.5
+ 1724  python3 -m pip install Django==6.0.5
+ 1725  cd ../..
+ 1726  ls
+ 1727  ls -a
+ 1728  cd python/
+ 1729  ls
+ 1730  cd django/
+ 1731  mkdir tasks
+ 1732  cd tasks/
+ 1733  mkdir task1
+ 1734  cd task1/
+ 1735  cl
+ 1736  python3 -m pip install Django
+ 1737  ls -a
+ 1738  cd ../../..
+ 1739  ls
+ 1740  cd ..
+ 1741  ls
+ 1742  python3 -m venv venv
+ 1743  ls -a
+ 1744  source venv/bin/activate
+ 1745  touch .gitignore
+ 1746  code .gitignore 
+ 1747  cd python/django/tasks/task1/
+ 1748  python3 -m pip install Django
+ 1749  ls
+ 1750  django-admin startproject task1 .
+ 1751  ls
+ 1752  ls task1/
+ 1753  python3 manage.py startapp myapp
+ 1754  pip install django
+ 1755  cd ../../..
+ 1756  cd ..
+ 1757  deactivate 
+ 1758  ls
+ 1759  rm -rf venv/
+ 1760  cd python/django/tasks/task1/
+ 1761  ls
+ 1762  cd ..
+ 1763  ls
+ 1764  cd task1/
+ 1765  rm -rf *
+ 1766  ls
+ 1767  python3 -m venv venv 
+ 1768  source venv/bin/activate
+ 1769  pip install djanago 
+ 1770  pip install djnago 
+ 1771  pip install django 
+ 1772  django-admin startproject task1 
+ 1773  ls
+ 1774  cd task1/
+ 1775  ls
+ 1776  cd django/tasks/task1/
+ 1777  ls
+ 1778  source venv/bin/activate
+ 1779  sudo apt install python3-pip python3-venv
+ 1780  deactivate
+ 1781  cd ..
+ 1782  ls
+ 1783  rm -rf task1/
+ 1784  sudo apt install python3-pip python3-venv
+ 1785  python3 -m venv venv
+ 1786  source venv/bin/activate
+ 1787  pip install django
+ 1788  django-admin --version
+ 1789  django-admin startproject task1
+ 1790  pip install django-stubs
+ 1791  ls
+ 1792  python3 -m venv venv
+ 1793  source venv/bin/activate
+ 1794  cl
+ 1795  pip3 install django
+ 1796  django-admin startproject task1
+ 1797  ls
+ 1798  ls
+ 1799  cd django/
+ 1800  ls
+ 1801  cd tasks/
+ 1802  ls
+ 1803  source venv/bin/activate
+ 1804  cd ..
+ 1805  ls
+ 1806  deactivate 
+ 1807  ls
+ 1808  cd tasks/
+ 1809  ls
+ 1810  rm -rf *
+ 1811  zed .
+ 1812  cd tasks/
+ 1813  ls
+ 1814  rm -rf venv/
+ 1815  ls
+ 1816  python3 -m venv venv
+ 1817  source venv/bin/activate
+ 1818  cl
+ 1819  pip3 install django 
+ 1820  django-admin startproject task1
+ 1821  cd task1/
+ 1822  python3 manage.py startapp home
+ 1823  python3 manage.py --help
+ 1824  python3 manage.py runserver
+ 1825  cd tasks/
+ 1826  cd task1/
+ 1827  ls
+ 1828  cl
+ 1829  python3 manage.py migrate
+ 1830  ls
+ 1831  cd l
+ 1832  cd Lab5/
+ 1833  python3 main.py 
+ 1834  git log
+ 1835  git add .
+ 1836  git status 
+ 1837  git commit -m "FEAT: added the OOP lab and Django Lab"
+ 1838  git push -u origin main 
+ 1839  cd ..
+ 1840  cd python/
+ 1841  cd tasks/
+ 1842  ls
+ 1843  code .
+ 1844  cd ..
+ 1845  ls
+ 1846  ls -a
+ 1847  code .gitignore 
+ 1848  cd django/
+ 1849  ls
+ 1850  cd tasks/
+ 1851  ls
+ 1852  cd task1/
+ 1853  l
+ 1854  scl
+ 1855  cl
+ 1856  python3 manage.py startapp home
+ 1857  ls
+ 1858  cd ..
+ 1859  source venv/bin/activate
+ 1860  cd task1/
+ 1861  cl
+ 1862  python3 manage.py startapp home
+ 1863  python3 manage.py migrate
+ 1864  python3 manage.py runserver
+ 1865  python3 manage.py createsuperuser
+ 1866  cl
+ 1867  cd ..
+ 1868  ls
+ 1869  source venv/bin/activate
+ 1870  cl
+ 1871  cd task1/
+ 1872  cl
+ 1873  python3 manage.py createsuperuser 
+ 1874  pip install 'django-tailwind[reload]'
+ 1875  python manage.py tailwind init
+ 1876  ls
+ 1877  npm init -y
+ 1878  npm i -D tailwindcss
+ 1879  npx tailwindcss init 
+ 1880  npx tailwindcss init
+ 1881  npm install -D tailwindcss@3
+ 1882  npx tailwindcss init
+ 1883  npm run dev
+ 1884  npm remove tailwindcss
+ 1885  npm install -D tailwindcss@3
+ 1886  npm run dev
+ 1887  cd 
+ 1888  cd -
+ 1889  cd django/
+ 1890  ls
+ 1891  cd tasks/
+ 1892  ls
+ 1893  source venv/bin/activate
+ 1894  cl
+ 1895  cd task1/
+ 1896  ls
+ 1897  npm start 
+ 1898  npm i -y
+ 1899  cd 
+ 1900  cd repos/itiTasks/reactTasks/
+ 1901  ls
+ 1902  cd task5/
+ 1903  ls
+ 1904  npm run dev 
+ 1905  npm start
+ 1906  cd 
+ 1907  cd ITI/React/day2/
+ 1908  ls
+ 1909  ls task2/
+ 1910  ls
+ 1911  cd task2/reactTasks/
+ 1912  ls
+ 1913  cd task5/
+ 1914  ls
+ 1915  code . 
+ 1916  npm i -D three
+ 1917  npm run dev
+ 1918  npm install --save three
+ 1919  npm install --save-dev vite
+ 1920  npx vite 
+ 1921  ls
+ 1922  rm -rf *
+ 1923  mkdir basic
+ 1924  npm install -D vite
+ 1925  rm -rf *
+ 1926  npm create vite@latest
+ 1927  npm run dev
+ 1928  npm 
+ 1929  npm run vite
+ 1930  cd ..
+ 1931  ;s
+ 1932  l
+ 1933  rm -rf withNpm/
+ 1934  npm create vite@latest
+ 1935  npm run dev
+ 1936  vite
+ 1937  npm dev
+ 1938  npm run dev
+ 1939  ls
+ 1940  cd withNpm/
+ 1941  npm run dev
+ 1942  cd ..
+ 1943  ls
+ 1944  cd withNpm/
+ 1945  ls
+ 1946  npm i -D three
+ 1947  cl
+ 1948  docker ps -a
+ 1949  docker rm xamp xamp-old-day2 
+ 1950  docker ps -a
+ 1951  docker rm hirestack-app 
+ 1952  docker ps -a
+ 1953  docker rm a71f63
+ 1954  docker rm 42ec1e2
+ 1955  docker rm 531daf5b
+ 1956  docker rm 606982
+ 1957  docker rm a96559
+ 1958  docker rm 4f5b837
+ 1959  docker ps -a
+ 1960  cl
+ 1961  docker run --name xamp /
+ 1962  docker run --name xamp --port 9090 \
+ 1963  cd repos/tiniProjects/Laravel/
+ 1964  docker run --name myXampp -p 41061:22 -p 41062:80 -d -v .:/opt/lampp/htdocs tomsik68/xampp
+ 1965  docker ps
+ 1966  docker exec -it myXampp 
+ 1967  docker exec -it myXampp bash
+ 1968  laravel new myApp .
+ 1969  laravel new myApp 
+ 1970  ls
+ 1971  cd myApp/
+ 1972  ssh -p 41061 root@localhost
+ 1973  # default password: admin
+ 1974  ls
+ 1975  code .
+ 1976  repos/
+ 1977  ls
+ 1978  cd tutorials/
+ 1979  ls
+ 1980  mkdir threeJs
+ 1981  cd threeJs/
+ 1982  cl
+ 1983  code .
+ 1984  ls
+ 1985  mkdir withNpm
+ 1986  cd withNpm/
+ 1987  code .
+ 1988  ls
+ 1989  cd tutorials/
+ 1990  ls
+ 1991  nvim aiWorkFlow.txt
+ 1992  ls
+ 1993  cd threeJs/
+ 1994  ls
+ 1995  nvim vanillaThreeJs.txt
+ 1996  git switch systemSettingsPage 
+ 1997  git log
+ 1998  git log --oneline
+ 1999  git log
+ 2000  git branch 
+ 2001  git log
+ 2002  git switch -c the specialtiesBranch
+ 2003  git switch -c  specialtiesBranch
+ 2004  --quit
+ 2005  git cherry-pick  --quit
+ 2006  git log
+ 2007  git log --oneline
+ 2008  git switch -c  specialtiesBranch
+ 2009  git log
+ 2010  git switch systemSettingsPage 
+ 2011  git add src/pages/admin/SpecialtiesPage.jsx
+ 2012  git commit -m "resolve merge conflict"
+ 2013  git log 
+ 2014  git branch 
+ 2015  git switch systemSettingsPage 
+ 2016  git stach pop 
+ 2017  git stash pop 
+ 2018  git log
+ 2019  git commit -m "FEAT : added the snackBar to the admin/SpecialtiesPage"
+ 2020  git add .
+ 2021  git stage 
+ 2022  git status 
+ 2023  git add .
+ 2024  git commit -m "FIX : resolving conflicts"
+ 2025  git log --oneline 
+ 2026  git branch 
+ 2027  git switch 6-admin-specialties-crud-page-samir 
+ 2028  git cherry-pick f561f0f 6ead99c
+ 2029  git cherry-pick --skip
+ 2030  git log
+ 2031  git log --oneline 
+ 2032  git add src/pages/admin/SpecialtiesPage.jsx
+ 2033  git cherry-pick --continue
+ 2034  git log --oneline 
+ 2035  git reset --hard da6fbf8
+ 2036  git log --oneline 
+ 2037  git cherry-pick 9118e9a
+ 2038  git branch 
+ 2039  git switch 6-admin-specialties-crud-page-samir 
+ 2040  git log --oneline 
+ 2041  git reset --hard f561f0f
+ 2042  git log
+ 2043  git switch -c sp
+ 2044  git switch main 
+ 2045  git switch -c fixspecilties
+ 2046  git branch 
+ 2047  git pull origin systemSettingsPage 
+ 2048  git log
+ 2049  git switch master 
+ 2050  git log
+ 2051  git switch -c spFix
+ 2052  git pull origin systemSettingsPage 
+ 2053  git log
+ 2054  git log --oneline 
+ 2055  git switch 6
+ 2056  git switch 6-admin-specialties-crud-page-samir 
+ 2057  git branch 
+ 2058  git log 
+ 2059  npm install @mui/x-data-grid
+ 2060  git log
+ 2061  git add .
+ 2062  git commit -m "feat(admin) : added animation and status color to the snackbar in admin/specialtiesPage"
+ 2063  git push origin 6-admin-specialties-crud-page-samir 
+ 2064  git branch --delete fixspecilties sp spFix specialtiesBranch systemSettingsPage 
+ 2065  git branch -D fixspecilties sp spFix specialtiesBranch systemSettingsPage 
+ 2066  git branch 
+ 2067  history > file
