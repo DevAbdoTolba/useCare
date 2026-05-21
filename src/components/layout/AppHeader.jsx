@@ -12,7 +12,6 @@ import {
   Divider,
 } from '@mui/material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import FavoriteIcon from '@mui/icons-material/Favorite';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useAuth } from '../../hooks/useAuth.js';
 
@@ -41,8 +40,7 @@ export default function AppHeader() {
   return (
     <AppBar position="sticky" color="default" elevation={0}>
       <Toolbar>
-        <FavoriteIcon color="primary" />
-        <Typography variant="h6" component={RouterLink} to="/" marginLeft={1} flexGrow={1} color="inherit">
+        <Typography variant="h6" component={RouterLink} to="/" flexGrow={1} color="inherit">
           useCare
         </Typography>
 

@@ -16,11 +16,13 @@ import {
 import MenuIcon from '@mui/icons-material/Menu';
 import PersonSearchIcon from '@mui/icons-material/PersonSearch';
 import EventNoteIcon from '@mui/icons-material/EventNote';
+import PersonIcon from '@mui/icons-material/Person';
 import AppHeader from './AppHeader.jsx';
 
 const NAV_ITEMS = [
   { label: 'Find a doctor', to: '/patient', icon: <PersonSearchIcon /> },
   { label: 'My appointments', to: '/patient/appointments', icon: <EventNoteIcon /> },
+  { label: 'My profile', to: '/patient/profile', icon: <PersonIcon /> },
 ];
 
 /**

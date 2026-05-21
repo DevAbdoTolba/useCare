@@ -5,17 +5,10 @@ import {
   Stack,
   Box,
   Typography,
-  Card,
-  CardContent,
   Avatar,
   Chip,
   Divider,
-  Table,
-  TableBody,
-  TableRow,
-  TableCell,
-  TableContainer,
-  Paper,
+  Card,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -28,23 +21,10 @@ import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
 import { listAppointmentsForPatient } from '../../api/appointments.js';
 import { getUser } from '../../api/users.js';
 import { useAuth } from '../../hooks/useAuth.js';
-import EmptyState from '../../components/common/EmptyState.jsx';
 import LoadingSpinner from '../../components/common/LoadingSpinner.jsx';
-
-const HOURS = Array.from({ length: 24 }, (_, h) => h);          // 0..23
-const GRID_ROWS = [0, 1, 2];                                    // 3 rows
-const GRID_COLS = 8;                                            // 8 cols → 24 cells
-
-const STATUS_COLOR = {
-  pending: 'warning',
-  confirmed: 'success',
-  cancelled: 'default',
-  completed: 'info',
-};
-
-const hourLabel = (h) => dayjs().hour(h).minute(0).format('h A');
-const timeLabel = (t) => dayjs(`2000-01-01 ${t}`).format('h:mm A');
-const initialOf = (name) => (name?.trim()?.[0] ?? '?').toUpperCase();
+import ProfileSummaryCard from '../../components/common/ProfileSummaryCard.jsx';
+import DayHourGrid from '../../components/common/DayHourGrid.jsx';
+import { initialOf, timeLabel, STATUS_COLOR } from '../../lib/format.js';
 
 export default function MyAppointmentsPage() {
   const { user } = useAuth();
@@ -53,7 +33,7 @@ export default function MyAppointmentsPage() {
   const [appointments, setAppointments] = useState([]);
   const [doctorById, setDoctorById] = useState({});
   const [selectedDay, setSelectedDay] = useState(dayjs());
-  const [detail, setDetail] = useState(null); // the appointment shown in the dialog
+  const [detail, setDetail] = useState(null);
 
   useEffect(() => {
     let mounted = true;
@@ -75,7 +55,6 @@ export default function MyAppointmentsPage() {
 
   const dateStr = selectedDay.format('YYYY-MM-DD');
 
-  // hour (0..23) -> appointment on the selected day
   const apptByHour = useMemo(() => {
     const map = {};
     appointments
@@ -89,6 +68,21 @@ export default function MyAppointmentsPage() {
 
   const dayHasAppointments = Object.keys(apptByHour).length > 0;
   const doctorName = (id) => doctorById[id]?.name ?? `Doctor #${id}`;
+
+  const getCell = (hour) => {
+    const appt = apptByHour[hour];
+    if (!appt) return {};
+    return {
+      selected: true,
+      dim: true,
+      chip: <Chip size="small" label={doctorName(appt.doctor_id)} />,
+    };
+  };
+
+  const onHourClick = (hour) => {
+    const appt = apptByHour[hour];
+    if (appt) setDetail(appt);
+  };
 
   if (loading) {
     return (
@@ -105,26 +99,12 @@ export default function MyAppointmentsPage() {
       <Stack spacing={3} marginTop={4} marginBottom={6}>
         <Typography variant="h4" component="h1">My appointments</Typography>
 
-        {/* ---- Profile (left) + day calendar (right) ---- */}
         <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems="stretch">
           <Box flexGrow={1}>
-            <Card variant="outlined">
-              <CardContent>
-                {user ? (
-                  <Stack spacing={2} alignItems="center">
-                    <Avatar>{initialOf(user.name)}</Avatar>
-                    <Typography variant="h6">{user.name}</Typography>
-                    <Stack spacing={0.5} alignItems="center">
-                      {user.email && <Typography variant="body2" color="text.secondary">{user.email}</Typography>}
-                      {user.phone_number && <Typography variant="body2" color="text.secondary">{user.phone_number}</Typography>}
-                      {user.gender && <Typography variant="body2" color="text.secondary">{user.gender}</Typography>}
-                    </Stack>
-                  </Stack>
-                ) : (
-                  <EmptyState title="Not signed in" message="Log in to see your appointments." />
-                )}
-              </CardContent>
-            </Card>
+            <ProfileSummaryCard user={user}>
+              {user?.phone_number && <Typography variant="body2" color="text.secondary">{user.phone_number}</Typography>}
+              {user?.gender && <Typography variant="body2" color="text.secondary">{user.gender}</Typography>}
+            </ProfileSummaryCard>
           </Box>
 
           <Card variant="outlined">
@@ -134,56 +114,15 @@ export default function MyAppointmentsPage() {
           </Card>
         </Stack>
 
-        {/* ---- 24-hour day grid (8 cols x 3 rows) ---- */}
         <Stack spacing={1}>
-          <Typography variant="overline" color="text.secondary">
-            {selectedDay.format('dddd, MMM D, YYYY')}
-          </Typography>
-          <TableContainer component={Paper} variant="outlined">
-            <Table>
-              <TableBody>
-                {GRID_ROWS.map((row) => (
-                  <TableRow key={row}>
-                    {Array.from({ length: GRID_COLS }, (_, col) => {
-                      const hour = row * GRID_COLS + col;
-                      const appt = apptByHour[hour];
-                      const reserved = Boolean(appt);
-                      return (
-                        <TableCell
-                          key={hour}
-                          align="center"
-                          onClick={reserved ? () => setDetail(appt) : undefined}
-                          selected={reserved}
-                        >
-                          <Stack spacing={0.5} alignItems="center">
-                            <Typography variant="caption" color={reserved ? 'text.disabled' : 'text.secondary'}>
-                              {hourLabel(hour)}
-                            </Typography>
-                            {reserved && (
-                              <Chip
-                                size="small"
-                                label={doctorName(appt.doctor_id)}
-                                onClick={() => setDetail(appt)}
-                              />
-                            )}
-                          </Stack>
-                        </TableCell>
-                      );
-                    })}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+          <DayHourGrid selectedDay={selectedDay} getCell={getCell} onHourClick={onHourClick} />
           {!dayHasAppointments && (
-            <Typography variant="body2" color="text.secondary">
-              No appointments on this day.
-            </Typography>
+            <Typography variant="body2" color="text.secondary">No appointments on this day.</Typography>
           )}
         </Stack>
       </Stack>
 
-      {/* ---- Appointment detail dialog ---- */}
+      {/* Read-only appointment detail (patient view) */}
       <Dialog open={Boolean(detail)} onClose={() => setDetail(null)} fullWidth maxWidth="xs">
         <DialogTitle>Appointment details</DialogTitle>
         <DialogContent>

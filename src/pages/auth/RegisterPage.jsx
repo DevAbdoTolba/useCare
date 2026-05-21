@@ -13,7 +13,7 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from '@mui/material';
-import { register as apiRegister } from '../../api/auth.js';
+import { registerLocal } from '../../auth/localAuthStore.js';
 import { listSpecialties } from '../../api/specialties.js';
 import { useAuth } from '../../hooks/useAuth.js';
 import { GENDERS } from '../../schema/schema.js';
@@ -78,11 +78,11 @@ export default function RegisterPage() {
       description: isDoctor ? values.description : null,
     };
     try {
-      const { user } = await apiRegister(payload);
+      const user = registerLocal(payload);
       setAuthUser(user);
       navigate(HOME_BY_ROLE[user.role] ?? '/patient');
-    } catch {
-      setSubmitError('Could not create your account. Please try again.');
+    } catch (err) {
+      setSubmitError(err?.message || 'Could not create your account. Please try again.');
     }
   }
 
