@@ -57,6 +57,7 @@ export default function RegisterPage() {
       specialty_id: '',
       resume_url: '',
       license_url: '',
+      hourly_rate: '',
       description: '',
     },
   });
@@ -82,6 +83,7 @@ export default function RegisterPage() {
       specialty_id: isDoctor ? Number(values.specialty_id) : null,
       resume_url: isDoctor ? values.resume_url : null,
       license_url: isDoctor ? values.license_url : null,
+      hourly_rate: isDoctor ? Number(values.hourly_rate) : null,
       description: isDoctor ? values.description : null,
     };
     try {
@@ -289,6 +291,26 @@ export default function RegisterPage() {
                   fullWidth
                   error={Boolean(errors.license_url)}
                   helperText={errors.license_url?.message || 'Verified by the admin to confirm you can practice.'}
+                />
+              )}
+            />
+
+            <Controller
+              name="hourly_rate"
+              control={control}
+              rules={{
+                required: 'Set your hourly consultation rate',
+                min: { value: 1, message: 'Rate must be greater than 0' },
+              }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Hourly rate (USD)"
+                  type="number"
+                  fullWidth
+                  InputProps={{ startAdornment: <Typography color="text.secondary" marginRight={0.5}>$</Typography> }}
+                  error={Boolean(errors.hourly_rate)}
+                  helperText={errors.hourly_rate?.message || 'Patients see this before they book.'}
                 />
               )}
             />

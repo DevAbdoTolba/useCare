@@ -41,6 +41,7 @@
  * @property {number | null} [specialty_id]     FK -> Specialty; doctors only
  * @property {string}        [resume_url]       // ADDITION: doctors only — link the admin reviews to approve
  * @property {string}        [license_url]      // ADDITION: doctors only — medical license the admin verifies
+ * @property {number | null} [hourly_rate]      // ADDITION: doctors only — consultation price per hour (USD)
  */
 
 /**

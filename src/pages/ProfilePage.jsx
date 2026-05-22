@@ -30,6 +30,7 @@ const formFrom = (u) => ({
   gender: u?.gender ?? '',
   date_of_birth: u?.date_of_birth ?? '',
   specialty_id: u?.specialty_id ?? '',
+  hourly_rate: u?.hourly_rate ?? '',
   description: u?.description ?? '',
 });
 
@@ -77,6 +78,7 @@ export default function ProfilePage() {
     };
     if (isDoctor) {
       patch.specialty_id = form.specialty_id === '' ? null : Number(form.specialty_id);
+      patch.hourly_rate = form.hourly_rate === '' ? null : Number(form.hourly_rate);
       patch.description = form.description;
     }
     updateCurrentUser(patch);
@@ -118,6 +120,7 @@ export default function ProfilePage() {
                 <ReadRow label="Phone" value={user.phone_number} />
                 <ReadRow label="Gender" value={user.gender} />
                 <ReadRow label="Date of birth" value={user.date_of_birth} />
+                {isDoctor && <ReadRow label="Hourly rate" value={user.hourly_rate != null ? `$${user.hourly_rate}/hr` : null} />}
                 {isDoctor && <ReadRow label="About" value={user.description} />}
               </Stack>
             ) : (
@@ -145,6 +148,14 @@ export default function ProfilePage() {
                         <MenuItem key={s.id} value={s.id}>{s.name}</MenuItem>
                       ))}
                     </TextField>
+                    <TextField
+                      label="Hourly rate (USD)"
+                      type="number"
+                      value={form.hourly_rate}
+                      onChange={set('hourly_rate')}
+                      fullWidth
+                      InputProps={{ startAdornment: <Typography color="text.secondary" marginRight={0.5}>$</Typography> }}
+                    />
                     <TextField label="About you" value={form.description} onChange={set('description')} fullWidth multiline minRows={3} />
                   </>
                 )}
