@@ -65,5 +65,11 @@
     { "id": 12, "doctor_id": 6, "date": "2026-05-20", "start_time": "13:00", "end_time": "18:00", "is_available": true },
     { "id": 13, "doctor_id": 6, "date": "2026-05-22", "start_time": "13:00", "end_time": "18:00", "is_available": true },
     { "id": 14, "doctor_id": 6, "date": "2026-05-25", "start_time": "13:00", "end_time": "18:00", "is_available": true }
+  ],
+  "ratings": [
+    { "appointment_id": 1, "doctor_id": 2, "patient_id": 7,  "stars": 5, "comment": "Very thorough, explained everything clearly." },
+    { "appointment_id": 2, "doctor_id": 2, "patient_id": 10, "stars": 4, "comment": "Good visit, a bit of a wait." },
+    { "appointment_id": 4, "doctor_id": 4, "patient_id": 9,  "stars": 5, "comment": "Cleared my skin issue fast." },
+    { "appointment_id": 5, "doctor_id": 6, "patient_id": 11, "stars": 4, "comment": "" }
   ]
 }

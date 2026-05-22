@@ -71,6 +71,15 @@
  * @property {boolean} is_available       false = explicit unavailable
  */
 
+/**
+ * @typedef {Object} Rating   // ADDITION: not on the original ERD
+ * @property {number} appointment_id  FK -> Appointment (one rating per completed visit)
+ * @property {number} doctor_id       FK -> User (the rated doctor)
+ * @property {number} patient_id      FK -> User (the rating patient)
+ * @property {number} stars           1..5
+ * @property {string} [comment]       optional "why this rating" note
+ */
+
 // Re-export from one place so callers can do: import { } from '../schema/schema'.
 export const ROLES = /** @type {const} */ (['admin', 'doctor', 'patient']);
 export const USER_STATUSES = /** @type {const} */ (['pending', 'approved', 'rejected']);
