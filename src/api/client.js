@@ -35,6 +35,7 @@ export function getDb() {
       users: fixtures.users,
       appointments: fixtures.appointments,
       availabilities: fixtures.availabilities,
+      payments: fixtures.payments,
     });
     return _dbPromise;
   }
@@ -52,6 +53,7 @@ export function getDb() {
         users: fixtures.users,
         appointments: fixtures.appointments,
         availabilities: fixtures.availabilities,
+        payments: fixtures.payments,
       };
     });
 

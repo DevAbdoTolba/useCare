@@ -71,5 +71,12 @@
     { "appointment_id": 2, "doctor_id": 2, "patient_id": 10, "stars": 4, "comment": "Good visit, a bit of a wait." },
     { "appointment_id": 4, "doctor_id": 4, "patient_id": 9,  "stars": 5, "comment": "Cleared my skin issue fast." },
     { "appointment_id": 5, "doctor_id": 6, "patient_id": 11, "stars": 4, "comment": "" }
+  ],
+  "payments": [
+    { "id": 1, "appointment_id": 1, "patient_id": 7,  "doctor_id": 2, "amount": 60, "status": "paid", "date": "2026-05-04" },
+    { "id": 2, "appointment_id": 2, "patient_id": 10, "doctor_id": 2, "amount": 60, "status": "paid", "date": "2026-05-06" },
+    { "id": 3, "appointment_id": 4, "patient_id": 9,  "doctor_id": 4, "amount": 50, "status": "paid", "date": "2026-05-12" },
+    { "id": 4, "appointment_id": 5, "patient_id": 11, "doctor_id": 6, "amount": 65, "status": "paid", "date": "2026-05-15" },
+    { "id": 5, "appointment_id": 6, "patient_id": 7,  "doctor_id": 2, "amount": 60, "status": "paid", "date": "2026-05-18" }
   ]
 }

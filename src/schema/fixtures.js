@@ -6,4 +6,4 @@
  */
 import seed from './seed.json';
 
-export const { specialties, users, appointments, availabilities } = seed;
+export const { specialties, users, appointments, availabilities, ratings, payments } = seed;
