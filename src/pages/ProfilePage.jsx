@@ -16,12 +16,21 @@ import {
   IconButton,
   Snackbar,
   Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
+import DescriptionIcon from '@mui/icons-material/Description';
+import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import { useAuth } from '../hooks/useAuth.js';
 import { listSpecialties } from '../api/specialties.js';
+import { addDocUpdateRequest, getPendingRequestForDoctor } from '../lib/docUpdateRequestsStore.js';
 import { GENDERS } from '../schema/schema.js';
 import { initialOf } from '../lib/format.js';
+
+const URL_PATTERN = /^https?:\/\/.+/i;
 
 /** Editable form shape from the current user. */
 const formFrom = (u) => ({
@@ -47,6 +56,31 @@ export default function ProfilePage() {
   const [form, setForm] = useState(() => formFrom(user));
   const [specialties, setSpecialties] = useState([]);
   const [toast, setToast] = useState('');
+
+  // Doctor document-update request (résumé/license — needs admin approval).
+  const [docOpen, setDocOpen] = useState(false);
+  const [docForm, setDocForm] = useState({ resume_url: '', license_url: '' });
+  const [docError, setDocError] = useState('');
+  const [reqTick, setReqTick] = useState(0); // bump to re-read the pending request
+  const pendingDocReq = isDoctor && reqTick >= 0 ? getPendingRequestForDoctor(user?.id) : null;
+
+  function openDocDialog() {
+    setDocForm({ resume_url: user?.resume_url ?? '', license_url: user?.license_url ?? '' });
+    setDocError('');
+    setDocOpen(true);
+  }
+
+  function submitDocRequest() {
+    const { resume_url, license_url } = docForm;
+    if (!URL_PATTERN.test(resume_url) || !URL_PATTERN.test(license_url)) {
+      setDocError('Both links must be valid URLs (https://…).');
+      return;
+    }
+    addDocUpdateRequest(user, docForm);
+    setReqTick((t) => t + 1);
+    setDocOpen(false);
+    setToast('Update requested — an admin will review it.');
+  }
 
   useEffect(() => {
     if (isDoctor) listSpecialties().then(setSpecialties).catch(() => setSpecialties([]));
@@ -122,6 +156,49 @@ export default function ProfilePage() {
                 <ReadRow label="Date of birth" value={user.date_of_birth} />
                 {isDoctor && <ReadRow label="Hourly rate" value={user.hourly_rate != null ? `$${user.hourly_rate}/hr` : null} />}
                 {isDoctor && <ReadRow label="About" value={user.description} />}
+
+                {isDoctor && (
+                  <>
+                    <Divider textAlign="left">
+                      <Typography variant="overline">Verification documents</Typography>
+                    </Divider>
+                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
+                      <Button
+                        startIcon={<DescriptionIcon />}
+                        variant="outlined"
+                        component="a"
+                        href={user.resume_url || undefined}
+                        target="_blank"
+                        rel="noopener"
+                        disabled={!user.resume_url}
+                        fullWidth
+                      >
+                        {user.resume_url ? 'View résumé' : 'No résumé'}
+                      </Button>
+                      <Button
+                        startIcon={<VerifiedUserIcon />}
+                        variant="outlined"
+                        component="a"
+                        href={user.license_url || undefined}
+                        target="_blank"
+                        rel="noopener"
+                        disabled={!user.license_url}
+                        fullWidth
+                      >
+                        {user.license_url ? 'View license' : 'No license'}
+                      </Button>
+                    </Stack>
+                    {pendingDocReq ? (
+                      <Alert severity="info">
+                        Document update requested — waiting for admin approval.
+                      </Alert>
+                    ) : (
+                      <Box>
+                        <Button onClick={openDocDialog}>Request document update</Button>
+                      </Box>
+                    )}
+                  </>
+                )}
               </Stack>
             ) : (
               <Stack spacing={2}>
@@ -171,6 +248,37 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
       </Stack>
+
+      <Dialog open={docOpen} onClose={() => setDocOpen(false)} fullWidth maxWidth="sm">
+        <DialogTitle>Request document update</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} marginTop={1}>
+            <Typography variant="body2" color="text.secondary">
+              New links go to the admin for approval — your current documents stay
+              in place until they&apos;re reviewed.
+            </Typography>
+            <TextField
+              label="Résumé / CV link"
+              placeholder="https://…"
+              value={docForm.resume_url}
+              onChange={(e) => setDocForm((f) => ({ ...f, resume_url: e.target.value }))}
+              fullWidth
+            />
+            <TextField
+              label="Medical license link"
+              placeholder="https://…"
+              value={docForm.license_url}
+              onChange={(e) => setDocForm((f) => ({ ...f, license_url: e.target.value }))}
+              fullWidth
+            />
+            {docError && <Typography variant="caption" color="error">{docError}</Typography>}
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDocOpen(false)}>Cancel</Button>
+          <Button variant="contained" disableElevation onClick={submitDocRequest}>Send request</Button>
+        </DialogActions>
+      </Dialog>
 
       <Snackbar
         open={Boolean(toast)}
