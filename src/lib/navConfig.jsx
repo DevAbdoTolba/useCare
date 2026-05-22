@@ -28,6 +28,7 @@ export function getNavItems(role) {
     case 'doctor':
       return [
         { label: 'My day', to: '/doctor', icon: <CalendarMonthIcon /> },
+        { label: 'History', to: '/doctor/history', icon: <HistoryIcon /> },
         { label: 'My profile', to: '/doctor/profile', icon: <PersonIcon /> },
       ];
     case 'admin':

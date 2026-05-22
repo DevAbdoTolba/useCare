@@ -20,6 +20,7 @@ import SystemSettingsPage from '../pages/admin/SystemSettingsPage.jsx';
 import DoctorLayout from '../components/layout/DoctorLayout.jsx';
 import DoctorCalendarPage from '../pages/doctor/DoctorCalendarPage.jsx';
 import DaySchedulePage from '../pages/doctor/DaySchedulePage.jsx';
+import DoctorHistoryPage from '../pages/doctor/DoctorHistoryPage.jsx';
 
 import PatientLayout from '../components/layout/PatientLayout.jsx';
 import PatientHomePage from '../pages/patient/PatientHomePage.jsx';
@@ -60,6 +61,7 @@ export default function AppRoutes() {
         <Route path="/doctor" element={<DoctorLayout />}>
           <Route index element={<DoctorCalendarPage />} />
           <Route path="day/:date" element={<DaySchedulePage />} />
+          <Route path="history" element={<DoctorHistoryPage />} />
           <Route path="profile" element={<ProfilePage />} />
         </Route>
       </Route>
