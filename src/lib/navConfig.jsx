@@ -1,5 +1,6 @@
 import PersonSearchIcon from '@mui/icons-material/PersonSearch';
 import EventNoteIcon from '@mui/icons-material/EventNote';
+import HistoryIcon from '@mui/icons-material/History';
 import PersonIcon from '@mui/icons-material/Person';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -21,6 +22,7 @@ export function getNavItems(role) {
       return [
         { label: 'Find a doctor', to: '/patient', icon: <PersonSearchIcon /> },
         { label: 'My appointments', to: '/patient/appointments', icon: <EventNoteIcon /> },
+        { label: 'History', to: '/patient/history', icon: <HistoryIcon /> },
         { label: 'My profile', to: '/patient/profile', icon: <PersonIcon /> },
       ];
     case 'doctor':
