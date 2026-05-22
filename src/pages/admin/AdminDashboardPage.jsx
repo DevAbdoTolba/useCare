@@ -4,10 +4,13 @@ import { Container, Typography, Box } from '@mui/material';
 import LoadingSpinner from '../../components/common/LoadingSpinner.jsx';
 import DashboardStats from '../../components/admin/DashboardStats.jsx';
 import PendingApprovalsList from '../../components/admin/PendingApprovalsList.jsx';
+import DocUpdateRequestsList from '../../components/admin/DocUpdateRequestsList.jsx';
 import { listUsers, listPendingUsers } from '../../api/users.js';
 import { listAppointments } from '../../api/appointments.js';
 import { listSpecialties } from '../../api/specialties.js';
 import { getTotalPaid, PLATFORM_FEE_RATE } from '../../api/payments.js';
+import { listPendingRequests, setDocRequestStatus } from '../../lib/docUpdateRequestsStore.js';
+import { updateLocalUser } from '../../auth/localAuthStore.js';
 
 export default function AdminDashboardPage() {
   const navigate = useNavigate();
@@ -17,6 +20,7 @@ export default function AdminDashboardPage() {
   });
   const [money, setMoney] = useState({ totalPaid: 0, revenue: 0 });
   const [pendingUsers, setPendingUsers] = useState([]);
+  const [docRequests, setDocRequests] = useState([]);
 
   useEffect(() => {
     let mounted = true;
@@ -35,6 +39,7 @@ export default function AdminDashboardPage() {
         });
         setMoney({ totalPaid, revenue: totalPaid * PLATFORM_FEE_RATE });
         setPendingUsers(Array.isArray(pending) ? pending : []);
+        setDocRequests(listPendingRequests());
       })
       .catch(() => {
         if (!mounted) return;
@@ -45,6 +50,17 @@ export default function AdminDashboardPage() {
       .finally(() => { if (mounted) setLoading(false); });
     return () => { mounted = false; };
   }, []);
+
+  function approveDocRequest(req) {
+    updateLocalUser(req.doctor_id, { resume_url: req.resume_url, license_url: req.license_url });
+    setDocRequestStatus(req.id, 'approved');
+    setDocRequests(listPendingRequests());
+  }
+
+  function rejectDocRequest(req) {
+    setDocRequestStatus(req.id, 'rejected');
+    setDocRequests(listPendingRequests());
+  }
 
   if (loading) {
     return (
@@ -65,6 +81,7 @@ export default function AdminDashboardPage() {
           onPendingClick={() => navigate('/admin/users?status=pending')}
         />
         <PendingApprovalsList users={pendingUsers} onViewAll={() => navigate('/admin/users?status=pending')} />
+        <DocUpdateRequestsList requests={docRequests} onApprove={approveDocRequest} onReject={rejectDocRequest} />
       </Box>
     </Container>
   );
