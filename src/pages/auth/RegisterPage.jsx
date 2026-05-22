@@ -27,6 +27,7 @@ const HOME_BY_ROLE = {
 };
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const URL_PATTERN = /^https?:\/\/.+/i;
 
 // Non-breaking space: keeps the helperText line reserved so showing/clearing
 // a validation message never shifts the layout below the field.
@@ -54,6 +55,8 @@ export default function RegisterPage() {
       date_of_birth: '',
       gender: '',
       specialty_id: '',
+      resume_url: '',
+      license_url: '',
       description: '',
     },
   });
@@ -77,6 +80,8 @@ export default function RegisterPage() {
       role: values.role,
       status: isDoctor ? 'pending' : 'approved',
       specialty_id: isDoctor ? Number(values.specialty_id) : null,
+      resume_url: isDoctor ? values.resume_url : null,
+      license_url: isDoctor ? values.license_url : null,
       description: isDoctor ? values.description : null,
     };
     try {
@@ -247,6 +252,44 @@ export default function RegisterPage() {
                     <MenuItem key={s.id} value={s.id}>{s.name}</MenuItem>
                   ))}
                 </TextField>
+              )}
+            />
+
+            <Controller
+              name="resume_url"
+              control={control}
+              rules={{
+                required: 'A résumé link is required for doctors',
+                pattern: { value: URL_PATTERN, message: 'Enter a valid link (https://…)' },
+              }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Résumé / CV link"
+                  placeholder="https://…"
+                  fullWidth
+                  error={Boolean(errors.resume_url)}
+                  helperText={errors.resume_url?.message || 'The admin reviews this before approving you.'}
+                />
+              )}
+            />
+
+            <Controller
+              name="license_url"
+              control={control}
+              rules={{
+                required: 'A medical license link is required for doctors',
+                pattern: { value: URL_PATTERN, message: 'Enter a valid link (https://…)' },
+              }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Medical license link"
+                  placeholder="https://…"
+                  fullWidth
+                  error={Boolean(errors.license_url)}
+                  helperText={errors.license_url?.message || 'Verified by the admin to confirm you can practice.'}
+                />
               )}
             />
 

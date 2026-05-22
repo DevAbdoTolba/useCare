@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Stack, Typography } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Stack, Typography, Divider } from '@mui/material';
+import DescriptionIcon from '@mui/icons-material/Description';
+import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import { listSpecialties } from '../../api/specialties.js';
 import { approveUser, rejectUser } from '../../api/users.js';
 
@@ -84,6 +86,44 @@ export default function ApproveUserDialog({ open, onClose, user, onUpdated }) {
               />
             )}
             <TextField label="Description" value={user.description || ''} disabled multiline rows={3} fullWidth />
+
+            {user.role === 'doctor' && (
+              <>
+                <Divider textAlign="left">
+                  <Typography variant="overline">Verification documents</Typography>
+                </Divider>
+                <Typography variant="body2" color="text.secondary">
+                  Review the résumé and license before approving — they&apos;re the basis for the decision.
+                </Typography>
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
+                  <Button
+                    startIcon={<DescriptionIcon />}
+                    variant="outlined"
+                    component="a"
+                    href={user.resume_url || undefined}
+                    target="_blank"
+                    rel="noopener"
+                    disabled={!user.resume_url}
+                    fullWidth
+                  >
+                    {user.resume_url ? 'Open résumé' : 'No résumé'}
+                  </Button>
+                  <Button
+                    startIcon={<VerifiedUserIcon />}
+                    variant="outlined"
+                    component="a"
+                    href={user.license_url || undefined}
+                    target="_blank"
+                    rel="noopener"
+                    disabled={!user.license_url}
+                    fullWidth
+                  >
+                    {user.license_url ? 'Open license' : 'No license'}
+                  </Button>
+                </Stack>
+              </>
+            )}
+
             {actionError && <Typography color="error">{actionError}</Typography>}
           </Stack>
         ) : (

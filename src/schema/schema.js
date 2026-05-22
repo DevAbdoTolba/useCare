@@ -39,6 +39,8 @@
  * @property {string}        [date_of_birth]    ISO date (YYYY-MM-DD)
  * @property {UserStatus}    status             // ADDITION: admin approval flow
  * @property {number | null} [specialty_id]     FK -> Specialty; doctors only
+ * @property {string}        [resume_url]       // ADDITION: doctors only — link the admin reviews to approve
+ * @property {string}        [license_url]      // ADDITION: doctors only — medical license the admin verifies
  */
 
 /**
