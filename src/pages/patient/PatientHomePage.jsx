@@ -97,8 +97,13 @@ function Day({ day, selectedDay, hoveredDay, ...other }) {
   );
 }
 
-/** Build 30-minute slots from a doctor's available days, skipping booked times. */
+/**
+ * Build 30-minute slots from a doctor's available days, skipping booked times
+ * AND any slot that's already in the past — an outdated slot can never be
+ * booked, so it shouldn't even show up in the list.
+ */
 function buildSlots(availabilities, appointments) {
+  const now = dayjs();
   const booked = new Set(
     appointments
       .filter((a) => a.status !== 'cancelled')
@@ -114,7 +119,7 @@ function buildSlots(availabilities, appointments) {
       while (t.isBefore(end)) {
         const time24 = t.format('HH:mm');
         const key = `${a.date} ${time24}`;
-        if (!booked.has(key)) {
+        if (!booked.has(key) && !t.isBefore(now)) {
           slots.push({
             id: key,
             date: a.date,
@@ -165,6 +170,7 @@ export default function PatientHomePage() {
   const [notes, setNotes] = useState(''); // "Reason for visit" (optional)
   const [booking, setBooking] = useState(false);
   const [toast, setToast] = useState('');
+  const [toastSeverity, setToastSeverity] = useState('success');
 
   function closeBookingDialog() {
     setPendingSlot(null);
@@ -267,6 +273,14 @@ export default function PatientHomePage() {
 
   async function confirmBooking() {
     if (!pendingSlot || !selectedDoctor) return;
+    // Validation layer: never let a past slot through, even if it somehow
+    // lingered in the view (clock drift, stale render, etc.).
+    if (dayjs(`${pendingSlot.date} ${pendingSlot.time24}`).isBefore(dayjs())) {
+      setToastSeverity('warning');
+      setToast('That time has already passed — please pick another slot.');
+      closeBookingDialog();
+      return;
+    }
     setBooking(true);
     try {
       await createAppointment({
@@ -280,6 +294,7 @@ export default function PatientHomePage() {
       // Mark the slot as "requested" — keeps it visible with an indeterminate
       // (in-progress) checkbox rather than removing it.
       setRequested((prev) => new Set(prev).add(pendingSlot.id));
+      setToastSeverity('success');
       setToast(`Requested ${pendingSlot.dateLabel} at ${pendingSlot.timeLabel} with ${selectedDoctor.name}.`);
       closeBookingDialog();
     } finally {
@@ -523,7 +538,7 @@ export default function PatientHomePage() {
         onClose={() => setToast('')}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert severity="success" onClose={() => setToast('')}>{toast}</Alert>
+        <Alert severity={toastSeverity} onClose={() => setToast('')}>{toast}</Alert>
       </Snackbar>
     </Container>
   );
