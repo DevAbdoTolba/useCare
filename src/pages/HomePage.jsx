@@ -113,7 +113,7 @@ export default function HomePage() {
                 </Typography>
               </CardContent>
               <CardActions>
-                <Button size="small">Try it</Button>
+                <Button size="small" component={RouterLink} to="/register">Try it</Button>
               </CardActions>
             </Card>
 
@@ -128,7 +128,7 @@ export default function HomePage() {
                 </Typography>
               </CardContent>
               <CardActions>
-                <Button size="small">For doctors</Button>
+                <Button size="small" component={RouterLink} to="/register">For doctors</Button>
               </CardActions>
             </Card>
 
@@ -143,7 +143,7 @@ export default function HomePage() {
                 </Typography>
               </CardContent>
               <CardActions>
-                <Button size="small">How it works</Button>
+                <Button size="small" component={RouterLink} to="/login">How it works</Button>
               </CardActions>
             </Card>
           </Stack>
