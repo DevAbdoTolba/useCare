@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Container, Stack, Typography } from '@mui/material';
-import { listAppointmentsForPatient } from '../../api/appointments.js';
+import { Container, Stack, Typography, Button, Snackbar, Alert } from '@mui/material';
+import { listAppointmentsForPatient, cancelAppointment } from '../../api/appointments.js';
 import { getUser } from '../../api/users.js';
 import { useAuth } from '../../hooks/useAuth.js';
 import LoadingSpinner from '../../components/common/LoadingSpinner.jsx';
@@ -13,6 +13,7 @@ export default function AppointmentHistoryPage() {
   const [loading, setLoading] = useState(true);
   const [appointments, setAppointments] = useState([]);
   const [doctorById, setDoctorById] = useState({});
+  const [toast, setToast] = useState('');
 
   useEffect(() => {
     let mounted = true;
@@ -32,6 +33,12 @@ export default function AppointmentHistoryPage() {
     return () => { mounted = false; };
   }, [user?.id]);
 
+  async function handleCancel(appt) {
+    await cancelAppointment(appt.id);
+    setAppointments((prev) => prev.map((a) => (a.id === appt.id ? { ...a, status: 'cancelled' } : a)));
+    setToast('Appointment request cancelled.');
+  }
+
   if (loading) {
     return (
       <Container maxWidth="md">
@@ -49,8 +56,25 @@ export default function AppointmentHistoryPage() {
           getPersonName={(a) => doctorById[a.doctor_id]?.name ?? `Doctor #${a.doctor_id}`}
           personLabel="Doctor"
           notesLabel="Doctor's notes"
+          renderActions={(a) => (
+            // A patient can still back out while it's only "requested" (pending).
+            a.status === 'pending' ? (
+              <Button size="small" color="error" onClick={() => handleCancel(a)}>
+                Cancel request
+              </Button>
+            ) : null
+          )}
         />
       </Stack>
+
+      <Snackbar
+        open={Boolean(toast)}
+        autoHideDuration={3000}
+        onClose={() => setToast('')}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="success" onClose={() => setToast('')}>{toast}</Alert>
+      </Snackbar>
     </Container>
   );
 }

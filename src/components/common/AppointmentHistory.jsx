@@ -36,7 +36,13 @@ const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
  * @param {(a: object) => string} getPersonName  the counterpart's name (doctor for a patient, patient for a doctor)
  * @param {string} personLabel                   what the counterpart is called ("Doctor" / "Patient")
  */
-export default function AppointmentHistory({ appointments, getPersonName, personLabel = 'Person', notesLabel = 'Notes' }) {
+export default function AppointmentHistory({
+  appointments,
+  getPersonName,
+  personLabel = 'Person',
+  notesLabel = 'Notes',
+  renderActions,
+}) {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState(ALL);
   const [limitByMonth, setLimitByMonth] = useState({});
@@ -150,6 +156,11 @@ export default function AppointmentHistory({ appointments, getPersonName, person
                           <Typography variant="body2" color={a.notes?.trim() ? 'text.primary' : 'text.secondary'}>
                             {a.notes?.trim() ? a.notes : 'No notes.'}
                           </Typography>
+                          {renderActions && (
+                            <Stack direction="row" spacing={1} justifyContent="flex-end" flexWrap="wrap" useFlexGap>
+                              {renderActions(a)}
+                            </Stack>
+                          )}
                         </Stack>
                       </AccordionDetails>
                     </Accordion>
