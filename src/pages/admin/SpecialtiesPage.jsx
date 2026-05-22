@@ -5,6 +5,10 @@ import {
   Typography,
   Button,
   TextField,
+  Card,
+  CardContent,
+  Chip,
+  Divider,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -19,6 +23,7 @@ import {
   updateSpecialty,
   deleteSpecialty,
 } from '../../api/specialties.js';
+import { listPendingSuggestions, setSuggestionStatus } from '../../lib/specialtySuggestionsStore.js';
 import MasterDetailBrowser from '../../components/common/MasterDetailBrowser.jsx';
 import ConfirmDialog from '../../components/common/ConfirmDialog.jsx';
 import LoadingSpinner from '../../components/common/LoadingSpinner.jsx';
@@ -37,14 +42,31 @@ export default function SpecialtiesPage() {
   const [addForm, setAddForm] = useState(EMPTY);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [toast, setToast] = useState('');
+  const [suggestions, setSuggestions] = useState([]);
 
   useEffect(() => {
     let mounted = true;
     listSpecialties()
       .then((data) => { if (mounted) setSpecialties(Array.isArray(data) ? data : []); })
       .finally(() => { if (mounted) setLoading(false); });
+    setSuggestions(listPendingSuggestions());
     return () => { mounted = false; };
   }, []);
+
+  function approveSuggestion(suggestion) {
+    createSpecialty({ name: suggestion.name, description: '' }).then((created) => {
+      setSpecialties((prev) => [...prev, created]);
+    });
+    setSuggestionStatus(suggestion.id, 'approved');
+    setSuggestions(listPendingSuggestions());
+    setToast(`"${suggestion.name}" approved and added.`);
+  }
+
+  function rejectSuggestion(suggestion) {
+    setSuggestionStatus(suggestion.id, 'rejected');
+    setSuggestions(listPendingSuggestions());
+    setToast(`"${suggestion.name}" rejected.`);
+  }
 
   const rows = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -118,6 +140,41 @@ export default function SpecialtiesPage() {
 
   return (
     <>
+      {suggestions.length > 0 && (
+        <Container maxWidth="lg">
+          <Card variant="outlined">
+            <CardContent>
+              <Stack spacing={2}>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Typography variant="h6">Specialty suggestions</Typography>
+                  <Chip size="small" color="warning" label={suggestions.length} />
+                </Stack>
+                <Stack divider={<Divider flexItem />} spacing={1}>
+                  {suggestions.map((s) => (
+                    <Stack
+                      key={s.id}
+                      direction={{ xs: 'column', sm: 'row' }}
+                      spacing={1}
+                      alignItems={{ sm: 'center' }}
+                      justifyContent="space-between"
+                    >
+                      <Stack>
+                        <Typography variant="subtitle2">{s.name}</Typography>
+                        <Typography variant="caption" color="text.secondary">Proposed by {s.proposed_by || 'a doctor'}</Typography>
+                      </Stack>
+                      <Stack direction="row" spacing={1}>
+                        <Button size="small" color="warning" onClick={() => rejectSuggestion(s)}>Reject</Button>
+                        <Button size="small" variant="contained" disableElevation onClick={() => approveSuggestion(s)}>Approve</Button>
+                      </Stack>
+                    </Stack>
+                  ))}
+                </Stack>
+              </Stack>
+            </CardContent>
+          </Card>
+        </Container>
+      )}
+
       <MasterDetailBrowser
         title="Specialties"
         placeholderTitle="No specialty selected"

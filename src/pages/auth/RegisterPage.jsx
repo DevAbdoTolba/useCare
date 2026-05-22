@@ -15,10 +15,14 @@ import {
 } from '@mui/material';
 import { registerLocal } from '../../auth/localAuthStore.js';
 import { listSpecialties } from '../../api/specialties.js';
+import { addSpecialtySuggestion } from '../../lib/specialtySuggestionsStore.js';
 import { useAuth } from '../../hooks/useAuth.js';
 
 // Signup offers only female / male (no "other").
 const SIGNUP_GENDERS = ['female', 'male'];
+
+// Sentinel for "my specialty isn't listed — let me propose one".
+const SUGGEST_SPECIALTY = '__suggest__';
 
 /** Where each role lands after registering. */
 const HOME_BY_ROLE = {
@@ -55,6 +59,7 @@ export default function RegisterPage() {
       date_of_birth: '',
       gender: '',
       specialty_id: '',
+      suggested_specialty: '',
       resume_url: '',
       license_url: '',
       hourly_rate: '',
@@ -63,6 +68,8 @@ export default function RegisterPage() {
   });
 
   const role = watch('role');
+  const specialtyChoice = watch('specialty_id');
+  const isSuggesting = role === 'doctor' && specialtyChoice === SUGGEST_SPECIALTY;
 
   useEffect(() => {
     listSpecialties().then(setSpecialties).catch(() => setSpecialties([]));
@@ -71,6 +78,12 @@ export default function RegisterPage() {
   async function onSubmit(values) {
     setSubmitError('');
     const isDoctor = values.role === 'doctor';
+    const suggestingSpecialty = isDoctor && values.specialty_id === SUGGEST_SPECIALTY;
+    if (suggestingSpecialty) {
+      // Record the proposal for the admin; the doctor starts with no specialty
+      // until it's approved.
+      addSpecialtySuggestion(values.suggested_specialty, values.email);
+    }
     const payload = {
       name: values.name,
       email: values.email,
@@ -80,7 +93,7 @@ export default function RegisterPage() {
       gender: values.gender,
       role: values.role,
       status: isDoctor ? 'pending' : 'approved',
-      specialty_id: isDoctor ? Number(values.specialty_id) : null,
+      specialty_id: isDoctor && !suggestingSpecialty ? Number(values.specialty_id) : null,
       resume_url: isDoctor ? values.resume_url : null,
       license_url: isDoctor ? values.license_url : null,
       hourly_rate: isDoctor ? Number(values.hourly_rate) : null,
@@ -253,9 +266,28 @@ export default function RegisterPage() {
                   {specialties.map((s) => (
                     <MenuItem key={s.id} value={s.id}>{s.name}</MenuItem>
                   ))}
+                  <MenuItem value={SUGGEST_SPECIALTY}>Other — suggest a new specialty…</MenuItem>
                 </TextField>
               )}
             />
+
+            {isSuggesting && (
+              <Controller
+                name="suggested_specialty"
+                control={control}
+                rules={{ required: 'Tell us the specialty you want to propose' }}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    label="Proposed specialty"
+                    placeholder="e.g. Orthopedics"
+                    fullWidth
+                    error={Boolean(errors.suggested_specialty)}
+                    helperText={errors.suggested_specialty?.message || 'An admin reviews this before it goes live.'}
+                  />
+                )}
+              />
+            )}
 
             <Controller
               name="resume_url"

@@ -78,5 +78,8 @@
     { "id": 3, "appointment_id": 4, "patient_id": 9,  "doctor_id": 4, "amount": 50, "status": "paid", "date": "2026-05-12" },
     { "id": 4, "appointment_id": 5, "patient_id": 11, "doctor_id": 6, "amount": 65, "status": "paid", "date": "2026-05-15" },
     { "id": 5, "appointment_id": 6, "patient_id": 7,  "doctor_id": 2, "amount": 60, "status": "paid", "date": "2026-05-18" }
+  ],
+  "specialty_suggestions": [
+    { "id": 1, "name": "Orthopedics", "proposed_by": "karim@usecare.test", "status": "pending" }
   ]
 }
