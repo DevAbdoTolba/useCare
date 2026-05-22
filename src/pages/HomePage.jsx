@@ -128,6 +128,27 @@ export default function HomePage() {
           </Button>
         </Box>
       </Container>
+
+      {/* Footer */}
+      <Divider />
+      <Box component="footer" paddingY={4}>
+        <Container maxWidth="md">
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={2}
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <Typography variant="body2" color="text.secondary">
+              © {new Date().getFullYear()} useCare. All rights reserved.
+            </Typography>
+            <Stack direction="row" spacing={3}>
+              <Button size="small" color="inherit" component={RouterLink} to="/login">Login</Button>
+              <Button size="small" color="inherit" component={RouterLink} to="/register">Register</Button>
+            </Stack>
+          </Stack>
+        </Container>
+      </Box>
     </>
   );
 }

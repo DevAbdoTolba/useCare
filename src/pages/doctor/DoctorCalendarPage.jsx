@@ -62,6 +62,7 @@ export default function DoctorCalendarPage() {
   const [editNotes, setEditNotes] = useState('');
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState('');
+  const [toastSeverity, setToastSeverity] = useState('success');
 
   const dateStr = selectedDay.format('YYYY-MM-DD');
 
@@ -140,6 +141,12 @@ export default function DoctorCalendarPage() {
       setConfirmRemoveHour(hour); // confirm before removing an open hour
       return;
     }
+    // Can't open a time that's already in the past.
+    if (dayjs(`${dateStr} ${String(hour).padStart(2, '0')}:00`).isBefore(dayjs())) {
+      setToastSeverity('warning');
+      setToast("You can't open a time in the past.");
+      return;
+    }
     setConfirmHour(hour);
   };
 
@@ -163,6 +170,7 @@ export default function DoctorCalendarPage() {
       setAppointments((prev) =>
         prev.map((a) => (a.id === detail.id ? { ...a, status: editStatus, notes: editNotes } : a)),
       );
+      setToastSeverity('success');
       setToast('Appointment updated.');
       setDetail(null);
     } finally {
@@ -301,7 +309,7 @@ export default function DoctorCalendarPage() {
         onClose={() => setToast('')}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert severity="success" onClose={() => setToast('')}>{toast}</Alert>
+        <Alert severity={toastSeverity} onClose={() => setToast('')}>{toast}</Alert>
       </Snackbar>
     </Container>
   );

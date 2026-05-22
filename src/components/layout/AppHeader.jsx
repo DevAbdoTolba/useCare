@@ -12,6 +12,7 @@ import {
   Divider,
 } from '@mui/material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { styled } from '@mui/material/styles';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useAuth } from '../../hooks/useAuth.js';
 import { getNavItems, HOME_BY_ROLE } from '../../lib/navConfig.jsx';
@@ -19,6 +20,24 @@ import { getNavItems, HOME_BY_ROLE } from '../../lib/navConfig.jsx';
 function initialOf(name) {
   return (name?.trim()?.[0] ?? '?').toUpperCase();
 }
+
+// Themed wordmark: no link underline, and a distinct look per theme — wide
+// italic serif on Vintage, lowercase on Liquid Glass, bold on Classic.
+const Brand = styled(Typography)(({ theme }) => {
+  const family = theme.typography.fontFamily || '';
+  const isVintage = /Georgia/i.test(family);
+  const isGlass = /-apple-system|SF Pro/i.test(family);
+  return {
+    textDecoration: 'none',
+    color: 'inherit',
+    fontWeight: 800,
+    fontStyle: isVintage ? 'italic' : 'normal',
+    letterSpacing: isVintage ? '0.14em' : '0.02em',
+    textTransform: isGlass ? 'lowercase' : 'none',
+    transition: 'opacity .15s ease',
+    '&:hover': { opacity: 0.8 },
+  };
+});
 
 /**
  * Shared header. When signed in, the wordmark links to the user's dashboard
@@ -43,9 +62,9 @@ export default function AppHeader() {
   return (
     <AppBar position="sticky" color="default" elevation={0}>
       <Toolbar>
-        <Typography variant="h6" component={RouterLink} to={homeTo} flexGrow={1} color="inherit">
+        <Brand variant="h6" component={RouterLink} to={homeTo} flexGrow={1}>
           useCare
-        </Typography>
+        </Brand>
 
         {user ? (
           <>
