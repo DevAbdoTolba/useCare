@@ -44,6 +44,7 @@ import { listAvailabilityForDoctor } from '../../api/availability.js';
 import { listAppointmentsForDoctor } from '../../api/appointments.js';
 import { createAppointment } from '../../api/appointments.js';
 import { useAuth } from '../../hooks/useAuth.js';
+import { getDoctorRating } from '../../lib/ratingsStore.js';
 import EmptyState from '../../components/common/EmptyState.jsx';
 import LoadingSpinner from '../../components/common/LoadingSpinner.jsx';
 
@@ -430,18 +431,30 @@ export default function PatientHomePage() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {pagedDoctors.map((doctor) => (
+                {pagedDoctors.map((doctor) => {
+                  const { average, count } = getDoctorRating(doctor.id);
+                  return (
                   <TableRow key={doctor.id} hover selected={selectedDoctor?.id === doctor.id}>
                     <TableCell>{doctor.name}</TableCell>
                     <TableCell>{specialtyNameById.get(doctor.specialty_id) ?? '—'}</TableCell>
-                    <TableCell><Rating value={4.5} readOnly precision={0.5} /></TableCell>
+                    <TableCell>
+                      {count > 0 ? (
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <Rating value={average} readOnly precision={0.5} size="small" />
+                          <Typography variant="caption" color="text.secondary">({count})</Typography>
+                        </Stack>
+                      ) : (
+                        <Typography variant="caption" color="text.secondary">No ratings yet</Typography>
+                      )}
+                    </TableCell>
                     <TableCell align="right">
                       <Button variant="contained" disableElevation onClick={() => handleViewDoctor(doctor)}>
                         View
                       </Button>
                     </TableCell>
                   </TableRow>
-                ))}
+                  );
+                })}
               </TableBody>
             </Table>
             <TablePagination

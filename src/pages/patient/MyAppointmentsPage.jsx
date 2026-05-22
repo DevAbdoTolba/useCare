@@ -14,10 +14,15 @@ import {
   DialogContent,
   DialogActions,
   Button,
+  Rating,
+  TextField,
+  Snackbar,
+  Alert,
 } from '@mui/material';
 import { listAppointmentsForPatient } from '../../api/appointments.js';
 import { getUser } from '../../api/users.js';
 import { useAuth } from '../../hooks/useAuth.js';
+import { getRatingForAppointment, rateAppointment } from '../../lib/ratingsStore.js';
 import LoadingSpinner from '../../components/common/LoadingSpinner.jsx';
 import ProfileSummaryCard from '../../components/common/ProfileSummaryCard.jsx';
 import DayHourGrid from '../../components/common/DayHourGrid.jsx';
@@ -32,6 +37,11 @@ export default function MyAppointmentsPage() {
   const [doctorById, setDoctorById] = useState({});
   const [selectedDay, setSelectedDay] = useState(dayjs());
   const [detail, setDetail] = useState(null);
+  const [ratingStars, setRatingStars] = useState(0);
+  const [ratingComment, setRatingComment] = useState('');
+  const [ratingError, setRatingError] = useState('');
+  const [savedTick, setSavedTick] = useState(0); // bump to re-read the saved rating
+  const [toast, setToast] = useState('');
 
   useEffect(() => {
     let mounted = true;
@@ -85,8 +95,21 @@ export default function MyAppointmentsPage() {
 
   const onHourClick = (hour) => {
     const appt = apptByHour[hour];
-    if (appt) setDetail(appt);
+    if (!appt) return;
+    setDetail(appt);
+    const existing = getRatingForAppointment(appt.id);
+    setRatingStars(existing?.stars ?? 0);
+    setRatingComment(existing?.comment ?? '');
+    setRatingError('');
   };
+
+  function submitRating() {
+    if (!detail) return;
+    if (!ratingStars) { setRatingError('Please pick a star rating.'); return; }
+    rateAppointment(detail, ratingStars, ratingComment);
+    setSavedTick((t) => t + 1);
+    setToast('Thanks! Your rating was saved.');
+  }
 
   if (loading) {
     return (
@@ -97,6 +120,8 @@ export default function MyAppointmentsPage() {
   }
 
   const detailDoctor = detail ? doctorById[detail.doctor_id] : null;
+  // savedTick is referenced so this re-reads right after a rating is saved.
+  const savedRating = detail && savedTick >= 0 ? getRatingForAppointment(detail.id) : null;
 
   return (
     <Container maxWidth="lg">
@@ -151,13 +176,55 @@ export default function MyAppointmentsPage() {
               <Typography variant="body2" color={detail.notes?.trim() ? 'text.primary' : 'text.secondary'}>
                 {detail.notes?.trim() ? detail.notes : 'No notes from the doctor yet.'}
               </Typography>
+
+              {detail.status === 'completed' && (
+                <>
+                  <Divider textAlign="left">
+                    <Typography variant="overline">Rate your visit</Typography>
+                  </Divider>
+                  <Stack spacing={1}>
+                    <Rating
+                      value={ratingStars}
+                      onChange={(_e, next) => { setRatingStars(next ?? 0); setRatingError(''); }}
+                    />
+                    <TextField
+                      label="Why this rating? (optional)"
+                      value={ratingComment}
+                      onChange={(e) => setRatingComment(e.target.value)}
+                      fullWidth
+                      multiline
+                      minRows={2}
+                    />
+                    {ratingError && <Typography variant="caption" color="error">{ratingError}</Typography>}
+                    {savedRating && (
+                      <Typography variant="caption" color="success.main">
+                        You rated this visit {savedRating.stars}/5.
+                      </Typography>
+                    )}
+                  </Stack>
+                </>
+              )}
             </Stack>
           )}
         </DialogContent>
         <DialogActions>
+          {detail?.status === 'completed' && (
+            <Button variant="contained" disableElevation onClick={submitRating}>
+              {savedRating ? 'Update rating' : 'Submit rating'}
+            </Button>
+          )}
           <Button onClick={() => setDetail(null)}>Close</Button>
         </DialogActions>
       </Dialog>
+
+      <Snackbar
+        open={Boolean(toast)}
+        autoHideDuration={3000}
+        onClose={() => setToast('')}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="success" onClose={() => setToast('')}>{toast}</Alert>
+      </Snackbar>
     </Container>
   );
 }
