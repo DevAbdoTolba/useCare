@@ -43,8 +43,10 @@ import { listSpecialties } from '../../api/specialties.js';
 import { listAvailabilityForDoctor } from '../../api/availability.js';
 import { listAppointmentsForDoctor } from '../../api/appointments.js';
 import { createAppointment } from '../../api/appointments.js';
+import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import { useAuth } from '../../hooks/useAuth.js';
 import { getDoctorRating } from '../../lib/ratingsStore.js';
+import { PAYPAL_OPTIONS, PAYPAL_ENABLED } from '../../lib/paypal.js';
 import EmptyState from '../../components/common/EmptyState.jsx';
 import LoadingSpinner from '../../components/common/LoadingSpinner.jsx';
 
@@ -272,7 +274,7 @@ export default function PatientHomePage() {
     setDraftDay(null);
   }
 
-  async function confirmBooking() {
+  async function confirmBooking({ paid = false } = {}) {
     if (!pendingSlot || !selectedDoctor) return;
     // Validation layer: never let a past slot through, even if it somehow
     // lingered in the view (clock drift, stale render, etc.).
@@ -291,12 +293,18 @@ export default function PatientHomePage() {
         time: pendingSlot.time24,
         notes: notes.trim(),
         status: 'pending',
+        paid,
+        amount_paid: paid ? Number(selectedDoctor.hourly_rate) || 0 : 0,
       });
       // Mark the slot as "requested" — keeps it visible with an indeterminate
       // (in-progress) checkbox rather than removing it.
       setRequested((prev) => new Set(prev).add(pendingSlot.id));
       setToastSeverity('success');
-      setToast(`Requested ${pendingSlot.dateLabel} at ${pendingSlot.timeLabel} with ${selectedDoctor.name}.`);
+      setToast(
+        paid
+          ? `Paid & requested ${pendingSlot.dateLabel} at ${pendingSlot.timeLabel} with ${selectedDoctor.name}.`
+          : `Requested ${pendingSlot.dateLabel} at ${pendingSlot.timeLabel} with ${selectedDoctor.name}.`,
+      );
       closeBookingDialog();
     } finally {
       setBooking(false);
@@ -307,8 +315,10 @@ export default function PatientHomePage() {
     ? `${weekStart.format('MMM D')} – ${weekStart.endOf('week').format('MMM D')}`
     : null;
   const filtersActive = specialtyFilter !== ALL_SPECIALTIES || weekStart != null;
+  const hasFee = Boolean(pendingSlot && selectedDoctor && Number(selectedDoctor.hourly_rate) > 0);
 
   return (
+    <PayPalScriptProvider options={PAYPAL_OPTIONS} deferLoading={!PAYPAL_ENABLED}>
     <Container maxWidth="lg">
       <Stack spacing={3} marginTop={4} marginBottom={6}>
         <Typography variant="h4" component="h1">Find a doctor</Typography>
@@ -545,13 +555,60 @@ export default function PatientHomePage() {
               multiline
               minRows={2}
             />
+
+            {hasFee && (
+              <>
+                <Divider textAlign="left">
+                  <Typography variant="overline">Payment</Typography>
+                </Divider>
+                <Stack direction="row" justifyContent="space-between" alignItems="center">
+                  <Typography variant="body2" color="text.secondary">Consultation fee</Typography>
+                  <Typography variant="h6">${selectedDoctor.hourly_rate}</Typography>
+                </Stack>
+
+                {PAYPAL_ENABLED ? (
+                  <PayPalButtons
+                    style={{ layout: 'vertical', label: 'pay' }}
+                    disabled={booking}
+                    forceReRender={[pendingSlot?.id, selectedDoctor?.hourly_rate]}
+                    createOrder={(_data, actions) =>
+                      actions.order.create({
+                        purchase_units: [{
+                          amount: { value: String(selectedDoctor.hourly_rate), currency_code: 'USD' },
+                          description: `useCare consult — ${selectedDoctor.name}`,
+                        }],
+                      })
+                    }
+                    onApprove={(_data, actions) => actions.order.capture().then(() => confirmBooking({ paid: true }))}
+                    onError={() => { setToastSeverity('warning'); setToast('Payment failed — please try again.'); }}
+                  />
+                ) : (
+                  <>
+                    <Button
+                      variant="contained"
+                      disableElevation
+                      fullWidth
+                      onClick={() => confirmBooking({ paid: true })}
+                      disabled={booking}
+                    >
+                      {`Pay $${selectedDoctor.hourly_rate} (sandbox demo)`}
+                    </Button>
+                    <Typography variant="caption" color="text.secondary">
+                      Demo payment. Set VITE_PAYPAL_CLIENT_ID for live PayPal sandbox buttons.
+                    </Typography>
+                  </>
+                )}
+              </>
+            )}
           </Stack>
         </DialogContent>
         <DialogActions>
           <Button onClick={closeBookingDialog}>Cancel</Button>
-          <Button variant="contained" disableElevation onClick={confirmBooking} disabled={booking}>
-            Confirm
-          </Button>
+          {!hasFee && (
+            <Button variant="contained" disableElevation onClick={() => confirmBooking()} disabled={booking}>
+              Confirm
+            </Button>
+          )}
         </DialogActions>
       </Dialog>
 
@@ -564,5 +621,6 @@ export default function PatientHomePage() {
         <Alert severity={toastSeverity} onClose={() => setToast('')}>{toast}</Alert>
       </Snackbar>
     </Container>
+    </PayPalScriptProvider>
   );
 }
