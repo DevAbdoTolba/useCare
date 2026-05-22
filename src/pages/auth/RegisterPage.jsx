@@ -16,6 +16,7 @@ import {
 import { registerLocal } from '../../auth/localAuthStore.js';
 import { listSpecialties } from '../../api/specialties.js';
 import { addSpecialtySuggestion } from '../../lib/specialtySuggestionsStore.js';
+import DocumentInput, { isDocValue } from '../../components/common/DocumentInput.jsx';
 import { useAuth } from '../../hooks/useAuth.js';
 
 // Signup offers only female / male (no "other").
@@ -31,7 +32,6 @@ const HOME_BY_ROLE = {
 };
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const URL_PATTERN = /^https?:\/\/.+/i;
 
 // Non-breaking space: keeps the helperText line reserved so showing/clearing
 // a validation message never shifts the layout below the field.
@@ -292,16 +292,12 @@ export default function RegisterPage() {
             <Controller
               name="resume_url"
               control={control}
-              rules={{
-                required: 'A résumé link is required for doctors',
-                pattern: { value: URL_PATTERN, message: 'Enter a valid link (https://…)' },
-              }}
+              rules={{ validate: (v) => isDocValue(v) || 'Add a résumé — paste a link or upload a file' }}
               render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="Résumé / CV link"
-                  placeholder="https://…"
-                  fullWidth
+                <DocumentInput
+                  label="Résumé / CV"
+                  value={field.value}
+                  onChange={field.onChange}
                   error={Boolean(errors.resume_url)}
                   helperText={errors.resume_url?.message || 'The admin reviews this before approving you.'}
                 />
@@ -311,16 +307,12 @@ export default function RegisterPage() {
             <Controller
               name="license_url"
               control={control}
-              rules={{
-                required: 'A medical license link is required for doctors',
-                pattern: { value: URL_PATTERN, message: 'Enter a valid link (https://…)' },
-              }}
+              rules={{ validate: (v) => isDocValue(v) || 'Add your license — paste a link or upload a file' }}
               render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="Medical license link"
-                  placeholder="https://…"
-                  fullWidth
+                <DocumentInput
+                  label="Medical license"
+                  value={field.value}
+                  onChange={field.onChange}
                   error={Boolean(errors.license_url)}
                   helperText={errors.license_url?.message || 'Verified by the admin to confirm you can practice.'}
                 />

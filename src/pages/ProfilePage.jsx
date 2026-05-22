@@ -27,10 +27,9 @@ import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import { useAuth } from '../hooks/useAuth.js';
 import { listSpecialties } from '../api/specialties.js';
 import { addDocUpdateRequest, getPendingRequestForDoctor } from '../lib/docUpdateRequestsStore.js';
+import DocumentInput, { isDocValue } from '../components/common/DocumentInput.jsx';
 import { GENDERS } from '../schema/schema.js';
 import { initialOf } from '../lib/format.js';
-
-const URL_PATTERN = /^https?:\/\/.+/i;
 
 /** Editable form shape from the current user. */
 const formFrom = (u) => ({
@@ -72,8 +71,8 @@ export default function ProfilePage() {
 
   function submitDocRequest() {
     const { resume_url, license_url } = docForm;
-    if (!URL_PATTERN.test(resume_url) || !URL_PATTERN.test(license_url)) {
-      setDocError('Both links must be valid URLs (https://…).');
+    if (!isDocValue(resume_url) || !isDocValue(license_url)) {
+      setDocError('For each document, paste a link or upload a file.');
       return;
     }
     addDocUpdateRequest(user, docForm);
@@ -257,19 +256,15 @@ export default function ProfilePage() {
               New links go to the admin for approval — your current documents stay
               in place until they&apos;re reviewed.
             </Typography>
-            <TextField
-              label="Résumé / CV link"
-              placeholder="https://…"
+            <DocumentInput
+              label="Résumé / CV"
               value={docForm.resume_url}
-              onChange={(e) => setDocForm((f) => ({ ...f, resume_url: e.target.value }))}
-              fullWidth
+              onChange={(v) => setDocForm((f) => ({ ...f, resume_url: v }))}
             />
-            <TextField
-              label="Medical license link"
-              placeholder="https://…"
+            <DocumentInput
+              label="Medical license"
               value={docForm.license_url}
-              onChange={(e) => setDocForm((f) => ({ ...f, license_url: e.target.value }))}
-              fullWidth
+              onChange={(v) => setDocForm((f) => ({ ...f, license_url: v }))}
             />
             {docError && <Typography variant="caption" color="error">{docError}</Typography>}
           </Stack>
