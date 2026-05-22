@@ -336,6 +336,16 @@ export default function PatientHomePage() {
                   {selectedDoctor.description || 'No description provided.'}
                 </Typography>
 
+                {selectedDoctor.hourly_rate != null && (
+                  <Stack direction="row">
+                    <Chip
+                      label={`$${selectedDoctor.hourly_rate} / hour`}
+                      color="primary"
+                      variant="outlined"
+                    />
+                  </Stack>
+                )}
+
                 <Divider textAlign="left">
                   <Typography variant="overline">
                     Available appointments{weekLabel ? ` · ${weekLabel}` : ''}
