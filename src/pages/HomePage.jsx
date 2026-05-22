@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import {
   Typography,
   Button,
@@ -7,6 +8,10 @@ import {
   Card,
   CardContent,
   CardActions,
+  CardHeader,
+  Avatar,
+  Chip,
+  Rating,
   Divider,
 } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
@@ -15,8 +20,38 @@ import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
 import ScarfHeart from '../components/ScarfHeart.jsx';
 import AppHeader from '../components/layout/AppHeader.jsx';
+import { listDoctors } from '../api/users.js';
+import { listSpecialties } from '../api/specialties.js';
+import { getDoctorRating } from '../lib/ratingsStore.js';
+import { initialOf } from '../lib/format.js';
+
+// Guests get a teaser, not the full directory — keeps unauthenticated traffic
+// from hammering search. We show only the few best-rated doctors + the list
+// of specialties; the real browser lives behind login.
+const GUEST_DOCTOR_LIMIT = 3;
 
 export default function HomePage() {
+  const [topDoctors, setTopDoctors] = useState([]);
+  const [specialties, setSpecialties] = useState([]);
+
+  useEffect(() => {
+    let mounted = true;
+    Promise.all([listDoctors(), listSpecialties()])
+      .then(([docs, specs]) => {
+        if (!mounted) return;
+        const specList = Array.isArray(specs) ? specs : [];
+        setSpecialties(specList);
+        const specName = (id) => specList.find((s) => s.id === id)?.name ?? 'General';
+        const ranked = (Array.isArray(docs) ? docs : [])
+          .map((d) => ({ ...d, _rating: getDoctorRating(d.id), _specialty: specName(d.specialty_id) }))
+          .sort((a, b) => b._rating.average - a._rating.average)
+          .slice(0, GUEST_DOCTOR_LIMIT);
+        setTopDoctors(ranked);
+      })
+      .catch(() => { if (mounted) { setTopDoctors([]); setSpecialties([]); } });
+    return () => { mounted = false; };
+  }, []);
+
   return (
     <>
       <AppHeader />
@@ -112,6 +147,60 @@ export default function HomePage() {
               </CardActions>
             </Card>
           </Stack>
+        </Container>
+      </Box>
+
+      <Divider />
+
+      {/* SECTION 2.5 — guest teaser: a few top doctors + our specialties */}
+      <Box paddingY={8}>
+        <Container maxWidth="md">
+          <Stack spacing={1} textAlign="center" marginBottom={4}>
+            <Typography variant="h4" component="h2">Meet a few of our doctors</Typography>
+            <Typography variant="body1" color="text.secondary">
+              A taste of the directory — sign in to browse everyone and book.
+            </Typography>
+          </Stack>
+
+          {topDoctors.length > 0 && (
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={3} justifyContent="center">
+              {topDoctors.map((doc) => (
+                <Card key={doc.id} variant="outlined">
+                  <CardHeader
+                    avatar={<Avatar>{initialOf(doc.name)}</Avatar>}
+                    title={doc.name}
+                    subheader={doc._specialty}
+                  />
+                  <CardContent>
+                    <Stack spacing={1}>
+                      {doc._rating.count > 0 ? (
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <Rating value={doc._rating.average} readOnly precision={0.5} size="small" />
+                          <Typography variant="caption" color="text.secondary">({doc._rating.count})</Typography>
+                        </Stack>
+                      ) : (
+                        <Typography variant="caption" color="text.secondary">New to useCare</Typography>
+                      )}
+                      {doc.hourly_rate != null && (
+                        <Typography variant="body2" color="text.secondary">${doc.hourly_rate} / hour</Typography>
+                      )}
+                    </Stack>
+                  </CardContent>
+                </Card>
+              ))}
+            </Stack>
+          )}
+
+          {specialties.length > 0 && (
+            <Stack spacing={2} marginTop={6} alignItems="center">
+              <Typography variant="overline" color="text.secondary">Specialties we cover</Typography>
+              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap justifyContent="center">
+                {specialties.map((s) => (
+                  <Chip key={s.id} label={s.name} variant="outlined" />
+                ))}
+              </Stack>
+            </Stack>
+          )}
         </Container>
       </Box>
 
