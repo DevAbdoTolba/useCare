@@ -5,8 +5,8 @@ entities (User / Specialty / Appointments) keep the diagram's field names
 (`U_*`, `S_*`, `A_*`).
 
 Everything tagged **(post-discussion)** was added after the lecturer review:
-verification docs + hourly rate on the doctor, plus the new Rating, Payment and
-SpecialtySuggestion entities.
+verification docs + hourly rate on the doctor, plus the new Rating, Payment,
+SpecialtySuggestion and DocUpdateRequest entities.
 
 ```mermaid
 erDiagram
@@ -23,6 +23,8 @@ erDiagram
 
     USER ||--o{ SPECIALTY_SUGGESTION : "proposes — doctor (1:N)"
     SPECIALTY_SUGGESTION }o--|| SPECIALTY : "becomes on approval"
+
+    USER ||--o{ DOC_UPDATE_REQUEST : "requests — doctor (1:N)"
 
     USER {
         int U_id PK
@@ -83,6 +85,15 @@ erDiagram
         string proposed_by "doctor email"
         string status "pending / approved / rejected"
     }
+
+    DOC_UPDATE_REQUEST {
+        int id PK
+        int doctor_id FK
+        string doctor_name "denormalised for the admin list"
+        string resume_url "proposed — link or data URL (uploaded file)"
+        string license_url "proposed — link or data URL (uploaded file)"
+        string status "pending / approved / rejected"
+    }
 ```
 
 ## Relationships
@@ -97,11 +108,13 @@ erDiagram
 | Appointments | Payment | Paid for | each appointment → at most one payment *(post-discussion)* |
 | User | Payment | Pays | one patient → many payments; platform keeps a 12% cut *(post-discussion)* |
 | User | SpecialtySuggestion | Proposes | a doctor proposes specialties the admin approves into Specialty *(post-discussion)* |
+| User | DocUpdateRequest | Requests | a doctor files résumé/license changes the admin approves back onto User *(post-discussion)* |
 
 ## Notes on the additions
 
 - **U_resume_url / U_license_url** — required at doctor signup; the admin opens
-  both before approving or rejecting the account.
+  both before approving or rejecting the account. Each field stores either a
+  link (`https://…`) or a `data:` URL when the doctor uploaded a file directly.
 - **U_hourly_rate** — the consultation fee shown to patients and charged through
   the PayPal sandbox at booking time.
 - **Payment** — `amount_paid` on the appointment is the per-booking record;
@@ -109,3 +122,6 @@ erDiagram
   platform revenue).
 - **SpecialtySuggestion** — a doctor whose specialty isn't listed proposes one;
   approving it creates a real `Specialty`.
+- **DocUpdateRequest** — already-approved doctors can't silently swap their
+  résumé/license. They file a `DocUpdateRequest`; admin approval patches the
+  matching `U_resume_url` / `U_license_url` back onto `User`.
