@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" pages="2">
+<mxfile host="app.diagrams.net" pages="3">
   <diagram name="ERD" id="JtUAmj0C53khmd_sOSad">
     <mxGraphModel dx="4490" dy="2733" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
@@ -190,6 +190,74 @@
             <mxGeometry height="171" width="346" x="50" y="230" as="geometry" />
           </mxCell>
         </UserObject>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="ERD — post-discussion" id="POSTDISC_ERD_2026">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="pd-note" value="ERD — post-discussion additions. Page 1 is the lecturer's original; this page layers Rating, Payment, SpecialtySuggestion and DocUpdateRequest plus the new doctor / appointment fields. Items marked * are new." style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=2;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="40" y="10" width="780" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="pd-legend" value="&lt;b&gt;Legend&lt;/b&gt;&lt;br/&gt;* = added post-discussion&lt;br/&gt;solid edge = owns / creates&lt;br/&gt;dashed edge = patches / derived on approval" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=11;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="60" y="80" width="260" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="pd-user" value="&lt;b&gt;USER&lt;/b&gt;&lt;br/&gt;U_id (PK)&lt;br/&gt;U_name&lt;br/&gt;U_role&lt;br/&gt;U_status&lt;br/&gt;U_resume_url *&lt;br/&gt;U_license_url *&lt;br/&gt;U_hourly_rate *&lt;br/&gt;S_id (FK)" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingTop=6;spacingLeft=10;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="340" y="180" width="200" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="pd-appt" value="&lt;b&gt;APPOINTMENTS&lt;/b&gt;&lt;br/&gt;A_id (PK)&lt;br/&gt;A_date&lt;br/&gt;A_time&lt;br/&gt;A_status&lt;br/&gt;A_notes&lt;br/&gt;A_paid *&lt;br/&gt;A_amount_paid *&lt;br/&gt;patient_id (FK)&lt;br/&gt;doctor_id (FK)" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingTop=6;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="60" y="440" width="220" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="pd-spec" value="&lt;b&gt;SPECIALTY&lt;/b&gt;&lt;br/&gt;S_id (PK)&lt;br/&gt;S_name&lt;br/&gt;S_desc" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingTop=6;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="600" y="440" width="200" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="pd-rating" value="&lt;b&gt;RATING *&lt;/b&gt;&lt;br/&gt;appointment_id (PK, FK)&lt;br/&gt;doctor_id (FK)&lt;br/&gt;patient_id (FK)&lt;br/&gt;stars (1..5)&lt;br/&gt;comment" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingTop=6;spacingLeft=10;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="60" y="740" width="220" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="pd-payment" value="&lt;b&gt;PAYMENT *&lt;/b&gt;&lt;br/&gt;id (PK)&lt;br/&gt;appointment_id (FK)&lt;br/&gt;patient_id (FK)&lt;br/&gt;doctor_id (FK)&lt;br/&gt;amount (USD)&lt;br/&gt;status&lt;br/&gt;date" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingTop=6;spacingLeft=10;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="340" y="740" width="220" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="pd-sugg" value="&lt;b&gt;SPECIALTY_SUGGESTION *&lt;/b&gt;&lt;br/&gt;id (PK)&lt;br/&gt;name (proposed)&lt;br/&gt;proposed_by (doctor email)&lt;br/&gt;status" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingTop=6;spacingLeft=10;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="600" y="740" width="220" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="pd-docreq" value="&lt;b&gt;DOC_UPDATE_REQUEST *&lt;/b&gt;&lt;br/&gt;id (PK)&lt;br/&gt;doctor_id (FK)&lt;br/&gt;doctor_name&lt;br/&gt;resume_url&lt;br/&gt;license_url&lt;br/&gt;status" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingTop=6;spacingLeft=10;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="600" y="180" width="220" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="pd-e1" edge="1" parent="1" source="pd-user" target="pd-appt" value="books (1:N) — patient" style="endArrow=classic;html=1;rounded=1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pd-e2" edge="1" parent="1" source="pd-user" target="pd-appt" value="manages (1:N) — doctor" style="endArrow=classic;html=1;rounded=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.75;entryY=0;entryDx=0;entryDy=0;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pd-e3" edge="1" parent="1" source="pd-spec" target="pd-user" value="has (N:1)" style="endArrow=classic;html=1;rounded=1;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pd-e4" edge="1" parent="1" source="pd-appt" target="pd-rating" value="rated (1:0..1) *" style="endArrow=classic;html=1;rounded=1;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pd-e5" edge="1" parent="1" source="pd-user" target="pd-rating" value="receives / leaves *" style="endArrow=classic;html=1;rounded=1;dashed=1;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pd-e6" edge="1" parent="1" source="pd-appt" target="pd-payment" value="paid for (1:0..1) *" style="endArrow=classic;html=1;rounded=1;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pd-e7" edge="1" parent="1" source="pd-user" target="pd-payment" value="pays — patient *" style="endArrow=classic;html=1;rounded=1;dashed=1;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pd-e8" edge="1" parent="1" source="pd-user" target="pd-sugg" value="proposes — doctor *" style="endArrow=classic;html=1;rounded=1;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pd-e9" edge="1" parent="1" source="pd-sugg" target="pd-spec" value="becomes on approval *" style="endArrow=classic;html=1;rounded=1;dashed=1;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pd-e10" edge="1" parent="1" source="pd-user" target="pd-docreq" value="requests — doctor *" style="endArrow=classic;html=1;rounded=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pd-e11" edge="1" parent="1" source="pd-docreq" target="pd-user" value="patches U_resume_url / U_license_url on approval *" style="endArrow=classic;html=1;rounded=1;dashed=1;exitX=0;exitY=0.25;exitDx=0;exitDy=0;entryX=1;entryY=0.25;entryDx=0;entryDy=0;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
