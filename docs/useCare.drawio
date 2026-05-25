@@ -194,70 +194,110 @@
     </mxGraphModel>
   </diagram>
   <diagram name="ERD — post-discussion" id="POSTDISC_ERD_2026">
-    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="2000" dy="1500" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1900" pageHeight="1500" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="pd-note" value="ERD — post-discussion additions. Page 1 is the lecturer's original; this page layers Rating, Payment, SpecialtySuggestion and DocUpdateRequest plus the new doctor / appointment fields. Items marked * are new." style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=2;fillColor=none;strokeColor=none;" vertex="1" parent="1">
-          <mxGeometry x="40" y="10" width="780" height="60" as="geometry" />
+        <mxCell id="pd2-note" value="ERD — post-discussion additions. Same Chen-style notation as page 1 (rounded rectangle = entity, ellipse = attribute, rhombus = relationship, edge labels = cardinality). Items marked * were added after the lecturer review." style="text;html=1;align=center;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=2;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="40" y="10" width="1820" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="pd-legend" value="&lt;b&gt;Legend&lt;/b&gt;&lt;br/&gt;* = added post-discussion&lt;br/&gt;solid edge = owns / creates&lt;br/&gt;dashed edge = patches / derived on approval" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=11;fillColor=none;strokeColor=none;" vertex="1" parent="1">
-          <mxGeometry x="60" y="80" width="260" height="80" as="geometry" />
-        </mxCell>
-        <mxCell id="pd-user" value="&lt;b&gt;USER&lt;/b&gt;&lt;br/&gt;U_id (PK)&lt;br/&gt;U_name&lt;br/&gt;U_role&lt;br/&gt;U_status&lt;br/&gt;U_resume_url *&lt;br/&gt;U_license_url *&lt;br/&gt;U_hourly_rate *&lt;br/&gt;S_id (FK)" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingTop=6;spacingLeft=10;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
-          <mxGeometry x="340" y="180" width="200" height="200" as="geometry" />
-        </mxCell>
-        <mxCell id="pd-appt" value="&lt;b&gt;APPOINTMENTS&lt;/b&gt;&lt;br/&gt;A_id (PK)&lt;br/&gt;A_date&lt;br/&gt;A_time&lt;br/&gt;A_status&lt;br/&gt;A_notes&lt;br/&gt;A_paid *&lt;br/&gt;A_amount_paid *&lt;br/&gt;patient_id (FK)&lt;br/&gt;doctor_id (FK)" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingTop=6;spacingLeft=10;" vertex="1" parent="1">
-          <mxGeometry x="60" y="440" width="220" height="220" as="geometry" />
-        </mxCell>
-        <mxCell id="pd-spec" value="&lt;b&gt;SPECIALTY&lt;/b&gt;&lt;br/&gt;S_id (PK)&lt;br/&gt;S_name&lt;br/&gt;S_desc" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingTop=6;spacingLeft=10;" vertex="1" parent="1">
-          <mxGeometry x="600" y="440" width="200" height="120" as="geometry" />
-        </mxCell>
-        <mxCell id="pd-rating" value="&lt;b&gt;RATING *&lt;/b&gt;&lt;br/&gt;appointment_id (PK, FK)&lt;br/&gt;doctor_id (FK)&lt;br/&gt;patient_id (FK)&lt;br/&gt;stars (1..5)&lt;br/&gt;comment" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingTop=6;spacingLeft=10;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
-          <mxGeometry x="60" y="740" width="220" height="140" as="geometry" />
-        </mxCell>
-        <mxCell id="pd-payment" value="&lt;b&gt;PAYMENT *&lt;/b&gt;&lt;br/&gt;id (PK)&lt;br/&gt;appointment_id (FK)&lt;br/&gt;patient_id (FK)&lt;br/&gt;doctor_id (FK)&lt;br/&gt;amount (USD)&lt;br/&gt;status&lt;br/&gt;date" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingTop=6;spacingLeft=10;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
-          <mxGeometry x="340" y="740" width="220" height="160" as="geometry" />
-        </mxCell>
-        <mxCell id="pd-sugg" value="&lt;b&gt;SPECIALTY_SUGGESTION *&lt;/b&gt;&lt;br/&gt;id (PK)&lt;br/&gt;name (proposed)&lt;br/&gt;proposed_by (doctor email)&lt;br/&gt;status" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingTop=6;spacingLeft=10;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
-          <mxGeometry x="600" y="740" width="220" height="130" as="geometry" />
-        </mxCell>
-        <mxCell id="pd-docreq" value="&lt;b&gt;DOC_UPDATE_REQUEST *&lt;/b&gt;&lt;br/&gt;id (PK)&lt;br/&gt;doctor_id (FK)&lt;br/&gt;doctor_name&lt;br/&gt;resume_url&lt;br/&gt;license_url&lt;br/&gt;status" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingTop=6;spacingLeft=10;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
-          <mxGeometry x="600" y="180" width="220" height="170" as="geometry" />
-        </mxCell>
-        <mxCell id="pd-e1" edge="1" parent="1" source="pd-user" target="pd-appt" value="books (1:N) — patient" style="endArrow=classic;html=1;rounded=1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="pd-e2" edge="1" parent="1" source="pd-user" target="pd-appt" value="manages (1:N) — doctor" style="endArrow=classic;html=1;rounded=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.75;entryY=0;entryDx=0;entryDy=0;">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="pd-e3" edge="1" parent="1" source="pd-spec" target="pd-user" value="has (N:1)" style="endArrow=classic;html=1;rounded=1;">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="pd-e4" edge="1" parent="1" source="pd-appt" target="pd-rating" value="rated (1:0..1) *" style="endArrow=classic;html=1;rounded=1;">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="pd-e5" edge="1" parent="1" source="pd-user" target="pd-rating" value="receives / leaves *" style="endArrow=classic;html=1;rounded=1;dashed=1;">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="pd-e6" edge="1" parent="1" source="pd-appt" target="pd-payment" value="paid for (1:0..1) *" style="endArrow=classic;html=1;rounded=1;">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="pd-e7" edge="1" parent="1" source="pd-user" target="pd-payment" value="pays — patient *" style="endArrow=classic;html=1;rounded=1;dashed=1;">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="pd-e8" edge="1" parent="1" source="pd-user" target="pd-sugg" value="proposes — doctor *" style="endArrow=classic;html=1;rounded=1;">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="pd-e9" edge="1" parent="1" source="pd-sugg" target="pd-spec" value="becomes on approval *" style="endArrow=classic;html=1;rounded=1;dashed=1;">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="pd-e10" edge="1" parent="1" source="pd-user" target="pd-docreq" value="requests — doctor *" style="endArrow=classic;html=1;rounded=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="pd-e11" edge="1" parent="1" source="pd-docreq" target="pd-user" value="patches U_resume_url / U_license_url on approval *" style="endArrow=classic;html=1;rounded=1;dashed=1;exitX=0;exitY=0.25;exitDx=0;exitDy=0;entryX=1;entryY=0.25;entryDx=0;entryDy=0;">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
+        <mxCell id="pd2-user" value="User" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="700" y="380" width="120" height="50" as="geometry" /></mxCell>
+        <mxCell id="pd2-appt" value="Appointments" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="200" y="720" width="120" height="50" as="geometry" /></mxCell>
+        <mxCell id="pd2-spec" value="specialty" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="1450" y="720" width="120" height="50" as="geometry" /></mxCell>
+        <mxCell id="pd2-rating" value="Rating *" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="200" y="1120" width="120" height="50" as="geometry" /></mxCell>
+        <mxCell id="pd2-payment" value="Payment *" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="700" y="1120" width="120" height="50" as="geometry" /></mxCell>
+        <mxCell id="pd2-sugg" value="SpecialtySuggestion *" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="1380" y="1120" width="200" height="50" as="geometry" /></mxCell>
+        <mxCell id="pd2-docreq" value="DocUpdateRequest *" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="1280" y="280" width="200" height="50" as="geometry" /></mxCell>
+        <mxCell id="pd2-u-status" value="U_status" style="ellipse;whiteSpace=wrap;html=1;align=center;" vertex="1" parent="1"><mxGeometry x="740" y="230" width="100" height="40" as="geometry" /></mxCell>
+        <mxCell id="pd2-u-resume" value="U_resume_url *" style="ellipse;whiteSpace=wrap;html=1;align=center;" vertex="1" parent="1"><mxGeometry x="560" y="250" width="130" height="40" as="geometry" /></mxCell>
+        <mxCell id="pd2-u-license" value="U_license_url *" style="ellipse;whiteSpace=wrap;html=1;align=center;" vertex="1" parent="1"><mxGeometry x="870" y="250" width="130" height="40" as="geometry" /></mxCell>
+        <mxCell id="pd2-u-rate" value="U_hourly_rate *" style="ellipse;whiteSpace=wrap;html=1;align=center;" vertex="1" parent="1"><mxGeometry x="510" y="460" width="130" height="40" as="geometry" /></mxCell>
+        <mxCell id="pd2-a-paid" value="A_paid *" style="ellipse;whiteSpace=wrap;html=1;align=center;" vertex="1" parent="1"><mxGeometry x="80" y="640" width="100" height="40" as="geometry" /></mxCell>
+        <mxCell id="pd2-a-amount" value="A_amount_paid *" style="ellipse;whiteSpace=wrap;html=1;align=center;" vertex="1" parent="1"><mxGeometry x="60" y="820" width="140" height="40" as="geometry" /></mxCell>
+        <mxCell id="pd2-r-apptid" value="appointment_id (PK,FK)" style="ellipse;whiteSpace=wrap;html=1;align=center;" vertex="1" parent="1"><mxGeometry x="20" y="1030" width="170" height="40" as="geometry" /></mxCell>
+        <mxCell id="pd2-r-docid" value="doctor_id (FK)" style="ellipse;whiteSpace=wrap;html=1;align=center;" vertex="1" parent="1"><mxGeometry x="20" y="1180" width="130" height="40" as="geometry" /></mxCell>
+        <mxCell id="pd2-r-patid" value="patient_id (FK)" style="ellipse;whiteSpace=wrap;html=1;align=center;" vertex="1" parent="1"><mxGeometry x="20" y="1280" width="130" height="40" as="geometry" /></mxCell>
+        <mxCell id="pd2-r-stars" value="stars (1..5)" style="ellipse;whiteSpace=wrap;html=1;align=center;" vertex="1" parent="1"><mxGeometry x="360" y="1120" width="100" height="40" as="geometry" /></mxCell>
+        <mxCell id="pd2-r-comment" value="comment" style="ellipse;whiteSpace=wrap;html=1;align=center;" vertex="1" parent="1"><mxGeometry x="360" y="1230" width="100" height="40" as="geometry" /></mxCell>
+        <mxCell id="pd2-p-id" value="id (PK)" style="ellipse;whiteSpace=wrap;html=1;align=center;" vertex="1" parent="1"><mxGeometry x="610" y="1030" width="80" height="40" as="geometry" /></mxCell>
+        <mxCell id="pd2-p-amount" value="amount (USD)" style="ellipse;whiteSpace=wrap;html=1;align=center;" vertex="1" parent="1"><mxGeometry x="870" y="1030" width="120" height="40" as="geometry" /></mxCell>
+        <mxCell id="pd2-p-status" value="status" style="ellipse;whiteSpace=wrap;html=1;align=center;" vertex="1" parent="1"><mxGeometry x="870" y="1130" width="80" height="40" as="geometry" /></mxCell>
+        <mxCell id="pd2-p-date" value="date" style="ellipse;whiteSpace=wrap;html=1;align=center;" vertex="1" parent="1"><mxGeometry x="870" y="1230" width="80" height="40" as="geometry" /></mxCell>
+        <mxCell id="pd2-s-id" value="id (PK)" style="ellipse;whiteSpace=wrap;html=1;align=center;" vertex="1" parent="1"><mxGeometry x="1290" y="1040" width="80" height="40" as="geometry" /></mxCell>
+        <mxCell id="pd2-s-name" value="name" style="ellipse;whiteSpace=wrap;html=1;align=center;" vertex="1" parent="1"><mxGeometry x="1450" y="1040" width="80" height="40" as="geometry" /></mxCell>
+        <mxCell id="pd2-s-proposer" value="proposed_by" style="ellipse;whiteSpace=wrap;html=1;align=center;" vertex="1" parent="1"><mxGeometry x="1620" y="1130" width="120" height="40" as="geometry" /></mxCell>
+        <mxCell id="pd2-s-status" value="status" style="ellipse;whiteSpace=wrap;html=1;align=center;" vertex="1" parent="1"><mxGeometry x="1480" y="1230" width="80" height="40" as="geometry" /></mxCell>
+        <mxCell id="pd2-d-id" value="id (PK)" style="ellipse;whiteSpace=wrap;html=1;align=center;" vertex="1" parent="1"><mxGeometry x="1180" y="170" width="80" height="40" as="geometry" /></mxCell>
+        <mxCell id="pd2-d-docid" value="doctor_id (FK)" style="ellipse;whiteSpace=wrap;html=1;align=center;" vertex="1" parent="1"><mxGeometry x="1290" y="170" width="120" height="40" as="geometry" /></mxCell>
+        <mxCell id="pd2-d-docname" value="doctor_name" style="ellipse;whiteSpace=wrap;html=1;align=center;" vertex="1" parent="1"><mxGeometry x="1430" y="170" width="110" height="40" as="geometry" /></mxCell>
+        <mxCell id="pd2-d-resume" value="resume_url" style="ellipse;whiteSpace=wrap;html=1;align=center;" vertex="1" parent="1"><mxGeometry x="1540" y="270" width="100" height="40" as="geometry" /></mxCell>
+        <mxCell id="pd2-d-license" value="license_url" style="ellipse;whiteSpace=wrap;html=1;align=center;" vertex="1" parent="1"><mxGeometry x="1540" y="360" width="100" height="40" as="geometry" /></mxCell>
+        <mxCell id="pd2-d-status" value="status" style="ellipse;whiteSpace=wrap;html=1;align=center;" vertex="1" parent="1"><mxGeometry x="1390" y="380" width="80" height="40" as="geometry" /></mxCell>
+        <mxCell id="pd2-rel-has" value="Has" style="shape=rhombus;perimeter=rhombusPerimeter;whiteSpace=wrap;html=1;align=center;fontFamily=Helvetica;fontSize=11;" vertex="1" parent="1"><mxGeometry x="1080" y="590" width="120" height="60" as="geometry" /></mxCell>
+        <mxCell id="pd2-rel-book" value="Book" style="shape=rhombus;perimeter=rhombusPerimeter;whiteSpace=wrap;html=1;align=center;fontFamily=Helvetica;fontSize=11;" vertex="1" parent="1"><mxGeometry x="380" y="510" width="120" height="60" as="geometry" /></mxCell>
+        <mxCell id="pd2-rel-manage" value="Manage" style="shape=rhombus;perimeter=rhombusPerimeter;whiteSpace=wrap;html=1;align=center;fontFamily=Helvetica;fontSize=11;" vertex="1" parent="1"><mxGeometry x="550" y="590" width="120" height="60" as="geometry" /></mxCell>
+        <mxCell id="pd2-rel-rates" value="Rates *" style="shape=rhombus;perimeter=rhombusPerimeter;whiteSpace=wrap;html=1;align=center;fontFamily=Helvetica;fontSize=11;" vertex="1" parent="1"><mxGeometry x="200" y="910" width="120" height="60" as="geometry" /></mxCell>
+        <mxCell id="pd2-rel-paysfor" value="Pays_for *" style="shape=rhombus;perimeter=rhombusPerimeter;whiteSpace=wrap;html=1;align=center;fontFamily=Helvetica;fontSize=11;" vertex="1" parent="1"><mxGeometry x="500" y="930" width="120" height="60" as="geometry" /></mxCell>
+        <mxCell id="pd2-rel-proposes" value="Proposes *" style="shape=rhombus;perimeter=rhombusPerimeter;whiteSpace=wrap;html=1;align=center;fontFamily=Helvetica;fontSize=11;" vertex="1" parent="1"><mxGeometry x="1080" y="880" width="120" height="60" as="geometry" /></mxCell>
+        <mxCell id="pd2-rel-becomes" value="Becomes *" style="shape=rhombus;perimeter=rhombusPerimeter;whiteSpace=wrap;html=1;align=center;fontFamily=Helvetica;fontSize=11;dashed=1;" vertex="1" parent="1"><mxGeometry x="1480" y="940" width="120" height="60" as="geometry" /></mxCell>
+        <mxCell id="pd2-rel-requests" value="Requests *" style="shape=rhombus;perimeter=rhombusPerimeter;whiteSpace=wrap;html=1;align=center;fontFamily=Helvetica;fontSize=11;" vertex="1" parent="1"><mxGeometry x="1040" y="310" width="120" height="60" as="geometry" /></mxCell>
+        <mxCell id="pd2-eh1" edge="1" parent="1" source="pd2-rel-has" target="pd2-user" style="edgeStyle=orthogonalEdgeStyle;shape=connector;curved=1;rounded=0;html=1;endArrow=none;endFill=0;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="pd2-eh1-l" connectable="0" parent="pd2-eh1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontFamily=Helvetica;fontSize=11;" value="N" vertex="1"><mxGeometry relative="1" x="0.6" as="geometry"><mxPoint as="offset" /></mxGeometry></mxCell>
+        <mxCell id="pd2-eh2" edge="1" parent="1" source="pd2-rel-has" target="pd2-spec" style="edgeStyle=orthogonalEdgeStyle;shape=connector;curved=1;rounded=0;html=1;endArrow=none;endFill=0;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="pd2-eh2-l" connectable="0" parent="pd2-eh2" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontFamily=Helvetica;fontSize=11;" value="1" vertex="1"><mxGeometry relative="1" x="-0.6" as="geometry"><mxPoint as="offset" /></mxGeometry></mxCell>
+        <mxCell id="pd2-eb1" edge="1" parent="1" source="pd2-rel-book" target="pd2-user" style="edgeStyle=orthogonalEdgeStyle;shape=connector;curved=1;rounded=0;html=1;endArrow=none;endFill=0;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="pd2-eb1-l" connectable="0" parent="pd2-eb1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontFamily=Helvetica;fontSize=11;" value="1" vertex="1"><mxGeometry relative="1" x="0.6" as="geometry"><mxPoint as="offset" /></mxGeometry></mxCell>
+        <mxCell id="pd2-eb2" edge="1" parent="1" source="pd2-rel-book" target="pd2-appt" style="edgeStyle=orthogonalEdgeStyle;shape=connector;curved=1;rounded=0;html=1;endArrow=none;endFill=0;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="pd2-eb2-l" connectable="0" parent="pd2-eb2" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontFamily=Helvetica;fontSize=11;" value="N" vertex="1"><mxGeometry relative="1" x="-0.6" as="geometry"><mxPoint as="offset" /></mxGeometry></mxCell>
+        <mxCell id="pd2-em1" edge="1" parent="1" source="pd2-rel-manage" target="pd2-user" style="edgeStyle=orthogonalEdgeStyle;shape=connector;curved=1;rounded=0;html=1;endArrow=none;endFill=0;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="pd2-em1-l" connectable="0" parent="pd2-em1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontFamily=Helvetica;fontSize=11;" value="1" vertex="1"><mxGeometry relative="1" x="0.6" as="geometry"><mxPoint as="offset" /></mxGeometry></mxCell>
+        <mxCell id="pd2-em2" edge="1" parent="1" source="pd2-rel-manage" target="pd2-appt" style="edgeStyle=orthogonalEdgeStyle;shape=connector;curved=1;rounded=0;html=1;endArrow=none;endFill=0;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="pd2-em2-l" connectable="0" parent="pd2-em2" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontFamily=Helvetica;fontSize=11;" value="N" vertex="1"><mxGeometry relative="1" x="-0.6" as="geometry"><mxPoint as="offset" /></mxGeometry></mxCell>
+        <mxCell id="pd2-er1" edge="1" parent="1" source="pd2-rel-rates" target="pd2-appt" style="edgeStyle=orthogonalEdgeStyle;shape=connector;curved=1;rounded=0;html=1;endArrow=none;endFill=0;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="pd2-er1-l" connectable="0" parent="pd2-er1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontFamily=Helvetica;fontSize=11;" value="1" vertex="1"><mxGeometry relative="1" x="0.6" as="geometry"><mxPoint as="offset" /></mxGeometry></mxCell>
+        <mxCell id="pd2-er2" edge="1" parent="1" source="pd2-rel-rates" target="pd2-rating" style="edgeStyle=orthogonalEdgeStyle;shape=connector;curved=1;rounded=0;html=1;endArrow=none;endFill=0;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="pd2-er2-l" connectable="0" parent="pd2-er2" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontFamily=Helvetica;fontSize=11;" value="0..1" vertex="1"><mxGeometry relative="1" x="-0.6" as="geometry"><mxPoint as="offset" /></mxGeometry></mxCell>
+        <mxCell id="pd2-ep1" edge="1" parent="1" source="pd2-rel-paysfor" target="pd2-appt" style="edgeStyle=orthogonalEdgeStyle;shape=connector;curved=1;rounded=0;html=1;endArrow=none;endFill=0;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="pd2-ep1-l" connectable="0" parent="pd2-ep1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontFamily=Helvetica;fontSize=11;" value="1" vertex="1"><mxGeometry relative="1" x="0.6" as="geometry"><mxPoint as="offset" /></mxGeometry></mxCell>
+        <mxCell id="pd2-ep2" edge="1" parent="1" source="pd2-rel-paysfor" target="pd2-payment" style="edgeStyle=orthogonalEdgeStyle;shape=connector;curved=1;rounded=0;html=1;endArrow=none;endFill=0;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="pd2-ep2-l" connectable="0" parent="pd2-ep2" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontFamily=Helvetica;fontSize=11;" value="0..1" vertex="1"><mxGeometry relative="1" x="-0.6" as="geometry"><mxPoint as="offset" /></mxGeometry></mxCell>
+        <mxCell id="pd2-epr1" edge="1" parent="1" source="pd2-rel-proposes" target="pd2-user" style="edgeStyle=orthogonalEdgeStyle;shape=connector;curved=1;rounded=0;html=1;endArrow=none;endFill=0;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="pd2-epr1-l" connectable="0" parent="pd2-epr1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontFamily=Helvetica;fontSize=11;" value="1" vertex="1"><mxGeometry relative="1" x="0.6" as="geometry"><mxPoint as="offset" /></mxGeometry></mxCell>
+        <mxCell id="pd2-epr2" edge="1" parent="1" source="pd2-rel-proposes" target="pd2-sugg" style="edgeStyle=orthogonalEdgeStyle;shape=connector;curved=1;rounded=0;html=1;endArrow=none;endFill=0;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="pd2-epr2-l" connectable="0" parent="pd2-epr2" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontFamily=Helvetica;fontSize=11;" value="N" vertex="1"><mxGeometry relative="1" x="-0.6" as="geometry"><mxPoint as="offset" /></mxGeometry></mxCell>
+        <mxCell id="pd2-ebc1" edge="1" parent="1" source="pd2-rel-becomes" target="pd2-sugg" style="edgeStyle=orthogonalEdgeStyle;shape=connector;curved=1;rounded=0;html=1;endArrow=none;endFill=0;dashed=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="pd2-ebc1-l" connectable="0" parent="pd2-ebc1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontFamily=Helvetica;fontSize=11;" value="N" vertex="1"><mxGeometry relative="1" x="0.6" as="geometry"><mxPoint as="offset" /></mxGeometry></mxCell>
+        <mxCell id="pd2-ebc2" edge="1" parent="1" source="pd2-rel-becomes" target="pd2-spec" style="edgeStyle=orthogonalEdgeStyle;shape=connector;curved=1;rounded=0;html=1;endArrow=none;endFill=0;dashed=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="pd2-ebc2-l" connectable="0" parent="pd2-ebc2" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontFamily=Helvetica;fontSize=11;" value="1" vertex="1"><mxGeometry relative="1" x="-0.6" as="geometry"><mxPoint as="offset" /></mxGeometry></mxCell>
+        <mxCell id="pd2-erq1" edge="1" parent="1" source="pd2-rel-requests" target="pd2-user" style="edgeStyle=orthogonalEdgeStyle;shape=connector;curved=1;rounded=0;html=1;endArrow=none;endFill=0;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="pd2-erq1-l" connectable="0" parent="pd2-erq1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontFamily=Helvetica;fontSize=11;" value="1" vertex="1"><mxGeometry relative="1" x="0.6" as="geometry"><mxPoint as="offset" /></mxGeometry></mxCell>
+        <mxCell id="pd2-erq2" edge="1" parent="1" source="pd2-rel-requests" target="pd2-docreq" style="edgeStyle=orthogonalEdgeStyle;shape=connector;curved=1;rounded=0;html=1;endArrow=none;endFill=0;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="pd2-erq2-l" connectable="0" parent="pd2-erq2" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontFamily=Helvetica;fontSize=11;" value="N" vertex="1"><mxGeometry relative="1" x="-0.6" as="geometry"><mxPoint as="offset" /></mxGeometry></mxCell>
+        <mxCell id="pd2-ua1" edge="1" parent="1" source="pd2-user" target="pd2-u-status" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;curved=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="pd2-ua2" edge="1" parent="1" source="pd2-user" target="pd2-u-resume" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;curved=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="pd2-ua3" edge="1" parent="1" source="pd2-user" target="pd2-u-license" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;curved=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="pd2-ua4" edge="1" parent="1" source="pd2-user" target="pd2-u-rate" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;curved=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="pd2-aa1" edge="1" parent="1" source="pd2-appt" target="pd2-a-paid" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;curved=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="pd2-aa2" edge="1" parent="1" source="pd2-appt" target="pd2-a-amount" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;curved=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="pd2-ra1" edge="1" parent="1" source="pd2-rating" target="pd2-r-apptid" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;curved=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="pd2-ra2" edge="1" parent="1" source="pd2-rating" target="pd2-r-docid" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;curved=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="pd2-ra3" edge="1" parent="1" source="pd2-rating" target="pd2-r-patid" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;curved=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="pd2-ra4" edge="1" parent="1" source="pd2-rating" target="pd2-r-stars" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;curved=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="pd2-ra5" edge="1" parent="1" source="pd2-rating" target="pd2-r-comment" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;curved=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="pd2-pa1" edge="1" parent="1" source="pd2-payment" target="pd2-p-id" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;curved=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="pd2-pa2" edge="1" parent="1" source="pd2-payment" target="pd2-p-amount" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;curved=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="pd2-pa3" edge="1" parent="1" source="pd2-payment" target="pd2-p-status" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;curved=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="pd2-pa4" edge="1" parent="1" source="pd2-payment" target="pd2-p-date" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;curved=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="pd2-sa1" edge="1" parent="1" source="pd2-sugg" target="pd2-s-id" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;curved=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="pd2-sa2" edge="1" parent="1" source="pd2-sugg" target="pd2-s-name" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;curved=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="pd2-sa3" edge="1" parent="1" source="pd2-sugg" target="pd2-s-proposer" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;curved=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="pd2-sa4" edge="1" parent="1" source="pd2-sugg" target="pd2-s-status" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;curved=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="pd2-da1" edge="1" parent="1" source="pd2-docreq" target="pd2-d-id" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;curved=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="pd2-da2" edge="1" parent="1" source="pd2-docreq" target="pd2-d-docid" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;curved=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="pd2-da3" edge="1" parent="1" source="pd2-docreq" target="pd2-d-docname" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;curved=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="pd2-da4" edge="1" parent="1" source="pd2-docreq" target="pd2-d-resume" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;curved=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="pd2-da5" edge="1" parent="1" source="pd2-docreq" target="pd2-d-license" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;curved=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="pd2-da6" edge="1" parent="1" source="pd2-docreq" target="pd2-d-status" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;curved=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
       </root>
     </mxGraphModel>
   </diagram>
