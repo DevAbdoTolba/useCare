@@ -5,26 +5,28 @@ entities (User / Specialty / Appointments) keep the diagram's field names
 (`U_*`, `S_*`, `A_*`).
 
 Everything tagged **(post-discussion)** was added after the lecturer review:
-verification docs + hourly rate on the doctor, plus the new Rating, Payment,
-SpecialtySuggestion and DocUpdateRequest entities.
+the new **Doctor** subtype (ISA of `User` when `U_role = 'doctor'`) holding all
+doctor-only fields, plus the new Rating, Payment, SpecialtySuggestion and
+DocUpdateRequest entities.
 
 ```mermaid
 erDiagram
-    SPECIALTY ||--o{ USER : "has (N:1)"
+    USER ||--o| DOCTOR : "is a (when U_role=doctor)"
+    SPECIALTY ||--o{ DOCTOR : "has (N:1)"
     USER ||--o{ APPOINTMENTS : "books — patient (1:N)"
-    USER ||--o{ APPOINTMENTS : "manages — doctor (1:N)"
+    DOCTOR ||--o{ APPOINTMENTS : "manages (1:N)"
 
     APPOINTMENTS ||--o| RATING : "rated after completion (1:0..1)"
-    USER ||--o{ RATING : "receives — doctor (1:N)"
+    DOCTOR ||--o{ RATING : "receives (1:N)"
     USER ||--o{ RATING : "leaves — patient (1:N)"
 
     APPOINTMENTS ||--o| PAYMENT : "paid for (1:0..1)"
     USER ||--o{ PAYMENT : "pays — patient (1:N)"
 
-    USER ||--o{ SPECIALTY_SUGGESTION : "proposes — doctor (1:N)"
+    DOCTOR ||--o{ SPECIALTY_SUGGESTION : "proposes (1:N)"
     SPECIALTY_SUGGESTION }o--|| SPECIALTY : "becomes on approval"
 
-    USER ||--o{ DOC_UPDATE_REQUEST : "requests — doctor (1:N)"
+    DOCTOR ||--o{ DOC_UPDATE_REQUEST : "requests (1:N)"
 
     USER {
         int U_id PK
@@ -36,11 +38,15 @@ erDiagram
         string U_gender
         string u_phone_number
         string U_Desc
-        string U_status
-        string U_resume_url "post-discussion: doctor only"
-        string U_license_url "post-discussion: doctor only"
-        float U_hourly_rate "post-discussion: doctor only (USD)"
-        int S_id FK
+        string U_status "post-discussion"
+    }
+
+    DOCTOR {
+        int D_id PK_FK "post-discussion: = U_id (both PK and FK to User)"
+        int specialty_id FK
+        string D_resume_url "post-discussion: link or data URL"
+        string D_license_url "post-discussion: link or data URL"
+        float D_hourly_rate "post-discussion (USD)"
     }
 
     SPECIALTY {
@@ -100,23 +106,32 @@ erDiagram
 
 | From | To | Verb | Cardinality |
 |------|----|------|-------------|
-| User | Specialty | Has | many users → one specialty (a doctor has one specialty) |
+| User | Doctor | ISA | every User with `role=doctor` has exactly one Doctor row; patient and admin users have none *(post-discussion: class-table inheritance — `D_id = U_id`)* |
+| Doctor | Specialty | Has | many doctors → one specialty *(post-discussion: moved off User, since only doctors have a specialty)* |
 | User | Appointments | Book | one patient → many appointments |
-| User | Appointments | Manage | one doctor → many appointments |
+| Doctor | Appointments | Manage | one doctor → many appointments *(post-discussion: moved off User)* |
 | Appointments | Rating | Rated | each completed appointment → at most one rating *(post-discussion)* |
-| User | Rating | Receives / Leaves | a doctor gets many ratings; a patient leaves many *(post-discussion)* |
+| Doctor | Rating | Receives | a doctor receives many ratings *(post-discussion)* |
+| User | Rating | Leaves | a patient leaves many ratings *(post-discussion)* |
 | Appointments | Payment | Paid for | each appointment → at most one payment *(post-discussion)* |
 | User | Payment | Pays | one patient → many payments; platform keeps a 12% cut *(post-discussion)* |
-| User | SpecialtySuggestion | Proposes | a doctor proposes specialties the admin approves into Specialty *(post-discussion)* |
-| User | DocUpdateRequest | Requests | a doctor files résumé/license changes the admin approves back onto User *(post-discussion)* |
+| Doctor | SpecialtySuggestion | Proposes | a doctor proposes specialties the admin approves into Specialty *(post-discussion)* |
+| Doctor | DocUpdateRequest | Requests | a doctor files résumé/license changes the admin approves back onto Doctor *(post-discussion)* |
 
 ## Notes on the additions
 
-- **U_resume_url / U_license_url** — required at doctor signup; the admin opens
+- **Doctor (ISA subtype of User)** — **class-table inheritance**: every Doctor
+  row has `D_id = U_id` (both PK *and* FK to `User`). Patient and admin records
+  live only in `User`; users with `role=doctor` get an extra `Doctor` row that
+  holds the doctor-only attributes. All relationships that only make sense for
+  a doctor (`Has` specialty, `Manage` appointments, `Receives` ratings,
+  `Proposes` SpecialtySuggestion, `Requests` DocUpdateRequest) hang off
+  `Doctor`, not `User`.
+- **D_resume_url / D_license_url** — required at doctor signup; the admin opens
   both before approving or rejecting the account. Each field stores either a
   link (`https://…`) or a `data:` URL when the doctor uploaded a file directly.
-- **U_hourly_rate** — the consultation fee shown to patients and charged through
-  the PayPal sandbox at booking time.
+- **D_hourly_rate** — the consultation fee shown to patients and charged
+  through the PayPal sandbox at booking time.
 - **Payment** — `amount_paid` on the appointment is the per-booking record;
   `Payment` rows are the ledger the admin dashboard sums (total paid + 12%
   platform revenue).
@@ -124,4 +139,4 @@ erDiagram
   approving it creates a real `Specialty`.
 - **DocUpdateRequest** — already-approved doctors can't silently swap their
   résumé/license. They file a `DocUpdateRequest`; admin approval patches the
-  matching `U_resume_url` / `U_license_url` back onto `User`.
+  matching `D_resume_url` / `D_license_url` back onto `Doctor`.
