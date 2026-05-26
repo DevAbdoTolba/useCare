@@ -56,7 +56,7 @@ erDiagram
     }
 
     DOCTOR {
-        int D_id PK_FK "post-discussion: = U_id (both PK and FK to User)"
+        int D_id PK,FK "post-discussion: = U_id (both PK and FK to User)"
         int specialty_id FK
         string D_resume_url "post-discussion: link or data URL"
         string D_license_url "post-discussion: link or data URL"
