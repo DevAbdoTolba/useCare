@@ -1,53 +1,28 @@
 /**
- * Standalone localStorage store for doctor-proposed specialties (mock).
+ * Doctor-proposed specialties — backed by the Django backend (specialties slice).
  *
- * When a registering doctor can't find their specialty, they propose a new
- * one. It lands here as "pending" until an admin approves/rejects it on the
- * Specialties page. Read-only npoint can't take writes, so — like the ratings
- * and availability stores — this lives in localStorage and is seeded once from
- * the bundled demo data.
+ * A registering doctor proposes a missing specialty; it sits as "pending" until
+ * an admin approves it (which creates a real Specialty) or rejects it. These
+ * helpers are now async (network), unlike the old localStorage mock.
  */
-import seed from '../schema/seed.json';
+import { apiFetch } from '../api/http.js';
 
-const KEY = 'usecare_specialty_suggestions';
-
-function readAll() {
-  try {
-    const raw = localStorage.getItem(KEY);
-    if (raw) return JSON.parse(raw);
-  } catch {
-    return [];
-  }
-  const seeded = (seed.specialty_suggestions ?? []).map((s) => ({ ...s }));
-  try { localStorage.setItem(KEY, JSON.stringify(seeded)); } catch { /* ignore */ }
-  return seeded;
+export async function listSuggestions() {
+  const data = await apiFetch('/specialties/suggestions/');
+  return data.results ?? data;
 }
 
-function writeAll(list) {
-  try { localStorage.setItem(KEY, JSON.stringify(list)); } catch { /* ignore */ }
+export async function listPendingSuggestions() {
+  return (await listSuggestions()).filter((s) => s.status === 'pending');
 }
 
-export function listSuggestions() {
-  return readAll();
+/** Record a new proposal (the signup flow does this directly via http.signup). */
+export async function addSpecialtySuggestion(name) {
+  return apiFetch('/specialties/suggestions/', { method: 'POST', body: { name } });
 }
 
-export function listPendingSuggestions() {
-  return readAll().filter((s) => s.status === 'pending');
-}
-
-/** Record a new proposal. Returns the created suggestion. */
-export function addSpecialtySuggestion(name, proposedBy = '') {
-  const all = readAll();
-  const id = all.reduce((max, s) => Math.max(max, s.id || 0), 0) + 1;
-  const rec = { id, name: String(name).trim(), proposed_by: proposedBy, status: 'pending' };
-  all.push(rec);
-  writeAll(all);
-  return rec;
-}
-
-/** Approve or reject a suggestion. */
-export function setSuggestionStatus(id, status) {
-  const all = readAll().map((s) => (s.id === id ? { ...s, status } : s));
-  writeAll(all);
-  return all.find((s) => s.id === id);
+/** Approve ('approved') or reject ('rejected') a suggestion. */
+export async function setSuggestionStatus(id, status) {
+  const action = status === 'approved' ? 'approve' : 'reject';
+  return apiFetch(`/specialties/suggestions/${id}/${action}/`, { method: 'POST' });
 }

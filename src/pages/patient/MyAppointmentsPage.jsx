@@ -20,9 +20,8 @@ import {
   Alert,
 } from '@mui/material';
 import { listAppointmentsForPatient } from '../../api/appointments.js';
-import { getUser } from '../../api/users.js';
 import { useAuth } from '../../hooks/useAuth.js';
-import { getRatingForAppointment, rateAppointment } from '../../lib/ratingsStore.js';
+import { rateAppointment } from '../../lib/ratingsStore.js';
 import LoadingSpinner from '../../components/common/LoadingSpinner.jsx';
 import ProfileSummaryCard from '../../components/common/ProfileSummaryCard.jsx';
 import DayHourGrid from '../../components/common/DayHourGrid.jsx';
@@ -47,14 +46,15 @@ export default function MyAppointmentsPage() {
     let mounted = true;
     setLoading(true);
     listAppointmentsForPatient(user?.id ?? 0)
-      .then(async (appts) => {
+      .then((appts) => {
         if (!mounted) return;
-        setAppointments(Array.isArray(appts) ? appts : []);
-        const ids = [...new Set((appts ?? []).map((a) => a.doctor_id))];
-        const docs = await Promise.all(ids.map((id) => getUser(id)));
-        if (!mounted) return;
+        const list = Array.isArray(appts) ? appts : [];
+        setAppointments(list);
+        // doctor name/specialty are embedded on each row — no extra lookups.
         const map = {};
-        docs.forEach((d) => { if (d) map[d.id] = d; });
+        list.forEach((a) => {
+          map[a.doctor_id] = { id: a.doctor_id, name: a.doctor_name, specialty: a.doctor_specialty };
+        });
         setDoctorById(map);
       })
       .finally(() => { if (mounted) setLoading(false); });
@@ -97,18 +97,25 @@ export default function MyAppointmentsPage() {
     const appt = apptByHour[hour];
     if (!appt) return;
     setDetail(appt);
-    const existing = getRatingForAppointment(appt.id);
+    const existing = appt.my_rating;
     setRatingStars(existing?.stars ?? 0);
     setRatingComment(existing?.comment ?? '');
     setRatingError('');
   };
 
-  function submitRating() {
+  async function submitRating() {
     if (!detail) return;
     if (!ratingStars) { setRatingError('Please pick a star rating.'); return; }
-    rateAppointment(detail, ratingStars, ratingComment);
-    setSavedTick((t) => t + 1);
-    setToast('Thanks! Your rating was saved.');
+    try {
+      await rateAppointment(detail, ratingStars, ratingComment);
+      const my = { stars: ratingStars, comment: ratingComment.trim() };
+      setAppointments((prev) => prev.map((a) => (a.id === detail.id ? { ...a, my_rating: my } : a)));
+      setDetail((d) => (d ? { ...d, my_rating: my } : d));
+      setSavedTick((t) => t + 1);
+      setToast('Thanks! Your rating was saved.');
+    } catch (err) {
+      setRatingError(err?.message || 'Could not save your rating.');
+    }
   }
 
   if (loading) {
@@ -121,7 +128,7 @@ export default function MyAppointmentsPage() {
 
   const detailDoctor = detail ? doctorById[detail.doctor_id] : null;
   // savedTick is referenced so this re-reads right after a rating is saved.
-  const savedRating = detail && savedTick >= 0 ? getRatingForAppointment(detail.id) : null;
+  const savedRating = detail && savedTick >= 0 ? detail.my_rating : null;
 
   return (
     <Container maxWidth="lg">
