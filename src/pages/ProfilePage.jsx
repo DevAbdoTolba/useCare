@@ -27,6 +27,7 @@ import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import { useAuth } from '../hooks/useAuth.js';
 import { listSpecialties } from '../api/specialties.js';
 import { addDocUpdateRequest, getPendingRequestForDoctor } from '../lib/docUpdateRequestsStore.js';
+import { updateProfile, splitName, apiFetch } from '../api/http.js';
 import DocumentInput, { isDocValue } from '../components/common/DocumentInput.jsx';
 import { GENDERS } from '../schema/schema.js';
 import { initialOf } from '../lib/format.js';
@@ -61,7 +62,14 @@ export default function ProfilePage() {
   const [docForm, setDocForm] = useState({ resume_url: '', license_url: '' });
   const [docError, setDocError] = useState('');
   const [reqTick, setReqTick] = useState(0); // bump to re-read the pending request
-  const pendingDocReq = isDoctor && reqTick >= 0 ? getPendingRequestForDoctor(user?.id) : null;
+  const [pendingDocReq, setPendingDocReq] = useState(null);
+
+  useEffect(() => {
+    if (!isDoctor) return;
+    getPendingRequestForDoctor(user?.id)
+      .then(setPendingDocReq)
+      .catch(() => setPendingDocReq(null));
+  }, [isDoctor, user?.id, reqTick]);
 
   function openDocDialog() {
     setDocForm({ resume_url: user?.resume_url ?? '', license_url: user?.license_url ?? '' });
@@ -69,16 +77,20 @@ export default function ProfilePage() {
     setDocOpen(true);
   }
 
-  function submitDocRequest() {
+  async function submitDocRequest() {
     const { resume_url, license_url } = docForm;
     if (!isDocValue(resume_url) || !isDocValue(license_url)) {
       setDocError('For each document, paste a link or upload a file.');
       return;
     }
-    addDocUpdateRequest(user, docForm);
-    setReqTick((t) => t + 1);
-    setDocOpen(false);
-    setToast('Update requested — an admin will review it.');
+    try {
+      await addDocUpdateRequest(user, docForm);
+      setReqTick((t) => t + 1);
+      setDocOpen(false);
+      setToast('Update requested — an admin will review it.');
+    } catch (err) {
+      setDocError(err?.message || 'Could not submit the request.');
+    }
   }
 
   useEffect(() => {
@@ -102,21 +114,34 @@ export default function ProfilePage() {
     setEditing(false);
   }
 
-  function save() {
+  async function save() {
+    const { first_name, last_name } = splitName(form.name);
     const patch = {
-      name: form.name,
+      first_name,
+      last_name,
       phone_number: form.phone_number,
       gender: form.gender,
-      date_of_birth: form.date_of_birth,
+      date_of_birth: form.date_of_birth || null,
     };
-    if (isDoctor) {
-      patch.specialty_id = form.specialty_id === '' ? null : Number(form.specialty_id);
-      patch.hourly_rate = form.hourly_rate === '' ? null : Number(form.hourly_rate);
-      patch.description = form.description;
+    if (isDoctor) patch.description = form.description;
+    try {
+      const updated = await updateProfile(patch);
+      const extra = {};
+      if (isDoctor) {
+        // Doctor-only fields live on DoctorProfile, not the User.
+        extra.specialty_id = form.specialty_id === '' ? null : Number(form.specialty_id);
+        extra.hourly_rate = form.hourly_rate === '' ? null : Number(form.hourly_rate);
+        await apiFetch('/doctors/me/', {
+          method: 'PUT',
+          body: { specialty: extra.specialty_id, hourly_rate: extra.hourly_rate },
+        });
+      }
+      updateCurrentUser({ ...updated, ...extra });
+      setEditing(false);
+      setToast('Profile updated.');
+    } catch (err) {
+      setToast(err?.message || 'Could not update your profile.');
     }
-    updateCurrentUser(patch);
-    setEditing(false);
-    setToast('Profile updated.');
   }
 
   if (!user) return null;

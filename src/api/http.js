@@ -1,13 +1,12 @@
 /**
- * Real backend bridge — talks to the RESTCareFul Django API over JWT.
+ * Backend transport — talks to the RESTCareFul Django API over JWT.
  *
- * This is ADDITIVE on purpose: the rest of the app still runs on the mock
- * client in client.js. Point VITE_BACKEND_URL at the running Django server and
- * switch a screen over to these helpers when you're ready — nothing here
- * touches the existing fixtures flow.
+ * Every api/*.js module goes through apiFetch() here, so there is exactly one
+ * place that knows the base URL, attaches the Bearer token, and turns a non-2xx
+ * into a thrown Error (with .status + .data).
  *
  *   Backend repo: https://github.com/DevAbdoTolba/RESTCareFul
- *   Default base: http://localhost:8000/api/v1
+ *   Default base: http://localhost:8000/api/v1   (override with VITE_BACKEND_URL)
  */
 
 const BASE = import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:8000/api/v1';
@@ -44,12 +43,26 @@ export async function apiFetch(path, { method = 'GET', body, auth = true, header
 
   const data = await res.json().catch(() => null);
   if (!res.ok) {
-    const err = new Error(data?.detail || `Request failed (${res.status})`);
+    const detail = data?.detail || data?.[Object.keys(data || {})[0]] || `Request failed (${res.status})`;
+    const err = new Error(Array.isArray(detail) ? detail[0] : detail);
     err.status = res.status;
     err.data = data;
     throw err;
   }
   return data;
+}
+
+/** Add a single `name` field the React pages expect (backend stores first/last). */
+export function normalizeUser(u) {
+  if (!u) return u;
+  const name = `${u.first_name ?? ''} ${u.last_name ?? ''}`.trim() || u.email;
+  return { ...u, name };
+}
+
+/** Split "Sarah Admin" -> { first_name: 'Sarah', last_name: 'Admin' }. */
+export function splitName(fullName = '') {
+  const parts = String(fullName).trim().split(/\s+/);
+  return { first_name: parts.shift() ?? '', last_name: parts.join(' ') };
 }
 
 export async function login(email, password) {
@@ -63,12 +76,71 @@ export async function login(email, password) {
   return { token: tokens.access, user };
 }
 
+/** Raw register — returns the created user (no token). Callers log in after. */
 export async function register(payload) {
   return apiFetch('/auth/register/', { method: 'POST', auth: false, body: payload });
 }
 
+/**
+ * Full signup orchestration used by the register form.
+ *
+ * Backend keeps doctor-only fields on a separate DoctorProfile, so a doctor
+ * signup is multi-step: create the user, log in, then upsert the profile (and
+ * optionally propose a specialty). Returns { user } ready for the auth context.
+ */
+export async function signup(values) {
+  const { first_name, last_name } = splitName(values.name);
+  const isDoctor = values.role === 'doctor';
+
+  await register({
+    email: values.email,
+    password: values.password,
+    role: values.role,
+    first_name,
+    last_name,
+    phone_number: values.phone_number || '',
+    gender: values.gender || '',
+    date_of_birth: values.date_of_birth || null,
+    description: isDoctor ? values.description || '' : '',
+  });
+
+  const { user } = await login(values.email, values.password);
+
+  if (isDoctor) {
+    await apiFetch('/doctors/me/', {
+      method: 'PUT',
+      body: {
+        specialty: values.specialty_id || null,
+        hourly_rate: values.hourly_rate ?? null,
+        resume_url: values.resume_url || '',
+        license_url: values.license_url || '',
+      },
+    });
+    if (values.suggested_specialty) {
+      await apiFetch('/specialties/suggestions/', {
+        method: 'POST',
+        body: { name: values.suggested_specialty },
+      });
+    }
+  }
+
+  return { user };
+}
+
 export async function me() {
-  return apiFetch('/auth/me/');
+  return normalizeUser(await apiFetch('/auth/me/'));
+}
+
+export async function updateProfile(patch) {
+  await apiFetch('/auth/me/profile/', { method: 'PATCH', body: patch });
+  return me();
+}
+
+export async function changePassword(oldPassword, newPassword) {
+  return apiFetch('/auth/me/password/', {
+    method: 'POST',
+    body: { old_password: oldPassword, new_password: newPassword },
+  });
 }
 
 export async function refresh() {
@@ -82,6 +154,6 @@ export async function refresh() {
   return tokens;
 }
 
-export async function logout() {
+export function logout() {
   clearTokens();
 }

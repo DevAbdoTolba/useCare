@@ -2,17 +2,18 @@ import { createContext, useState, useCallback } from 'react';
 import {
   getStoredSession,
   saveSession,
-  logoutLocal,
-  updateLocalUser,
-} from '../auth/localAuthStore.js';
+  clearSession,
+  updateStoredUser,
+} from '../auth/session.js';
+import { clearTokens } from '../api/http.js';
 
 /**
- * Auth state backed by the standalone localStorage store
- * (src/auth/localAuthStore.js). The session is restored on load, so a refresh
- * keeps you signed in. Detach the store import to swap in a real backend.
+ * Auth state backed by the JWT session cache (src/auth/session.js). The user is
+ * restored from localStorage on load (so a refresh keeps you signed in), while
+ * the actual credentials live on the Django backend.
  *
- * - login(user)            persist + set the current user
- * - logout()               clear the session
+ * - login(user)            persist + set the current user (call AFTER api login)
+ * - logout()               clear the session AND the JWT tokens
  * - updateCurrentUser(p)   patch the signed-in user (e.g. profile edit)
  */
 export const AuthContext = createContext({
@@ -32,12 +33,13 @@ export function AuthProvider({ children }) {
   }, []);
 
   const logout = useCallback(() => {
-    logoutLocal();
+    clearSession();
+    clearTokens();
     setUser(null);
   }, []);
 
   const updateCurrentUser = useCallback((patch) => {
-    setUser((prev) => (prev ? updateLocalUser(prev.id, patch) : prev));
+    setUser((prev) => (prev ? updateStoredUser(patch) : prev));
   }, []);
 
   return (

@@ -10,7 +10,7 @@ import {
   Alert,
   Divider,
 } from '@mui/material';
-import { loginLocal } from '../../auth/localAuthStore.js';
+import { login as apiLogin } from '../../api/http.js';
 import { useAuth } from '../../hooks/useAuth.js';
 
 /** Where each role lands after a successful login. */
@@ -43,7 +43,7 @@ export default function LoginPage() {
   async function onSubmit({ email, password }) {
     setSubmitError('');
     try {
-      const user = loginLocal(email, password);
+      const { user } = await apiLogin(email, password);
       setAuthUser(user);
       navigate(HOME_BY_ROLE[user.role] ?? '/patient');
     } catch {
