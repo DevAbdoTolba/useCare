@@ -10,7 +10,6 @@ import { listAppointments } from '../../api/appointments.js';
 import { listSpecialties } from '../../api/specialties.js';
 import { getTotalPaid, PLATFORM_FEE_RATE } from '../../api/payments.js';
 import { listPendingRequests, setDocRequestStatus } from '../../lib/docUpdateRequestsStore.js';
-import { updateLocalUser } from '../../auth/localAuthStore.js';
 
 export default function AdminDashboardPage() {
   const navigate = useNavigate();
@@ -26,7 +25,7 @@ export default function AdminDashboardPage() {
     let mounted = true;
     setLoading(true);
     Promise.all([listUsers(), listPendingUsers(), listAppointments(), listSpecialties(), getTotalPaid()])
-      .then(([users, pending, appointments, specialties, totalPaid]) => {
+      .then(async ([users, pending, appointments, specialties, totalPaid]) => {
         if (!mounted) return;
         const userList = Array.isArray(users) ? users : [];
         const apptList = Array.isArray(appointments) ? appointments : [];
@@ -39,7 +38,8 @@ export default function AdminDashboardPage() {
         });
         setMoney({ totalPaid, revenue: totalPaid * PLATFORM_FEE_RATE });
         setPendingUsers(Array.isArray(pending) ? pending : []);
-        setDocRequests(listPendingRequests());
+        const reqs = await listPendingRequests().catch(() => []);
+        if (mounted) setDocRequests(Array.isArray(reqs) ? reqs : []);
       })
       .catch(() => {
         if (!mounted) return;
@@ -51,15 +51,15 @@ export default function AdminDashboardPage() {
     return () => { mounted = false; };
   }, []);
 
-  function approveDocRequest(req) {
-    updateLocalUser(req.doctor_id, { resume_url: req.resume_url, license_url: req.license_url });
-    setDocRequestStatus(req.id, 'approved');
-    setDocRequests(listPendingRequests());
+  async function approveDocRequest(req) {
+    // The backend approve patches the doctor's profile server-side.
+    await setDocRequestStatus(req.id, 'approved');
+    setDocRequests(await listPendingRequests());
   }
 
-  function rejectDocRequest(req) {
-    setDocRequestStatus(req.id, 'rejected');
-    setDocRequests(listPendingRequests());
+  async function rejectDocRequest(req) {
+    await setDocRequestStatus(req.id, 'rejected');
+    setDocRequests(await listPendingRequests());
   }
 
   if (loading) {
