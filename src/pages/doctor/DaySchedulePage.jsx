@@ -9,10 +9,7 @@ import LoadingSpinner from '../../components/common/LoadingSpinner.jsx';
 import AppointmentDetailDialog from './AppointmentDetailDialog.jsx';
 import { listAppointmentsForDoctorOnDate } from '../../api/appointments.js';
 import { listAvailabilityForDoctor } from '../../api/availability.js';
-import { getUser } from '../../api/users.js';
-import { APPOINTMENT_STATUSES } from '../../schema/schema.js';
-
-const DOCTOR_ID = 2;
+import { useAuth } from '../../hooks/useAuth.js';
 
 function generateSlots(startTime, endTime) {
   const slots = [];
@@ -43,7 +40,8 @@ const getStatusColor = (status) => {
 
 export default function DaySchedulePage() {
   const { date } = useParams();
-  
+  const { user } = useAuth();
+
   const [loading, setLoading] = useState(true);
   const [slots, setSlots] = useState([]);
   const [appointments, setAppointments] = useState({});
@@ -59,30 +57,22 @@ export default function DaySchedulePage() {
       try {
         setLoading(true);
         // 1. Fetch availability for slots
-        const availabilities = await listAvailabilityForDoctor(DOCTOR_ID);
+        const availabilities = await listAvailabilityForDoctor(user?.id);
         const dayAvail = availabilities.find(a => a.date === date);
-        const start = dayAvail?.start_time || '09:00';
-        const end = dayAvail?.end_time || '17:00';
-        
+        const start = (dayAvail?.start_time || '09:00').slice(0, 5);
+        const end = (dayAvail?.end_time || '17:00').slice(0, 5);
+
         const timeSlots = generateSlots(start, end);
-        
-        // 2. Fetch appointments
-        const appts = await listAppointmentsForDoctorOnDate(DOCTOR_ID, date);
+
+        // 2. Fetch appointments — names are embedded, no user lookups needed.
+        const appts = await listAppointmentsForDoctorOnDate(user?.id, date);
         const apptMap = {};
-        const patientPromises = [];
-        
-        for (const appt of appts) {
-          apptMap[appt.time] = appt;
-          patientPromises.push(getUser(appt.patient_id));
-        }
-        
-        // 3. Fetch patients
-        const patientUsers = await Promise.all(patientPromises);
         const patMap = {};
-        for (const p of patientUsers) {
-          if (p) patMap[p.id] = p;
+        for (const appt of appts) {
+          apptMap[String(appt.time).slice(0, 5)] = appt; // backend time is HH:MM:SS
+          patMap[appt.patient_id] = { id: appt.patient_id, name: appt.patient_name };
         }
-        
+
         if (mounted) {
           setSlots(timeSlots);
           setAppointments(apptMap);
