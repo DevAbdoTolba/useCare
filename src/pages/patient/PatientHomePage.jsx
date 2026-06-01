@@ -41,12 +41,9 @@ import { styled } from '@mui/material/styles';
 import { listDoctors } from '../../api/users.js';
 import { listSpecialties } from '../../api/specialties.js';
 import { listAvailabilityForDoctor } from '../../api/availability.js';
-import { listAppointmentsForDoctor } from '../../api/appointments.js';
 import { createAppointment } from '../../api/appointments.js';
-import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
+import { createPayment, capturePayment } from '../../api/payments.js';
 import { useAuth } from '../../hooks/useAuth.js';
-import { getDoctorRating } from '../../lib/ratingsStore.js';
-import { PAYPAL_OPTIONS, PAYPAL_ENABLED } from '../../lib/paypal.js';
 import EmptyState from '../../components/common/EmptyState.jsx';
 import LoadingSpinner from '../../components/common/LoadingSpinner.jsx';
 
@@ -101,41 +98,27 @@ function Day({ day, selectedDay, hoveredDay, ...other }) {
 }
 
 /**
- * Build 30-minute slots from a doctor's available days, skipping booked times
- * AND any slot that's already in the past — an outdated slot can never be
- * booked, so it shouldn't even show up in the list.
+ * Turn a doctor's open availability windows into bookable slots.
+ *
+ * The backend already returns only future, still-open windows (a booked or
+ * outdated window never comes back), so each window maps to exactly one slot
+ * carrying its real DoctorAvailability id — which is what /appointments/book/
+ * expects.
  */
-function buildSlots(availabilities, appointments) {
-  const now = dayjs();
-  const booked = new Set(
-    appointments
-      .filter((a) => a.status !== 'cancelled')
-      .map((a) => `${a.date} ${a.time}`),
-  );
-
-  const slots = [];
-  availabilities
+function buildSlots(availabilities) {
+  return (availabilities ?? [])
     .filter((a) => a.is_available)
-    .forEach((a) => {
-      let t = dayjs(`${a.date} ${a.start_time}`);
-      const end = dayjs(`${a.date} ${a.end_time}`);
-      while (t.isBefore(end)) {
-        const time24 = t.format('HH:mm');
-        const key = `${a.date} ${time24}`;
-        if (!booked.has(key) && !t.isBefore(now)) {
-          slots.push({
-            id: key,
-            date: a.date,
-            time24,
-            dateLabel: t.format('ddd, MMM D'),
-            timeLabel: t.format('h:mm A'),
-          });
-        }
-        t = t.add(SLOT_MINUTES, 'minute');
-      }
-    });
-
-  return slots.sort((x, y) => `${x.date} ${x.time24}`.localeCompare(`${y.date} ${y.time24}`));
+    .map((a) => {
+      const start = dayjs(`${a.date} ${a.start_time}`);
+      return {
+        id: a.id,
+        date: a.date,
+        time24: start.format('HH:mm'),
+        dateLabel: start.format('ddd, MMM D'),
+        timeLabel: start.format('h:mm A'),
+      };
+    })
+    .sort((x, y) => `${x.date} ${x.time24}`.localeCompare(`${y.date} ${y.time24}`));
 }
 
 export default function PatientHomePage() {
@@ -191,11 +174,8 @@ export default function PatientHomePage() {
         // doctor list (not just the selected card).
         const entries = await Promise.all(
           docs.map(async (d) => {
-            const [avail, appts] = await Promise.all([
-              listAvailabilityForDoctor(d.id),
-              listAppointmentsForDoctor(d.id),
-            ]);
-            return [d.id, buildSlots(avail, appts)];
+            const avail = await listAvailabilityForDoctor(d.id);
+            return [d.id, buildSlots(avail)];
           }),
         );
         if (mounted) setSlotsByDoctor(Object.fromEntries(entries));
@@ -274,38 +254,42 @@ export default function PatientHomePage() {
     setDraftDay(null);
   }
 
-  async function confirmBooking({ paid = false } = {}) {
+  async function confirmBooking({ pay = false } = {}) {
     if (!pendingSlot || !selectedDoctor) return;
-    // Validation layer: never let a past slot through, even if it somehow
-    // lingered in the view (clock drift, stale render, etc.).
-    if (dayjs(`${pendingSlot.date} ${pendingSlot.time24}`).isBefore(dayjs())) {
-      setToastSeverity('warning');
-      setToast('That time has already passed — please pick another slot.');
-      closeBookingDialog();
-      return;
-    }
     setBooking(true);
     try {
-      await createAppointment({
-        patient_id: user?.id ?? 0,
-        doctor_id: selectedDoctor.id,
-        date: pendingSlot.date,
-        time: pendingSlot.time24,
+      // 1. Book the slot on the backend (it re-checks the slot is still open).
+      const appointment = await createAppointment({
+        availability: pendingSlot.id,
         notes: notes.trim(),
-        status: 'pending',
-        paid,
-        amount_paid: paid ? Number(selectedDoctor.hourly_rate) || 0 : 0,
       });
-      // Mark the slot as "requested" — keeps it visible with an indeterminate
-      // (in-progress) checkbox rather than removing it.
+
+      // 2. If there's a fee, run the PayPal flow against the backend.
+      if (pay && hasFee) {
+        const ret = `${window.location.origin}/patient/payment-return`;
+        const order = await createPayment(appointment.id, { returnUrl: ret, cancelUrl: ret });
+        if (order.approval_url) {
+          // Real sandbox: stash the payment id and hand off to PayPal. We come
+          // back to /patient/payment-return which captures it.
+          localStorage.setItem('uc_pending_payment', JSON.stringify({ paymentId: order.id }));
+          window.location.href = order.approval_url;
+          return;
+        }
+        // Demo mode (no credentials): capture immediately, no redirect.
+        await capturePayment(order.id);
+      }
+
       setRequested((prev) => new Set(prev).add(pendingSlot.id));
       setToastSeverity('success');
       setToast(
-        paid
-          ? `Paid & requested ${pendingSlot.dateLabel} at ${pendingSlot.timeLabel} with ${selectedDoctor.name}.`
+        pay
+          ? `Paid & booked ${pendingSlot.dateLabel} at ${pendingSlot.timeLabel} with ${selectedDoctor.name}.`
           : `Requested ${pendingSlot.dateLabel} at ${pendingSlot.timeLabel} with ${selectedDoctor.name}.`,
       );
       closeBookingDialog();
+    } catch (err) {
+      setToastSeverity('warning');
+      setToast(err?.message || 'Could not complete the booking — please try again.');
     } finally {
       setBooking(false);
     }
@@ -318,7 +302,6 @@ export default function PatientHomePage() {
   const hasFee = Boolean(pendingSlot && selectedDoctor && Number(selectedDoctor.hourly_rate) > 0);
 
   return (
-    <PayPalScriptProvider options={PAYPAL_OPTIONS} deferLoading={!PAYPAL_ENABLED}>
     <Container maxWidth="lg">
       <Stack spacing={3} marginTop={4} marginBottom={6}>
         <Typography variant="h4" component="h1">Find a doctor</Typography>
@@ -452,7 +435,8 @@ export default function PatientHomePage() {
               </TableHead>
               <TableBody>
                 {pagedDoctors.map((doctor) => {
-                  const { average, count } = getDoctorRating(doctor.id);
+                  const average = doctor.rating ?? 0;
+                  const count = doctor.rating_count ?? 0;
                   return (
                   <TableRow key={doctor.id} hover selected={selectedDoctor?.id === doctor.id}>
                     <TableCell>{doctor.name}</TableCell>
@@ -566,38 +550,19 @@ export default function PatientHomePage() {
                   <Typography variant="h6">${selectedDoctor.hourly_rate}</Typography>
                 </Stack>
 
-                {PAYPAL_ENABLED ? (
-                  <PayPalButtons
-                    style={{ layout: 'vertical', label: 'pay' }}
-                    disabled={booking}
-                    forceReRender={[pendingSlot?.id, selectedDoctor?.hourly_rate]}
-                    createOrder={(_data, actions) =>
-                      actions.order.create({
-                        purchase_units: [{
-                          amount: { value: String(selectedDoctor.hourly_rate), currency_code: 'USD' },
-                          description: `useCare consult — ${selectedDoctor.name}`,
-                        }],
-                      })
-                    }
-                    onApprove={(_data, actions) => actions.order.capture().then(() => confirmBooking({ paid: true }))}
-                    onError={() => { setToastSeverity('warning'); setToast('Payment failed — please try again.'); }}
-                  />
-                ) : (
-                  <>
-                    <Button
-                      variant="contained"
-                      disableElevation
-                      fullWidth
-                      onClick={() => confirmBooking({ paid: true })}
-                      disabled={booking}
-                    >
-                      {`Pay $${selectedDoctor.hourly_rate} (sandbox demo)`}
-                    </Button>
-                    <Typography variant="caption" color="text.secondary">
-                      Demo payment. Set VITE_PAYPAL_CLIENT_ID for live PayPal sandbox buttons.
-                    </Typography>
-                  </>
-                )}
+                <Button
+                  variant="contained"
+                  disableElevation
+                  fullWidth
+                  onClick={() => confirmBooking({ pay: true })}
+                  disabled={booking}
+                >
+                  {`Pay $${selectedDoctor.hourly_rate} & book`}
+                </Button>
+                <Typography variant="caption" color="text.secondary">
+                  You&apos;ll be redirected to PayPal (sandbox) to approve. Without PayPal
+                  credentials the backend books instantly in demo mode.
+                </Typography>
               </>
             )}
           </Stack>
@@ -621,6 +586,5 @@ export default function PatientHomePage() {
         <Alert severity={toastSeverity} onClose={() => setToast('')}>{toast}</Alert>
       </Snackbar>
     </Container>
-    </PayPalScriptProvider>
   );
 }

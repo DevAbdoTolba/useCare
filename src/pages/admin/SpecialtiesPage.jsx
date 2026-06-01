@@ -46,25 +46,32 @@ export default function SpecialtiesPage() {
 
   useEffect(() => {
     let mounted = true;
-    listSpecialties()
-      .then((data) => { if (mounted) setSpecialties(Array.isArray(data) ? data : []); })
+    Promise.all([listSpecialties(), listPendingSuggestions()])
+      .then(([specs, sugg]) => {
+        if (!mounted) return;
+        setSpecialties(Array.isArray(specs) ? specs : []);
+        setSuggestions(Array.isArray(sugg) ? sugg : []);
+      })
       .finally(() => { if (mounted) setLoading(false); });
-    setSuggestions(listPendingSuggestions());
     return () => { mounted = false; };
   }, []);
 
-  function approveSuggestion(suggestion) {
-    createSpecialty({ name: suggestion.name, description: '' }).then((created) => {
-      setSpecialties((prev) => [...prev, created]);
-    });
-    setSuggestionStatus(suggestion.id, 'approved');
-    setSuggestions(listPendingSuggestions());
+  async function refreshLists() {
+    const [specs, sugg] = await Promise.all([listSpecialties(), listPendingSuggestions()]);
+    setSpecialties(Array.isArray(specs) ? specs : []);
+    setSuggestions(Array.isArray(sugg) ? sugg : []);
+  }
+
+  async function approveSuggestion(suggestion) {
+    // The backend approve creates the real Specialty itself — no separate create.
+    await setSuggestionStatus(suggestion.id, 'approved');
+    await refreshLists();
     setToast(`"${suggestion.name}" approved and added.`);
   }
 
-  function rejectSuggestion(suggestion) {
-    setSuggestionStatus(suggestion.id, 'rejected');
-    setSuggestions(listPendingSuggestions());
+  async function rejectSuggestion(suggestion) {
+    await setSuggestionStatus(suggestion.id, 'rejected');
+    setSuggestions((prev) => prev.filter((s) => s.id !== suggestion.id));
     setToast(`"${suggestion.name}" rejected.`);
   }
 

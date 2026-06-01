@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Container, Stack, Typography, Button, Snackbar, Alert } from '@mui/material';
 import { listAppointmentsForPatient, cancelAppointment } from '../../api/appointments.js';
-import { getUser } from '../../api/users.js';
 import { useAuth } from '../../hooks/useAuth.js';
 import LoadingSpinner from '../../components/common/LoadingSpinner.jsx';
 import AppointmentHistory from '../../components/common/AppointmentHistory.jsx';
@@ -19,14 +18,12 @@ export default function AppointmentHistoryPage() {
     let mounted = true;
     setLoading(true);
     listAppointmentsForPatient(user?.id ?? 0)
-      .then(async (appts) => {
+      .then((appts) => {
         if (!mounted) return;
-        setAppointments(Array.isArray(appts) ? appts : []);
-        const ids = [...new Set((appts ?? []).map((a) => a.doctor_id))];
-        const docs = await Promise.all(ids.map((id) => getUser(id)));
-        if (!mounted) return;
+        const list = Array.isArray(appts) ? appts : [];
+        setAppointments(list);
         const map = {};
-        docs.forEach((d) => { if (d) map[d.id] = d; });
+        list.forEach((a) => { map[a.doctor_id] = { id: a.doctor_id, name: a.doctor_name }; });
         setDoctorById(map);
       })
       .finally(() => { if (mounted) setLoading(false); });
