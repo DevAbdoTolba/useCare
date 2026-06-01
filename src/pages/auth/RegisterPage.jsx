@@ -13,9 +13,8 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from '@mui/material';
-import { registerLocal } from '../../auth/localAuthStore.js';
+import { signup as apiSignup } from '../../api/http.js';
 import { listSpecialties } from '../../api/specialties.js';
-import { addSpecialtySuggestion } from '../../lib/specialtySuggestionsStore.js';
 import DocumentInput, { isDocValue } from '../../components/common/DocumentInput.jsx';
 import { useAuth } from '../../hooks/useAuth.js';
 
@@ -78,29 +77,24 @@ export default function RegisterPage() {
   async function onSubmit(values) {
     setSubmitError('');
     const isDoctor = values.role === 'doctor';
-    const suggestingSpecialty = isDoctor && values.specialty_id === SUGGEST_SPECIALTY;
-    if (suggestingSpecialty) {
-      // Record the proposal for the admin; the doctor starts with no specialty
-      // until it's approved.
-      addSpecialtySuggestion(values.suggested_specialty, values.email);
-    }
-    const payload = {
-      name: values.name,
-      email: values.email,
-      password: values.password,
-      phone_number: values.phone_number,
-      date_of_birth: values.date_of_birth,
-      gender: values.gender,
-      role: values.role,
-      status: isDoctor ? 'pending' : 'approved',
-      specialty_id: isDoctor && !suggestingSpecialty ? Number(values.specialty_id) : null,
-      resume_url: isDoctor ? values.resume_url : null,
-      license_url: isDoctor ? values.license_url : null,
-      hourly_rate: isDoctor ? Number(values.hourly_rate) : null,
-      description: isDoctor ? values.description : null,
-    };
+    const suggesting = isDoctor && values.specialty_id === SUGGEST_SPECIALTY;
     try {
-      const user = registerLocal(payload);
+      const { user } = await apiSignup({
+        name: values.name,
+        email: values.email,
+        password: values.password,
+        phone_number: values.phone_number,
+        date_of_birth: values.date_of_birth,
+        gender: values.gender,
+        role: values.role,
+        // The backend keeps doctor-only fields on DoctorProfile (see http.signup).
+        specialty_id: isDoctor && !suggesting ? Number(values.specialty_id) : null,
+        suggested_specialty: suggesting ? values.suggested_specialty : '',
+        resume_url: isDoctor ? values.resume_url : '',
+        license_url: isDoctor ? values.license_url : '',
+        hourly_rate: isDoctor ? Number(values.hourly_rate) : null,
+        description: isDoctor ? values.description : '',
+      });
       setAuthUser(user);
       navigate(HOME_BY_ROLE[user.role] ?? '/patient');
     } catch (err) {

@@ -3,7 +3,7 @@ import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, S
 import DescriptionIcon from '@mui/icons-material/Description';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import { listSpecialties } from '../../api/specialties.js';
-import { approveUser, rejectUser } from '../../api/users.js';
+import { approveUser, rejectUser, getUser } from '../../api/users.js';
 
 /**
  * @param {{ open: boolean, onClose: () => void, user?: import('../../schema/schema.js').User }} props
@@ -13,6 +13,18 @@ export default function ApproveUserDialog({ open, onClose, user, onUpdated }) {
   const [loadingSpecs, setLoadingSpecs] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [actionError, setActionError] = useState(null);
+  // Full detail incl. doctor docs (the list payload doesn't carry resume/license).
+  const [details, setDetails] = useState(null);
+
+  useEffect(() => {
+    if (!open || !user) { setDetails(null); return; }
+    if (user.role !== 'doctor') { setDetails(user); return; }
+    let mounted = true;
+    getUser(user.id)
+      .then((d) => { if (mounted) setDetails(d); })
+      .catch(() => { if (mounted) setDetails(user); });
+    return () => { mounted = false; };
+  }, [open, user]);
 
   useEffect(() => {
     let mounted = true;
@@ -32,9 +44,12 @@ export default function ApproveUserDialog({ open, onClose, user, onUpdated }) {
     return () => { mounted = false; };
   }, [open]);
 
+  // Prefer the enriched detail (carries doctor docs) but fall back to the prop.
+  const u = details ?? user;
+
   const specialtyName = (() => {
-    if (!user || !user.specialty_id) return '';
-    const s = specialties.find((sp) => sp.id === user.specialty_id);
+    if (!u || !u.specialty_id) return u?.specialty || '';
+    const s = specialties.find((sp) => sp.id === u.specialty_id);
     return s ? s.name : '';
   })();
 
@@ -85,7 +100,7 @@ export default function ApproveUserDialog({ open, onClose, user, onUpdated }) {
                 fullWidth
               />
             )}
-            <TextField label="Description" value={user.description || ''} disabled multiline rows={3} fullWidth />
+            <TextField label="Description" value={u.description || ''} disabled multiline rows={3} fullWidth />
 
             {user.role === 'doctor' && (
               <>
@@ -100,25 +115,25 @@ export default function ApproveUserDialog({ open, onClose, user, onUpdated }) {
                     startIcon={<DescriptionIcon />}
                     variant="outlined"
                     component="a"
-                    href={user.resume_url || undefined}
+                    href={u.resume_url || undefined}
                     target="_blank"
                     rel="noopener"
-                    disabled={!user.resume_url}
+                    disabled={!u.resume_url}
                     fullWidth
                   >
-                    {user.resume_url ? 'Open résumé' : 'No résumé'}
+                    {u.resume_url ? 'Open résumé' : 'No résumé'}
                   </Button>
                   <Button
                     startIcon={<VerifiedUserIcon />}
                     variant="outlined"
                     component="a"
-                    href={user.license_url || undefined}
+                    href={u.license_url || undefined}
                     target="_blank"
                     rel="noopener"
-                    disabled={!user.license_url}
+                    disabled={!u.license_url}
                     fullWidth
                   >
-                    {user.license_url ? 'Open license' : 'No license'}
+                    {u.license_url ? 'Open license' : 'No license'}
                   </Button>
                 </Stack>
               </>

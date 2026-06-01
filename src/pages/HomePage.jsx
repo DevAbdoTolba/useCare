@@ -25,7 +25,6 @@ import ScarfHeart from '../components/ScarfHeart.jsx';
 import AppHeader from '../components/layout/AppHeader.jsx';
 import { listDoctors } from '../api/users.js';
 import { listSpecialties } from '../api/specialties.js';
-import { getDoctorRating } from '../lib/ratingsStore.js';
 import { initialOf } from '../lib/format.js';
 
 // Guests get a teaser, not the full directory. By default we show the few
@@ -56,7 +55,12 @@ export default function HomePage() {
         setSpecialties(specList);
         const specName = (id) => specList.find((s) => s.id === id)?.name ?? 'General';
         const ranked = (Array.isArray(docs) ? docs : [])
-          .map((d) => ({ ...d, _rating: getDoctorRating(d.id), _specialty: specName(d.specialty_id) }))
+          .map((d) => ({
+            ...d,
+            // rating + specialty name are embedded on the doctor card already.
+            _rating: { average: d.rating ?? 0, count: d.rating_count ?? 0 },
+            _specialty: d.specialty ?? specName(d.specialty_id),
+          }))
           .sort((a, b) => b._rating.average - a._rating.average);
         setAllDoctors(ranked);
       })

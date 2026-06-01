@@ -1,52 +1,24 @@
 /**
- * Standalone localStorage-backed ratings store (mock).
+ * Ratings — backed by the Django backend (ratings slice).
  *
- * The npoint mock DB is read-only, so patient ratings live in localStorage —
- * exactly like the doctor's availability store. Self-contained so it can be
- * swapped for real API calls once a backend exists. Seeded once from the
- * bundled demo data (src/schema/seed.json) so doctor averages aren't empty.
+ * Doctor cards already arrive with `rating` + `rating_count` embedded, and
+ * appointment rows carry `my_rating`, so most screens don't need these helpers
+ * at all. They remain for the explicit "rate this visit" action and the
+ * per-doctor summary. NOTE: these are now async (network), unlike the old
+ * localStorage mock.
  */
-import seed from '../schema/seed.json';
+import { apiFetch } from '../api/http.js';
 
-const KEY = 'usecare_ratings';
-
-/** Read the whole { [appointmentId]: Rating } map, seeding on first use. */
-function readAll() {
-  try {
-    const raw = localStorage.getItem(KEY);
-    if (raw) return JSON.parse(raw);
-  } catch {
-    return {};
-  }
-  const seeded = {};
-  (seed.ratings ?? []).forEach((r) => { seeded[r.appointment_id] = r; });
-  try { localStorage.setItem(KEY, JSON.stringify(seeded)); } catch { /* ignore */ }
-  return seeded;
+/** Submit a rating for a completed appointment. */
+export async function rateAppointment(appointment, stars, comment = '') {
+  return apiFetch('/ratings/', {
+    method: 'POST',
+    body: { appointment: appointment.id, stars, comment: comment.trim() },
+  });
 }
 
-/** The rating left for one appointment, or null. */
-export function getRatingForAppointment(appointmentId) {
-  return readAll()[appointmentId] ?? null;
-}
-
-/** Save (or overwrite) the rating for a completed appointment. */
-export function rateAppointment(appointment, stars, comment = '') {
-  const all = readAll();
-  all[appointment.id] = {
-    appointment_id: appointment.id,
-    doctor_id: appointment.doctor_id,
-    patient_id: appointment.patient_id,
-    stars,
-    comment: comment.trim(),
-  };
-  try { localStorage.setItem(KEY, JSON.stringify(all)); } catch { /* ignore */ }
-  return all[appointment.id];
-}
-
-/** Average stars + how many ratings a doctor has. */
-export function getDoctorRating(doctorId) {
-  const list = Object.values(readAll()).filter((r) => r.doctor_id === Number(doctorId));
-  if (!list.length) return { average: 0, count: 0 };
-  const sum = list.reduce((acc, r) => acc + (Number(r.stars) || 0), 0);
-  return { average: sum / list.length, count: list.length };
+/** Average stars + count for a doctor: { average, count }. */
+export async function getDoctorRating(doctorId) {
+  const data = await apiFetch(`/ratings/doctor/${doctorId}/`);
+  return { average: data.average ?? 0, count: data.count ?? 0 };
 }
