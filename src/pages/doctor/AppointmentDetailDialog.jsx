@@ -5,8 +5,6 @@ import {
 } from '@mui/material';
 import dayjs from 'dayjs';
 import { getAppointment, updateAppointment } from '../../api/appointments.js';
-import { getUser } from '../../api/users.js';
-import { getSpecialty } from '../../api/specialties.js';
 import { APPOINTMENT_STATUSES } from '../../schema/schema.js';
 import LoadingSpinner from '../../components/common/LoadingSpinner.jsx';
 
@@ -34,22 +32,14 @@ export default function AppointmentDetailDialog({ open, onClose, appointmentId }
         setLoading(true);
         const appt = await getAppointment(appointmentId);
         if (!appt) return;
-        
-        const [pat, doc] = await Promise.all([
-          getUser(appt.patient_id),
-          getUser(appt.doctor_id)
-        ]);
-        
-        let spec = null;
-        if (doc && doc.specialty_id) {
-          spec = await getSpecialty(doc.specialty_id);
-        }
 
+        // Names/specialty are embedded on the appointment row, so no extra
+        // (and, for a doctor, unauthorized) user lookups are needed.
         if (mounted) {
           setAppointment(appt);
-          setPatient(pat);
-          setDoctor(doc);
-          setSpecialty(spec);
+          setPatient({ name: appt.patient_name, email: appt.patient_email });
+          setDoctor({ name: appt.doctor_name });
+          setSpecialty(appt.doctor_specialty ? { name: appt.doctor_specialty } : null);
           setStatus(appt.status || '');
           setNotes(appt.notes || '');
         }
@@ -132,8 +122,7 @@ export default function AppointmentDetailDialog({ open, onClose, appointmentId }
               <CardContent>
                 <Typography variant="h6" gutterBottom>Patient</Typography>
                 <Typography variant="body2"><strong>Name:</strong> {patient.name}</Typography>
-                <Typography variant="body2"><strong>Phone:</strong> {patient.phone_number || 'N/A'}</Typography>
-                <Typography variant="body2"><strong>Age:</strong> {calculateAge(patient.date_of_birth)}</Typography>
+                <Typography variant="body2"><strong>Email:</strong> {patient.email || 'N/A'}</Typography>
               </CardContent>
             </Card>
 

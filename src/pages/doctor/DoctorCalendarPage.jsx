@@ -22,7 +22,6 @@ import {
 } from '@mui/material';
 import AppointmentCalendar from '../../components/common/AppointmentCalendar.jsx';
 import { listAppointmentsForDoctor, updateAppointment } from '../../api/appointments.js';
-import { getUser } from '../../api/users.js';
 import { useAuth } from '../../hooks/useAuth.js';
 import { APPOINTMENT_STATUSES } from '../../schema/schema.js';
 import LoadingSpinner from '../../components/common/LoadingSpinner.jsx';
@@ -71,14 +70,12 @@ export default function DoctorCalendarPage() {
     let mounted = true;
     setLoading(true);
     listAppointmentsForDoctor(doctorId)
-      .then(async (appts) => {
+      .then((appts) => {
         if (!mounted) return;
-        setAppointments(Array.isArray(appts) ? appts : []);
-        const ids = [...new Set((appts ?? []).map((a) => a.patient_id))];
-        const patients = await Promise.all(ids.map((id) => getUser(id)));
-        if (!mounted) return;
+        const list = Array.isArray(appts) ? appts : [];
+        setAppointments(list);
         const map = {};
-        patients.forEach((p) => { if (p) map[p.id] = p; });
+        list.forEach((a) => { map[a.patient_id] = { id: a.patient_id, name: a.patient_name }; });
         setPatientById(map);
       })
       .finally(() => { if (mounted) setLoading(false); });
