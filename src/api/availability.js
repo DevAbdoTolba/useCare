@@ -15,6 +15,11 @@ export async function listAvailabilityForDoctor(doctorId) {
   return data.results ?? data;
 }
 
+/** Real bookable 30-min slots for a doctor (future, minus booked): [{date, time}]. */
+export async function listOpenSlotsForDoctor(doctorId) {
+  return apiFetch(`/doctors/${doctorId}/slots/`);
+}
+
 export async function listAvailabilityForDate(_date) {
   // Not used by the UI; date browsing goes per-doctor.
   return [];
