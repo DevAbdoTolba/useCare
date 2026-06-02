@@ -28,20 +28,41 @@ export function clearTokens() {
   localStorage.removeItem(REFRESH_KEY);
 }
 
-/**
- * Thin fetch wrapper: JSON in/out, Bearer token attached automatically, and a
- * thrown Error (with .status + .data) on any non-2xx so callers can try/catch.
- */
-export async function apiFetch(path, { method = 'GET', body, auth = true, headers = {} } = {}) {
+// SimpleJWT codes that mean "this stored token is worthless" — the user it
+// pointed at is gone (e.g. the DB was re-seeded) or the token is malformed.
+// When we see one, we drop the dead token and fall back to an anonymous call,
+// so public pages (landing-page search) keep working instead of 401-ing.
+const DEAD_TOKEN_CODES = new Set(['user_not_found', 'token_not_valid']);
+
+async function rawFetch(path, { method, body, headers, token }) {
   const opts = { method, headers: { 'Content-Type': 'application/json', ...headers } };
-  const token = getAccess();
-  if (auth && token) opts.headers.Authorization = `Bearer ${token}`;
+  if (token) opts.headers.Authorization = `Bearer ${token}`;
   if (body !== undefined) opts.body = JSON.stringify(body);
 
   const res = await fetch(`${BASE}${path}`, opts);
-  if (res.status === 204) return null;
-
+  if (res.status === 204) return { res, data: null };
   const data = await res.json().catch(() => null);
+  return { res, data };
+}
+
+/**
+ * Thin fetch wrapper: JSON in/out, Bearer token attached automatically, and a
+ * thrown Error (with .status + .data) on any non-2xx so callers can try/catch.
+ *
+ * If the stored token is dead (user re-seeded away, token expired/garbage), we
+ * clear it and retry the same request anonymously — public endpoints recover,
+ * protected ones fail cleanly which logs the stale session out.
+ */
+export async function apiFetch(path, { method = 'GET', body, auth = true, headers = {} } = {}) {
+  const token = auth ? getAccess() : null;
+  let { res, data } = await rawFetch(path, { method, body, headers, token });
+
+  if (res.status === 401 && token && DEAD_TOKEN_CODES.has(data?.code)) {
+    clearTokens();
+    ({ res, data } = await rawFetch(path, { method, body, headers, token: null }));
+  }
+
+  if (res.status === 204) return null;
   if (!res.ok) {
     const detail = data?.detail || data?.[Object.keys(data || {})[0]] || `Request failed (${res.status})`;
     const err = new Error(Array.isArray(detail) ? detail[0] : detail);
