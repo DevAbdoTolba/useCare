@@ -6,8 +6,8 @@ entities (User / Specialty / Appointments) keep the diagram's field names
 
 Everything tagged **(post-discussion)** was added after the lecturer review:
 the new **Doctor** subtype (ISA of `User` when `U_role = 'doctor'`) holding all
-doctor-only fields, plus the new Rating, Payment, SpecialtySuggestion and
-DocUpdateRequest entities.
+doctor-only fields, plus the Rating, Payment, SpecialtySuggestion,
+DocUpdateRequest, **DoctorAvailability** and **SiteSettings** entities.
 
 ```mermaid
 erDiagram
@@ -27,18 +27,19 @@ erDiagram
     SPECIALTY_SUGGESTION }o--|| SPECIALTY : "becomes on approval"
 
     DOCTOR ||--o{ DOC_UPDATE_REQUEST : "requests (1:N)"
+    DOCTOR ||--o{ DOCTOR_AVAILABILITY : "opens (1:N)"
 
     USER {
         int U_id PK
         string U_name
-        string U_role
+        string U_role "admin / doctor / patient"
         string U_email
         string U_password
         date U_DoB
         string U_gender
         string u_phone_number
         string U_Desc
-        string U_status "post-discussion"
+        string U_status "pending / approved / rejected / banned"
     }
 
     DOCTOR {
@@ -60,7 +61,7 @@ erDiagram
         date A_date
         time A_time
         string A_notes
-        string A_status
+        string A_status "pending / confirmed / cancelled / completed / outdated"
         boolean A_paid "post-discussion"
         float A_amount_paid "post-discussion (USD)"
         int patient_id FK
@@ -81,7 +82,7 @@ erDiagram
         int patient_id FK
         int doctor_id FK
         float amount "USD"
-        string status "paid / refunded"
+        string status "pending / paid / refunded / failed"
         date date
     }
 
@@ -100,6 +101,21 @@ erDiagram
         string license_url "proposed — link or data URL (uploaded file)"
         string status "pending / approved / rejected"
     }
+
+    DOCTOR_AVAILABILITY {
+        int id PK
+        int doctor_id FK
+        date date
+        time start_time
+        time end_time
+        boolean is_available
+    }
+
+    SITE_SETTINGS {
+        int id PK "singleton row"
+        string theme "active site theme key"
+        datetime updated_at
+    }
 ```
 
 ## Relationships
@@ -117,6 +133,9 @@ erDiagram
 | User | Payment | Pays | one patient → many payments; platform keeps a 12% cut *(post-discussion)* |
 | Doctor | SpecialtySuggestion | Proposes | a doctor proposes specialties the admin approves into Specialty *(post-discussion)* |
 | Doctor | DocUpdateRequest | Requests | a doctor files resume/license changes the admin approves back onto Doctor *(post-discussion)* |
+| Doctor | DoctorAvailability | Opens | a doctor opens many bookable time windows patients book inside |
+
+`SiteSettings` is a standalone singleton (no relationships) — see the notes below.
 
 ## Notes on the additions
 
@@ -140,3 +159,12 @@ erDiagram
 - **DocUpdateRequest** — already-approved doctors can't silently swap their
   resume/license. They file a `DocUpdateRequest`; admin approval patches the
   matching `D_resume_url` / `D_license_url` back onto `Doctor`.
+- **DoctorAvailability** — the open booking windows a doctor declares
+  (`date` + `start_time`–`end_time`). The slots endpoint expands each window
+  into on-the-hour times and hides any already booked.
+- **SiteSettings** — a single config row holding the site-wide `theme` the
+  admin picks; every user loads it on each new session. No relationships.
+- **Lifecycle statuses** — `A_status` adds `outdated` (a confirmed-less booking
+  whose time passed is auto-expired & refunded; a confirmed one auto-completes),
+  `U_status` adds `banned`, and `Payment.status` runs pending / paid / refunded
+  / failed.
