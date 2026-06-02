@@ -108,7 +108,7 @@ export default function ApproveUserDialog({ open, onClose, user, onUpdated }) {
                   <Typography variant="overline">Verification documents</Typography>
                 </Divider>
                 <Typography variant="body2" color="text.secondary">
-                  Review the résumé and license before approving — they&apos;re the basis for the decision.
+                  Review the resume and license before approving — they&apos;re the basis for the decision.
                 </Typography>
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
                   <Button
@@ -121,7 +121,7 @@ export default function ApproveUserDialog({ open, onClose, user, onUpdated }) {
                     disabled={!u.resume_url}
                     fullWidth
                   >
-                    {u.resume_url ? 'Open résumé' : 'No résumé'}
+                    {u.resume_url ? 'Open resume' : 'No resume'}
                   </Button>
                   <Button
                     startIcon={<VerifiedUserIcon />}

@@ -57,7 +57,7 @@ export default function ProfilePage() {
   const [specialties, setSpecialties] = useState([]);
   const [toast, setToast] = useState('');
 
-  // Doctor document-update request (résumé/license — needs admin approval).
+  // Doctor document-update request (resume/license — needs admin approval).
   const [docOpen, setDocOpen] = useState(false);
   const [docForm, setDocForm] = useState({ resume_url: '', license_url: '' });
   const [docError, setDocError] = useState('');
@@ -72,15 +72,17 @@ export default function ProfilePage() {
   }, [isDoctor, user?.id, reqTick]);
 
   function openDocDialog() {
-    setDocForm({ resume_url: user?.resume_url ?? '', license_url: user?.license_url ?? '' });
+    // Start empty — only the document(s) the doctor actually fills get updated.
+    setDocForm({ resume_url: '', license_url: '' });
     setDocError('');
     setDocOpen(true);
   }
 
   async function submitDocRequest() {
     const { resume_url, license_url } = docForm;
-    if (!isDocValue(resume_url) || !isDocValue(license_url)) {
-      setDocError('For each document, paste a link or upload a file.');
+    // Updating is per-document: fill the one(s) you want to change — at least one.
+    if (!isDocValue(resume_url) && !isDocValue(license_url)) {
+      setDocError('Add at least one document to update — resume and/or license.');
       return;
     }
     try {
@@ -197,7 +199,7 @@ export default function ProfilePage() {
                         disabled={!user.resume_url}
                         fullWidth
                       >
-                        {user.resume_url ? 'View résumé' : 'No résumé'}
+                        {user.resume_url ? 'View resume' : 'No resume'}
                       </Button>
                       <Button
                         startIcon={<VerifiedUserIcon />}
@@ -278,11 +280,12 @@ export default function ProfilePage() {
         <DialogContent>
           <Stack spacing={2} marginTop={1}>
             <Typography variant="body2" color="text.secondary">
-              New links go to the admin for approval — your current documents stay
-              in place until they&apos;re reviewed.
+              Fill only the document(s) you want to change — you can update just the
+              resume, just the license, or both. New links go to the admin for
+              approval; your current documents stay in place until reviewed.
             </Typography>
             <DocumentInput
-              label="Résumé / CV"
+              label="Resume / CV"
               value={docForm.resume_url}
               onChange={(v) => setDocForm((f) => ({ ...f, resume_url: v }))}
             />

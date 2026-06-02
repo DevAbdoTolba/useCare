@@ -21,9 +21,6 @@ import { useAuth } from '../../hooks/useAuth.js';
 // Signup offers only female / male (no "other").
 const SIGNUP_GENDERS = ['female', 'male'];
 
-// Sentinel for "my specialty isn't listed — let me propose one".
-const SUGGEST_SPECIALTY = '__suggest__';
-
 /** Where each role lands after registering. */
 const HOME_BY_ROLE = {
   doctor: '/doctor',
@@ -67,8 +64,6 @@ export default function RegisterPage() {
   });
 
   const role = watch('role');
-  const specialtyChoice = watch('specialty_id');
-  const isSuggesting = role === 'doctor' && specialtyChoice === SUGGEST_SPECIALTY;
 
   useEffect(() => {
     listSpecialties().then(setSpecialties).catch(() => setSpecialties([]));
@@ -77,7 +72,6 @@ export default function RegisterPage() {
   async function onSubmit(values) {
     setSubmitError('');
     const isDoctor = values.role === 'doctor';
-    const suggesting = isDoctor && values.specialty_id === SUGGEST_SPECIALTY;
     try {
       const { user } = await apiSignup({
         name: values.name,
@@ -88,8 +82,8 @@ export default function RegisterPage() {
         gender: values.gender,
         role: values.role,
         // The backend keeps doctor-only fields on DoctorProfile (see http.signup).
-        specialty_id: isDoctor && !suggesting ? Number(values.specialty_id) : null,
-        suggested_specialty: suggesting ? values.suggested_specialty : '',
+        // A doctor must pick an existing specialty (no "suggest" escape).
+        specialty_id: isDoctor ? Number(values.specialty_id) : null,
         resume_url: isDoctor ? values.resume_url : '',
         license_url: isDoctor ? values.license_url : '',
         hourly_rate: isDoctor ? Number(values.hourly_rate) : null,
@@ -260,36 +254,17 @@ export default function RegisterPage() {
                   {specialties.map((s) => (
                     <MenuItem key={s.id} value={s.id}>{s.name}</MenuItem>
                   ))}
-                  <MenuItem value={SUGGEST_SPECIALTY}>Other — suggest a new specialty…</MenuItem>
                 </TextField>
               )}
             />
 
-            {isSuggesting && (
-              <Controller
-                name="suggested_specialty"
-                control={control}
-                rules={{ required: 'Tell us the specialty you want to propose' }}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    label="Proposed specialty"
-                    placeholder="e.g. Orthopedics"
-                    fullWidth
-                    error={Boolean(errors.suggested_specialty)}
-                    helperText={errors.suggested_specialty?.message || 'An admin reviews this before it goes live.'}
-                  />
-                )}
-              />
-            )}
-
             <Controller
               name="resume_url"
               control={control}
-              rules={{ validate: (v) => isDocValue(v) || 'Add a résumé — paste a link or upload a file' }}
+              rules={{ validate: (v) => isDocValue(v) || 'Add a resume — paste a link or upload a file' }}
               render={({ field }) => (
                 <DocumentInput
-                  label="Résumé / CV"
+                  label="Resume / CV"
                   value={field.value}
                   onChange={field.onChange}
                   error={Boolean(errors.resume_url)}
