@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link as RouterLink } from 'react-router-dom';
 import dayjs from 'dayjs';
 import {
   Container,
@@ -215,6 +216,16 @@ export default function MyAppointmentsPage() {
           )}
         </DialogContent>
         <DialogActions>
+          {detail && shownStatus(detail) === 'unpaid' && (
+            <Button
+              variant="contained"
+              disableElevation
+              component={RouterLink}
+              to={`/patient/pay/${detail.id}`}
+            >
+              Pay now
+            </Button>
+          )}
           {detail?.status === 'completed' && (
             <Button variant="contained" disableElevation onClick={submitRating}>
               {savedRating ? 'Update rating' : 'Submit rating'}
