@@ -130,7 +130,7 @@ erDiagram
 | Appointments | Payment | Paid for | each appointment → at most one payment *(post-discussion)* |
 | User | Payment | Pays | one patient → many payments; platform keeps a 12% cut *(post-discussion)* |
 | Doctor | SpecialtySuggestion | Proposes | a doctor proposes specialties the admin approves into Specialty *(post-discussion)* |
-| Doctor | DocUpdateRequest | Requests | a doctor files résumé/license changes the admin approves back onto Doctor *(post-discussion)* |
+| Doctor | DocUpdateRequest | Requests | a doctor files resume/license changes the admin approves back onto Doctor *(post-discussion)* |
 
 
 

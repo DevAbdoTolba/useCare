@@ -25,6 +25,7 @@ import {
   banUser,
   unbanUser,
 } from '../../api/users.js';
+import { listPendingRequests } from '../../lib/docUpdateRequestsStore.js';
 import MasterDetailBrowser from '../../components/common/MasterDetailBrowser.jsx';
 import LoadingSpinner from '../../components/common/LoadingSpinner.jsx';
 import { initialOf, USER_STATUS_COLOR } from '../../lib/format.js';
@@ -51,11 +52,18 @@ export default function UsersListPage() {
   const [detail, setDetail] = useState(null); // enriched (doctor docs + rating + stats)
   const [detailLoading, setDetailLoading] = useState(false);
   const [toast, setToast] = useState('');
+  // Doctors with a pending resume/license update request (admin notification).
+  const [pendingDocIds, setPendingDocIds] = useState(() => new Set());
+  const [pendingDocsOnly, setPendingDocsOnly] = useState(false);
 
   useEffect(() => {
     let mounted = true;
-    listUsers()
-      .then((u) => { if (mounted) setUsers(Array.isArray(u) ? u : []); })
+    Promise.all([listUsers(), listPendingRequests().catch(() => [])])
+      .then(([u, reqs]) => {
+        if (!mounted) return;
+        setUsers(Array.isArray(u) ? u : []);
+        setPendingDocIds(new Set((reqs ?? []).map((r) => r.doctor_id)));
+      })
       .finally(() => { if (mounted) setLoading(false); });
     return () => { mounted = false; };
   }, []);
@@ -78,9 +86,10 @@ export default function UsersListPage() {
       const matchesName =
         !term || u.name?.toLowerCase().includes(term) || u.email?.toLowerCase().includes(term);
       const matchesStatus = statusFilter === ALL || u.status === statusFilter;
-      return matchesName && matchesStatus;
+      const matchesDocs = !pendingDocsOnly || pendingDocIds.has(u.id);
+      return matchesName && matchesStatus && matchesDocs;
     });
-  }, [users, search, statusFilter]);
+  }, [users, search, statusFilter, pendingDocsOnly, pendingDocIds]);
 
   const selected = users.find((u) => u.id === selectedId) ?? null;
 
@@ -193,7 +202,7 @@ export default function UsersListPage() {
                     rel="noopener"
                     disabled={!u.resume_url}
                   >
-                    {u.resume_url ? 'Open résumé' : 'No résumé'}
+                    {u.resume_url ? 'Open resume' : 'No resume'}
                   </Button>
                   <Button
                     startIcon={<VerifiedUserIcon />}
@@ -244,17 +253,27 @@ export default function UsersListPage() {
         searchLabel="Search by name or email"
         emptyMessage="No users match your filters"
         filters={(
-          <TextField
-            select
-            label="Status"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-          >
-            <MenuItem value={ALL}>All</MenuItem>
-            {STATUSES.map((s) => (
-              <MenuItem key={s} value={s}>{cap(s)}</MenuItem>
-            ))}
-          </TextField>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <TextField
+              select
+              label="Status"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <MenuItem value={ALL}>All</MenuItem>
+              {STATUSES.map((s) => (
+                <MenuItem key={s} value={s}>{cap(s)}</MenuItem>
+              ))}
+            </TextField>
+            {/* Notification + filter: doctors with a pending resume/license request. */}
+            <Chip
+              icon={<DescriptionIcon />}
+              label={`Pending docs${pendingDocIds.size ? ` (${pendingDocIds.size})` : ''}`}
+              color="warning"
+              variant={pendingDocsOnly ? 'filled' : 'outlined'}
+              onClick={() => setPendingDocsOnly((v) => !v)}
+            />
+          </Stack>
         )}
       />
       <Snackbar
