@@ -18,7 +18,7 @@ import { listUsers } from '../../api/users.js';
 import { APPOINTMENT_STATUSES } from '../../schema/schema.js';
 import MasterDetailBrowser from '../../components/common/MasterDetailBrowser.jsx';
 import LoadingSpinner from '../../components/common/LoadingSpinner.jsx';
-import { initialOf, timeLabel, ageFromDob, STATUS_COLOR } from '../../lib/format.js';
+import { initialOf, timeLabel, ageFromDob, STATUS_COLOR, shownStatus } from '../../lib/format.js';
 import { exportAppointmentsPdf, exportSingleAppointmentPdf } from '../../lib/exportAppointmentsPdf.js';
 
 const ALL = 'all';
@@ -80,7 +80,7 @@ export default function AppointmentsPage() {
     { key: 'time', label: 'Time', render: (a) => timeLabel(a.time) },
     { key: 'patient', label: 'Patient', render: (a) => patientName(a) },
     { key: 'doctor', label: 'Doctor', render: (a) => doctorName(a) },
-    { key: 'status', label: 'Status', render: (a) => <Chip size="small" label={a.status} color={STATUS_COLOR[a.status] ?? 'default'} /> },
+    { key: 'status', label: 'Status', render: (a) => <Chip size="small" label={shownStatus(a)} color={STATUS_COLOR[shownStatus(a)] ?? 'default'} /> },
   ];
 
   const renderDetail = (a) => {
@@ -119,7 +119,7 @@ export default function AppointmentsPage() {
         <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
           <Chip label={a.date} />
           <Chip label={timeLabel(a.time)} variant="outlined" />
-          <Chip label={a.status} color={STATUS_COLOR[a.status] ?? 'default'} />
+          <Chip label={shownStatus(a)} color={STATUS_COLOR[shownStatus(a)] ?? 'default'} />
           {a.paid && <Chip label={`Paid $${a.amount_paid}`} color="success" variant="outlined" />}
         </Stack>
 

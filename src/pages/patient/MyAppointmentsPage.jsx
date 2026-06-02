@@ -26,7 +26,7 @@ import LoadingSpinner from '../../components/common/LoadingSpinner.jsx';
 import ProfileSummaryCard from '../../components/common/ProfileSummaryCard.jsx';
 import DayHourGrid from '../../components/common/DayHourGrid.jsx';
 import AppointmentCalendar from '../../components/common/AppointmentCalendar.jsx';
-import { initialOf, timeLabel, STATUS_COLOR } from '../../lib/format.js';
+import { initialOf, timeLabel, STATUS_COLOR, shownStatus } from '../../lib/format.js';
 
 export default function MyAppointmentsPage() {
   const { user } = useAuth();
@@ -174,7 +174,7 @@ export default function MyAppointmentsPage() {
               <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
                 <Chip label={detail.date} />
                 <Chip label={timeLabel(detail.time)} variant="outlined" />
-                <Chip label={detail.status} color={STATUS_COLOR[detail.status] ?? 'default'} />
+                <Chip label={shownStatus(detail)} color={STATUS_COLOR[shownStatus(detail)] ?? 'default'} />
               </Stack>
 
               <Divider textAlign="left">
