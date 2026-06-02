@@ -40,7 +40,7 @@ import { styled } from '@mui/material/styles';
 
 import { listDoctors } from '../../api/users.js';
 import { listSpecialties } from '../../api/specialties.js';
-import { listAvailabilityForDoctor } from '../../api/availability.js';
+import { listOpenSlotsForDoctor } from '../../api/availability.js';
 import { createAppointment } from '../../api/appointments.js';
 import { createPayment, capturePayment } from '../../api/payments.js';
 import { useAuth } from '../../hooks/useAuth.js';
@@ -105,17 +105,16 @@ function Day({ day, selectedDay, hoveredDay, ...other }) {
  * carrying its real DoctorAvailability id — which is what /appointments/book/
  * expects.
  */
-function buildSlots(availabilities) {
-  return (availabilities ?? [])
-    .filter((a) => a.is_available)
-    .map((a) => {
-      const start = dayjs(`${a.date} ${a.start_time}`);
+function buildSlots(openSlots) {
+  return (openSlots ?? [])
+    .map((s) => {
+      const when = dayjs(`${s.date} ${s.time}`);
       return {
-        id: a.id,
-        date: a.date,
-        time24: start.format('HH:mm'),
-        dateLabel: start.format('ddd, MMM D'),
-        timeLabel: start.format('h:mm A'),
+        id: `${s.date} ${s.time}`,
+        date: s.date,
+        time24: s.time,
+        dateLabel: when.format('ddd, MMM D'),
+        timeLabel: when.format('h:mm A'),
       };
     })
     .sort((x, y) => `${x.date} ${x.time24}`.localeCompare(`${y.date} ${y.time24}`));
@@ -174,8 +173,8 @@ export default function PatientHomePage() {
         // doctor list (not just the selected card).
         const entries = await Promise.all(
           docs.map(async (d) => {
-            const avail = await listAvailabilityForDoctor(d.id);
-            return [d.id, buildSlots(avail)];
+            const open = await listOpenSlotsForDoctor(d.id);
+            return [d.id, buildSlots(open)];
           }),
         );
         if (mounted) setSlotsByDoctor(Object.fromEntries(entries));
@@ -260,7 +259,9 @@ export default function PatientHomePage() {
     try {
       // 1. Book the slot on the backend (it re-checks the slot is still open).
       const appointment = await createAppointment({
-        availability: pendingSlot.id,
+        doctor: selectedDoctor.id,
+        date: pendingSlot.date,
+        time: pendingSlot.time24,
         notes: notes.trim(),
       });
 
@@ -328,6 +329,18 @@ export default function PatientHomePage() {
                 <Typography variant="body2" color="text.secondary">
                   {selectedDoctor.description || 'No description provided.'}
                 </Typography>
+
+                {selectedDoctor.rating_count > 0 ? (
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Rating value={selectedDoctor.rating} readOnly precision={0.5} size="small" />
+                    <Typography variant="body2" color="text.secondary">
+                      {selectedDoctor.rating} ({selectedDoctor.rating_count} review
+                      {selectedDoctor.rating_count === 1 ? '' : 's'})
+                    </Typography>
+                  </Stack>
+                ) : (
+                  <Typography variant="body2" color="text.secondary">No ratings yet</Typography>
+                )}
 
                 {selectedDoctor.hourly_rate != null && (
                   <Stack direction="row">
