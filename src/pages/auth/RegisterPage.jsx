@@ -29,6 +29,9 @@ const HOME_BY_ROLE = {
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// Sentinel value for the "propose a new specialty" option in the select.
+const SUGGEST_SPECIALTY = '__suggest__';
+
 // Non-breaking space: keeps the helperText line reserved so showing/clearing
 // a validation message never shifts the layout below the field.
 const HELPER_PLACEHOLDER = ' ';
@@ -64,6 +67,8 @@ export default function RegisterPage() {
   });
 
   const role = watch('role');
+  const specialtyId = watch('specialty_id');
+  const isProposing = specialtyId === SUGGEST_SPECIALTY;
 
   useEffect(() => {
     listSpecialties().then(setSpecialties).catch(() => setSpecialties([]));
@@ -72,6 +77,7 @@ export default function RegisterPage() {
   async function onSubmit(values) {
     setSubmitError('');
     const isDoctor = values.role === 'doctor';
+    const proposing = isDoctor && values.specialty_id === SUGGEST_SPECIALTY;
     try {
       const { user } = await apiSignup({
         name: values.name,
@@ -82,8 +88,10 @@ export default function RegisterPage() {
         gender: values.gender,
         role: values.role,
         // The backend keeps doctor-only fields on DoctorProfile (see http.signup).
-        // A doctor must pick an existing specialty (no "suggest" escape).
-        specialty_id: isDoctor ? Number(values.specialty_id) : null,
+        // A doctor either picks an existing specialty or proposes a new one,
+        // which files a suggestion the admin approves with the account.
+        specialty_id: isDoctor && !proposing ? Number(values.specialty_id) : null,
+        suggested_specialty: proposing ? values.suggested_specialty.trim() : '',
         resume_url: isDoctor ? values.resume_url : '',
         license_url: isDoctor ? values.license_url : '',
         hourly_rate: isDoctor ? Number(values.hourly_rate) : null,
@@ -254,9 +262,34 @@ export default function RegisterPage() {
                   {specialties.map((s) => (
                     <MenuItem key={s.id} value={s.id}>{s.name}</MenuItem>
                   ))}
+                  <Divider />
+                  <MenuItem value={SUGGEST_SPECIALTY}>+ Propose a new specialty…</MenuItem>
                 </TextField>
               )}
             />
+
+            {isProposing && (
+              <Controller
+                name="suggested_specialty"
+                control={control}
+                rules={{
+                  validate: (v) =>
+                    !isProposing || (v && v.trim().length > 1) || 'Name the specialty you want to propose',
+                }}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    label="New specialty name"
+                    fullWidth
+                    error={Boolean(errors.suggested_specialty)}
+                    helperText={
+                      errors.suggested_specialty?.message ||
+                      'The admin reviews this and approves it together with your account.'
+                    }
+                  />
+                )}
+              />
+            )}
 
             <Controller
               name="resume_url"
