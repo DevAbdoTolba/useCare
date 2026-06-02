@@ -6,6 +6,7 @@ import {
   Typography,
   Avatar,
   Chip,
+  Rating,
   Divider,
   TextField,
   MenuItem,
@@ -14,7 +15,6 @@ import {
 import DownloadIcon from '@mui/icons-material/Download';
 import { listAppointments } from '../../api/appointments.js';
 import { listUsers } from '../../api/users.js';
-import { listSpecialties } from '../../api/specialties.js';
 import { APPOINTMENT_STATUSES } from '../../schema/schema.js';
 import MasterDetailBrowser from '../../components/common/MasterDetailBrowser.jsx';
 import LoadingSpinner from '../../components/common/LoadingSpinner.jsx';
@@ -26,7 +26,6 @@ const ALL = 'all';
 export default function AppointmentsPage() {
   const [appointments, setAppointments] = useState([]);
   const [userById, setUserById] = useState({});
-  const [specialtyById, setSpecialtyById] = useState({});
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState(ALL);
@@ -34,30 +33,32 @@ export default function AppointmentsPage() {
 
   useEffect(() => {
     let mounted = true;
-    Promise.all([listAppointments(), listUsers(), listSpecialties()])
-      .then(([appts, users, specs]) => {
+    Promise.all([listAppointments(), listUsers()])
+      .then(([appts, users]) => {
         if (!mounted) return;
         setAppointments(Array.isArray(appts) ? appts : []);
         const u = {};
         (users ?? []).forEach((x) => { u[x.id] = x; });
         setUserById(u);
-        const s = {};
-        (specs ?? []).forEach((x) => { s[x.id] = x; });
-        setSpecialtyById(s);
       })
       .finally(() => { if (mounted) setLoading(false); });
     return () => { mounted = false; };
   }, []);
 
-  const nameOf = (id) => userById[id]?.name ?? `#${id}`;
-  const specialtyOf = (doctorId) => specialtyById[userById[doctorId]?.specialty_id]?.name ?? '—';
+  // Names + specialty are embedded on each appointment row; fall back to the
+  // user map (e.g. for the bulk PDF export which works off ids).
+  const patientName = (a) => a.patient_name || userById[a.patient_id]?.name || `#${a.patient_id}`;
+  const doctorName = (a) => a.doctor_name || userById[a.doctor_id]?.name || `#${a.doctor_id}`;
+  const doctorSpecialty = (a) => a.doctor_specialty || '—';
+  const nameById = (id) => userById[id]?.name ?? `#${id}`;
 
   const rows = useMemo(() => {
     const term = search.trim().toLowerCase();
     return appointments.filter((a) => {
-      const matchesName = !term
-        || nameOf(a.patient_id).toLowerCase().includes(term)
-        || nameOf(a.doctor_id).toLowerCase().includes(term);
+      const matchesName =
+        !term
+        || patientName(a).toLowerCase().includes(term)
+        || doctorName(a).toLowerCase().includes(term);
       const matchesStatus = statusFilter === ALL || a.status === statusFilter;
       return matchesName && matchesStatus;
     });
@@ -77,27 +78,26 @@ export default function AppointmentsPage() {
   const columns = [
     { key: 'date', label: 'Date' },
     { key: 'time', label: 'Time', render: (a) => timeLabel(a.time) },
-    { key: 'patient', label: 'Patient', render: (a) => nameOf(a.patient_id) },
-    { key: 'doctor', label: 'Doctor', render: (a) => nameOf(a.doctor_id) },
+    { key: 'patient', label: 'Patient', render: (a) => patientName(a) },
+    { key: 'doctor', label: 'Doctor', render: (a) => doctorName(a) },
     { key: 'status', label: 'Status', render: (a) => <Chip size="small" label={a.status} color={STATUS_COLOR[a.status] ?? 'default'} /> },
   ];
 
   const renderDetail = (a) => {
     const patient = userById[a.patient_id];
-    const doctor = userById[a.doctor_id];
     const age = ageFromDob(patient?.date_of_birth);
     return (
       <Stack spacing={2}>
-        {/* Section 1: Patient | Doctor */}
+        {/* Patient | Doctor */}
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
           <Box flexGrow={1}>
             <Typography variant="overline" color="text.secondary">Patient</Typography>
             <Stack direction="row" spacing={2} alignItems="center">
-              <Avatar>{initialOf(patient?.name ?? '?')}</Avatar>
+              <Avatar>{initialOf(patientName(a))}</Avatar>
               <Box>
-                <Typography variant="subtitle1">{patient?.name ?? `#${a.patient_id}`}</Typography>
+                <Typography variant="subtitle1">{patientName(a)}</Typography>
                 <Typography variant="body2" color="text.secondary">
-                  {[patient?.phone_number, age != null ? `${age} yrs` : null].filter(Boolean).join(' · ')}
+                  {[patient?.phone_number, age != null ? `${age} yrs` : null].filter(Boolean).join(' · ') || '—'}
                 </Typography>
               </Box>
             </Stack>
@@ -105,10 +105,10 @@ export default function AppointmentsPage() {
           <Box flexGrow={1}>
             <Typography variant="overline" color="text.secondary">Doctor</Typography>
             <Stack direction="row" spacing={2} alignItems="center">
-              <Avatar>{initialOf(doctor?.name ?? '?')}</Avatar>
+              <Avatar>{initialOf(doctorName(a))}</Avatar>
               <Box>
-                <Typography variant="subtitle1">{doctor?.name ?? `#${a.doctor_id}`}</Typography>
-                <Typography variant="body2" color="text.secondary">{specialtyOf(a.doctor_id)}</Typography>
+                <Typography variant="subtitle1">{doctorName(a)}</Typography>
+                <Typography variant="body2" color="text.secondary">{doctorSpecialty(a)}</Typography>
               </Box>
             </Stack>
           </Box>
@@ -116,17 +116,34 @@ export default function AppointmentsPage() {
 
         <Divider />
 
-        {/* Section 2: appointment info + doctor's note */}
         <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
           <Chip label={a.date} />
           <Chip label={timeLabel(a.time)} variant="outlined" />
           <Chip label={a.status} color={STATUS_COLOR[a.status] ?? 'default'} />
+          {a.paid && <Chip label={`Paid $${a.amount_paid}`} color="success" variant="outlined" />}
         </Stack>
+
         <Box>
           <Typography variant="overline" color="text.secondary">Doctor&apos;s note</Typography>
           <Typography variant="body2" color={a.notes?.trim() ? 'text.primary' : 'text.secondary'}>
             {a.notes?.trim() ? a.notes : 'No note recorded.'}
           </Typography>
+        </Box>
+
+        {/* Rating left by the patient, if any. */}
+        <Box>
+          <Typography variant="overline" color="text.secondary">Patient rating</Typography>
+          {a.my_rating ? (
+            <Stack spacing={0.5}>
+              <Stack direction="row" spacing={1} alignItems="center">
+                <Rating value={a.my_rating.stars} readOnly size="small" />
+                <Typography variant="body2" color="text.secondary">{a.my_rating.stars}/5</Typography>
+              </Stack>
+              {a.my_rating.comment && <Typography variant="body2">“{a.my_rating.comment}”</Typography>}
+            </Stack>
+          ) : (
+            <Typography variant="body2" color="text.secondary">Not rated.</Typography>
+          )}
         </Box>
 
         <Box>
@@ -135,9 +152,9 @@ export default function AppointmentsPage() {
             disableElevation
             startIcon={<DownloadIcon />}
             onClick={() => exportSingleAppointmentPdf(a, {
-              patientName: nameOf(a.patient_id),
-              doctorName: nameOf(a.doctor_id),
-              specialtyName: specialtyOf(a.doctor_id),
+              patientName: patientName(a),
+              doctorName: doctorName(a),
+              specialtyName: doctorSpecialty(a),
             })}
           >
             Export this appointment
@@ -166,7 +183,7 @@ export default function AppointmentsPage() {
         <Button
           variant="outlined"
           startIcon={<DownloadIcon />}
-          onClick={() => exportAppointmentsPdf(rows, nameOf)}
+          onClick={() => exportAppointmentsPdf(rows, nameById)}
           disabled={rows.length === 0}
         >
           Export PDF
