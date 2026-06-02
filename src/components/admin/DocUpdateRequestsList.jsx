@@ -12,7 +12,7 @@ import EmptyState from '../common/EmptyState.jsx';
 
 /**
  * Pending doctor document-update requests on the admin dashboard. Each row
- * links out to the proposed résumé + license so the admin can review before
+ * links out to the proposed resume + license so the admin can review before
  * approving (which patches the doctor) or rejecting.
  */
 export default function DocUpdateRequestsList({ requests, onApprove, onReject }) {
@@ -38,7 +38,7 @@ export default function DocUpdateRequestsList({ requests, onApprove, onReject })
               <Typography variant="subtitle2">{r.doctor_name || `Doctor #${r.doctor_id}`}</Typography>
               <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
                 <Button size="small" startIcon={<DescriptionIcon />} component="a" href={r.resume_url || undefined} target="_blank" rel="noopener" disabled={!r.resume_url}>
-                  Résumé
+                  Resume
                 </Button>
                 <Button size="small" startIcon={<VerifiedUserIcon />} component="a" href={r.license_url || undefined} target="_blank" rel="noopener" disabled={!r.license_url}>
                   License
