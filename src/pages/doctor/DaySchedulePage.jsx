@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { 
+import {
   Container, Typography, Box,
   Table, TableHead, TableBody, TableRow, TableCell, TableContainer,
-  Paper, Button, Chip
+  Paper, Button, Chip, IconButton, Tooltip, Snackbar, Alert
 } from '@mui/material';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import LoadingSpinner from '../../components/common/LoadingSpinner.jsx';
 import AppointmentDetailDialog from './AppointmentDetailDialog.jsx';
-import { listAppointmentsForDoctorOnDate } from '../../api/appointments.js';
+import { listAppointmentsForDoctorOnDate, updateAppointment } from '../../api/appointments.js';
 import { listAvailabilityForDoctor } from '../../api/availability.js';
+import { STATUS_COLOR, shownStatus } from '../../lib/format.js';
 import { useAuth } from '../../hooks/useAuth.js';
 
 function generateSlots(startTime, endTime) {
@@ -28,16 +30,6 @@ function generateSlots(startTime, endTime) {
   return slots;
 }
 
-const getStatusColor = (status) => {
-  switch(status) {
-    case 'confirmed': return 'primary';
-    case 'completed': return 'success';
-    case 'cancelled': return 'error';
-    case 'pending': return 'warning';
-    default: return 'default';
-  }
-};
-
 export default function DaySchedulePage() {
   const { date } = useParams();
   const { user } = useAuth();
@@ -46,9 +38,28 @@ export default function DaySchedulePage() {
   const [slots, setSlots] = useState([]);
   const [appointments, setAppointments] = useState({});
   const [patients, setPatients] = useState({});
-  
+  const [confirming, setConfirming] = useState(false);
+  const [toast, setToast] = useState('');
+  const [toastSeverity, setToastSeverity] = useState('success');
+
   const [selectedAppointmentId, setSelectedAppointmentId] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  // One-click confirm of a paid, still-pending booking (the small tick).
+  async function quickConfirm(time, appt) {
+    setConfirming(true);
+    try {
+      await updateAppointment(appt.id, { status: 'confirmed', notes: appt.notes ?? '' });
+      setAppointments((prev) => ({ ...prev, [time]: { ...prev[time], status: 'confirmed' } }));
+      setToastSeverity('success');
+      setToast('Appointment confirmed.');
+    } catch (err) {
+      setToastSeverity('warning');
+      setToast(err?.message || 'Could not confirm the appointment.');
+    } finally {
+      setConfirming(false);
+    }
+  }
 
   useEffect(() => {
     let mounted = true;
@@ -137,13 +148,26 @@ export default function DaySchedulePage() {
                       <>
                         <TableCell>{patient ? patient.name : 'Unknown Patient'}</TableCell>
                         <TableCell>
-                          <Chip 
-                            label={appt.status} 
-                            color={getStatusColor(appt.status)}
+                          <Chip
+                            label={shownStatus(appt)}
+                            color={STATUS_COLOR[shownStatus(appt)] ?? 'default'}
                             size="small"
                           />
                         </TableCell>
-                        <TableCell align="right"></TableCell>
+                        <TableCell align="right">
+                          {appt.paid && appt.status === 'pending' && (
+                            <Tooltip title="Confirm appointment">
+                              <IconButton
+                                color="success"
+                                size="small"
+                                disabled={confirming}
+                                onClick={(e) => { e.stopPropagation(); quickConfirm(time, appt); }}
+                              >
+                                <CheckCircleIcon />
+                              </IconButton>
+                            </Tooltip>
+                          )}
+                        </TableCell>
                       </>
                     ) : (
                       <>
@@ -169,6 +193,15 @@ export default function DaySchedulePage() {
           appointmentId={selectedAppointmentId}
         />
       )}
+
+      <Snackbar
+        open={Boolean(toast)}
+        autoHideDuration={3000}
+        onClose={() => setToast('')}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity={toastSeverity} onClose={() => setToast('')}>{toast}</Alert>
+      </Snackbar>
     </Container>
   );
 }
