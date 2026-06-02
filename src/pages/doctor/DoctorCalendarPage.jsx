@@ -323,7 +323,12 @@ export default function DoctorCalendarPage() {
                 />
               </Stack>
 
-              {shownStatus(detail) === 'unpaid' ? (
+              {shownStatus(detail) === 'outdated' ? (
+                <Alert severity="warning">
+                  This appointment is outdated — the time passed without confirmation. It can no
+                  longer be managed.
+                </Alert>
+              ) : shownStatus(detail) === 'unpaid' ? (
                 <Alert severity="info">
                   Waiting for the patient to pay. You can&apos;t manage this appointment until it&apos;s
                   paid — you can only cancel it.
@@ -354,7 +359,7 @@ export default function DoctorCalendarPage() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDetail(null)} disabled={saving}>Close</Button>
-          {shownStatus(detail) === 'unpaid' ? (
+          {shownStatus(detail) === 'outdated' ? null : shownStatus(detail) === 'unpaid' ? (
             detail?.status === 'pending' && (
               <Button color="error" onClick={() => cancelByDoctor(detail)} disabled={saving}>
                 Cancel appointment
