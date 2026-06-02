@@ -128,15 +128,17 @@ export async function signup(values) {
   const { user } = await login(values.email, values.password);
 
   if (isDoctor) {
-    await apiFetch('/doctors/me/', {
-      method: 'PUT',
-      body: {
-        specialty: values.specialty_id || null,
-        hourly_rate: values.hourly_rate ?? null,
-        resume_url: values.resume_url || '',
-        license_url: values.license_url || '',
-      },
-    });
+    const profile = {
+      hourly_rate: values.hourly_rate ?? null,
+      resume_url: values.resume_url || '',
+      license_url: values.license_url || '',
+    };
+    // Picked an existing specialty -> set it. Proposing a new one -> leave it
+    // null (the backend allows that only while pending) and file a suggestion;
+    // approving the account later approves the specialty and links it.
+    if (values.specialty_id) profile.specialty = values.specialty_id;
+    await apiFetch('/doctors/me/', { method: 'PUT', body: profile });
+
     if (values.suggested_specialty) {
       await apiFetch('/specialties/suggestions/', {
         method: 'POST',
