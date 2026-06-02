@@ -31,6 +31,7 @@ import MyAppointmentsPage from '../pages/patient/MyAppointmentsPage.jsx';
 import AppointmentHistoryPage from '../pages/patient/AppointmentHistoryPage.jsx';
 import PaymentReturnPage from '../pages/patient/PaymentReturnPage.jsx';
 import PaymentPage from '../pages/patient/PaymentPage.jsx';
+import RateAppointmentPage from '../pages/patient/RateAppointmentPage.jsx';
 
 /**
  * Route map with role guards:
@@ -77,6 +78,7 @@ export default function AppRoutes() {
           <Route path="doctor/:doctorId/slots" element={<AvailableSlotsPage />} />
           <Route path="appointments" element={<MyAppointmentsPage />} />
           <Route path="pay/:appointmentId" element={<PaymentPage />} />
+          <Route path="rate/:appointmentId" element={<RateAppointmentPage />} />
           <Route path="history" element={<AppointmentHistoryPage />} />
           <Route path="payment-return" element={<PaymentReturnPage />} />
           <Route path="profile" element={<ProfilePage />} />
