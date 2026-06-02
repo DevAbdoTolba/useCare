@@ -47,6 +47,15 @@ export async function rejectUser(id) {
   return apiFetch(`/auth/admin/doctors/${id}/reject/`, { method: 'POST' });
 }
 
+/** Ban / unban any non-admin user (revokes login too). */
+export async function banUser(id) {
+  return apiFetch(`/auth/admin/users/${id}/ban/`, { method: 'POST' });
+}
+
+export async function unbanUser(id) {
+  return apiFetch(`/auth/admin/users/${id}/unban/`, { method: 'POST' });
+}
+
 /** Self profile edit (the only user mutation the UI exposes). */
 export async function updateUser(_id, patch) {
   return apiFetch('/auth/me/profile/', { method: 'PATCH', body: patch });
