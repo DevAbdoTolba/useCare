@@ -227,9 +227,14 @@ export default function MyAppointmentsPage() {
             </Button>
           )}
           {detail?.status === 'completed' && (
-            <Button variant="contained" disableElevation onClick={submitRating}>
-              {savedRating ? 'Update rating' : 'Submit rating'}
-            </Button>
+            <>
+              <Button component={RouterLink} to={`/patient/rate/${detail.id}`}>
+                Open rating page
+              </Button>
+              <Button variant="contained" disableElevation onClick={submitRating}>
+                {savedRating ? 'Update rating' : 'Submit rating'}
+              </Button>
+            </>
           )}
           <Button onClick={() => setDetail(null)}>Close</Button>
         </DialogActions>
