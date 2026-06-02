@@ -27,7 +27,8 @@ import { APPOINTMENT_STATUSES } from '../../schema/schema.js';
 import LoadingSpinner from '../../components/common/LoadingSpinner.jsx';
 import ProfileSummaryCard from '../../components/common/ProfileSummaryCard.jsx';
 import DayHourGrid from '../../components/common/DayHourGrid.jsx';
-import { initialOf, timeLabel, hourLabel, ageFromDob, STATUS_COLOR } from '../../lib/format.js';
+import { initialOf, timeLabel, hourLabel, ageFromDob, STATUS_COLOR, shownStatus } from '../../lib/format.js';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 // --- Standalone localStorage store for the doctor's "open" hours (mock). ---
 const AVAIL_KEY = 'usecare_doctor_availability';
@@ -117,7 +118,7 @@ export default function DoctorCalendarPage() {
       return {
         selected: true,
         dim: true,
-        chip: <Chip size="small" label={patientName(appt.patient_id)} color={STATUS_COLOR[appt.status] ?? 'default'} />,
+        chip: <Chip size="small" label={patientName(appt.patient_id)} color={STATUS_COLOR[shownStatus(appt)] ?? 'default'} />,
       };
     }
     if (openHours.includes(hour)) {
@@ -170,10 +171,34 @@ export default function DoctorCalendarPage() {
       setToastSeverity('success');
       setToast('Appointment updated.');
       setDetail(null);
+    } catch (err) {
+      setToastSeverity('warning');
+      setToast(err?.message || 'Could not update the appointment.');
     } finally {
       setSaving(false);
     }
   }
+
+  // One-click confirm for a paid, still-pending booking (the small tick).
+  async function quickConfirm(appt) {
+    setSaving(true);
+    try {
+      await updateAppointment(appt.id, { status: 'confirmed', notes: appt.notes ?? '' });
+      setAppointments((prev) =>
+        prev.map((a) => (a.id === appt.id ? { ...a, status: 'confirmed' } : a)),
+      );
+      setToastSeverity('success');
+      setToast('Appointment confirmed.');
+      setDetail(null);
+    } catch (err) {
+      setToastSeverity('warning');
+      setToast(err?.message || 'Could not confirm the appointment.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const canQuickConfirm = (a) => a?.paid && a?.status === 'pending';
 
   if (loading) {
     return (
@@ -272,7 +297,18 @@ export default function DoctorCalendarPage() {
               <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
                 <Chip label={detail.date} />
                 <Chip label={timeLabel(detail.time)} variant="outlined" />
+                <Chip
+                  size="small"
+                  label={shownStatus(detail)}
+                  color={STATUS_COLOR[shownStatus(detail)] ?? 'default'}
+                />
               </Stack>
+
+              {shownStatus(detail) === 'unpaid' && (
+                <Typography variant="caption" color="text.secondary">
+                  Waiting for the patient to pay — you can confirm it once it&apos;s paid.
+                </Typography>
+              )}
 
               <TextField select label="Status" value={editStatus} onChange={(e) => setEditStatus(e.target.value)} fullWidth>
                 {APPOINTMENT_STATUSES.map((s) => (
@@ -296,6 +332,16 @@ export default function DoctorCalendarPage() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDetail(null)} disabled={saving}>Cancel</Button>
+          {canQuickConfirm(detail) && (
+            <Button
+              color="success"
+              startIcon={<CheckCircleIcon />}
+              onClick={() => quickConfirm(detail)}
+              disabled={saving}
+            >
+              Confirm
+            </Button>
+          )}
           <Button variant="contained" disableElevation onClick={saveAppointment} disabled={saving}>Save</Button>
         </DialogActions>
       </Dialog>
