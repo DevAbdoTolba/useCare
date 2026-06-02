@@ -3,6 +3,14 @@ import dayjs from 'dayjs';
 /** First letter of a name for an Avatar, upper-cased. */
 export const initialOf = (name) => (name?.trim()?.[0] ?? '?').toUpperCase();
 
+// Phone: +, digits, spaces, dashes, parens — and 7–15 actual digits
+// (mirrors the backend validator so both levels agree).
+const PHONE_RE = /^\+?[0-9\s\-()]+$/;
+export const isValidPhone = (v) => {
+  const digits = (String(v ?? '').match(/\d/g) || []).length;
+  return PHONE_RE.test(v ?? '') && digits >= 7 && digits <= 15;
+};
+
 /** Hour number (0..23) → "h A" label, e.g. 14 → "2 PM". */
 export const hourLabel = (h) => dayjs().hour(h).minute(0).format('h A');
 
