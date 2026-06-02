@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { 
-  Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, 
-  Stack, TextField, Select, MenuItem, InputLabel, FormControl, Card, CardContent 
+import {
+  Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography,
+  Stack, TextField, Select, MenuItem, InputLabel, FormControl, Card, CardContent, Alert
 } from '@mui/material';
 import dayjs from 'dayjs';
 import { getAppointment, updateAppointment } from '../../api/appointments.js';
 import { APPOINTMENT_STATUSES } from '../../schema/schema.js';
+import { shownStatus } from '../../lib/format.js';
 import LoadingSpinner from '../../components/common/LoadingSpinner.jsx';
 
 /**
@@ -57,6 +58,8 @@ export default function AppointmentDetailDialog({ open, onClose, appointmentId }
     return () => { mounted = false; };
   }, [open, appointmentId]);
 
+  const isUnpaid = appointment ? shownStatus(appointment) === 'unpaid' : false;
+
   const handleSave = async () => {
     try {
       setSaving(true);
@@ -64,6 +67,19 @@ export default function AppointmentDetailDialog({ open, onClose, appointmentId }
       onClose(); // This will trigger the parent (DaySchedulePage) to rerender or user will reload
     } catch (err) {
       console.error('Failed to update appointment', err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Unpaid bookings can't be managed — the only thing the doctor may do is cancel.
+  const handleCancelAppointment = async () => {
+    try {
+      setSaving(true);
+      await updateAppointment(appointmentId, { status: 'cancelled' });
+      onClose();
+    } catch (err) {
+      console.error('Failed to cancel appointment', err);
     } finally {
       setSaving(false);
     }
@@ -102,8 +118,15 @@ export default function AppointmentDetailDialog({ open, onClose, appointmentId }
               />
             </Stack>
 
+            {isUnpaid && (
+              <Alert severity="info">
+                Waiting for the patient to pay. You can&apos;t manage this appointment until it&apos;s
+                paid — you can only cancel it.
+              </Alert>
+            )}
+
             {/* Status */}
-            <FormControl fullWidth>
+            <FormControl fullWidth disabled={isUnpaid}>
               <InputLabel id="status-label">Status</InputLabel>
               <Select
                 labelId="status-label"
@@ -143,6 +166,7 @@ export default function AppointmentDetailDialog({ open, onClose, appointmentId }
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               fullWidth
+              disabled={isUnpaid}
               placeholder="Add your clinical notes here..."
             />
 
@@ -155,15 +179,21 @@ export default function AppointmentDetailDialog({ open, onClose, appointmentId }
       )}
 
       <DialogActions>
-        <Button onClick={onClose} disabled={saving}>Cancel</Button>
-        <Button 
-          variant="contained" 
-          disableElevation 
-          onClick={handleSave} 
-          disabled={loading || saving}
-        >
-          {saving ? 'Saving...' : 'Save'}
-        </Button>
+        <Button onClick={onClose} disabled={saving}>Close</Button>
+        {isUnpaid ? (
+          <Button color="error" onClick={handleCancelAppointment} disabled={loading || saving}>
+            {saving ? 'Cancelling…' : 'Cancel appointment'}
+          </Button>
+        ) : (
+          <Button
+            variant="contained"
+            disableElevation
+            onClick={handleSave}
+            disabled={loading || saving}
+          >
+            {saving ? 'Saving...' : 'Save'}
+          </Button>
+        )}
       </DialogActions>
     </Dialog>
   );

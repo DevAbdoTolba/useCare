@@ -200,6 +200,25 @@ export default function DoctorCalendarPage() {
 
   const canQuickConfirm = (a) => a?.paid && a?.status === 'pending';
 
+  // An unpaid booking is off-limits to the doctor — cancel is the only action.
+  async function cancelByDoctor(appt) {
+    setSaving(true);
+    try {
+      await updateAppointment(appt.id, { status: 'cancelled' });
+      setAppointments((prev) =>
+        prev.map((a) => (a.id === appt.id ? { ...a, status: 'cancelled', paid: false } : a)),
+      );
+      setToastSeverity('success');
+      setToast('Appointment cancelled.');
+      setDetail(null);
+    } catch (err) {
+      setToastSeverity('warning');
+      setToast(err?.message || 'Could not cancel the appointment.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
   if (loading) {
     return (
       <Container maxWidth="lg">
@@ -304,45 +323,58 @@ export default function DoctorCalendarPage() {
                 />
               </Stack>
 
-              {shownStatus(detail) === 'unpaid' && (
-                <Typography variant="caption" color="text.secondary">
-                  Waiting for the patient to pay — you can confirm it once it&apos;s paid.
-                </Typography>
+              {shownStatus(detail) === 'unpaid' ? (
+                <Alert severity="info">
+                  Waiting for the patient to pay. You can&apos;t manage this appointment until it&apos;s
+                  paid — you can only cancel it.
+                </Alert>
+              ) : (
+                <>
+                  <TextField select label="Status" value={editStatus} onChange={(e) => setEditStatus(e.target.value)} fullWidth>
+                    {APPOINTMENT_STATUSES.map((s) => (
+                      <MenuItem key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</MenuItem>
+                    ))}
+                  </TextField>
+
+                  <Divider textAlign="left">
+                    <Typography variant="overline">Doctor&apos;s notes</Typography>
+                  </Divider>
+                  <TextField
+                    label="Notes for the patient"
+                    value={editNotes}
+                    onChange={(e) => setEditNotes(e.target.value)}
+                    fullWidth
+                    multiline
+                    minRows={3}
+                  />
+                </>
               )}
-
-              <TextField select label="Status" value={editStatus} onChange={(e) => setEditStatus(e.target.value)} fullWidth>
-                {APPOINTMENT_STATUSES.map((s) => (
-                  <MenuItem key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</MenuItem>
-                ))}
-              </TextField>
-
-              <Divider textAlign="left">
-                <Typography variant="overline">Doctor&apos;s notes</Typography>
-              </Divider>
-              <TextField
-                label="Notes for the patient"
-                value={editNotes}
-                onChange={(e) => setEditNotes(e.target.value)}
-                fullWidth
-                multiline
-                minRows={3}
-              />
             </Stack>
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDetail(null)} disabled={saving}>Cancel</Button>
-          {canQuickConfirm(detail) && (
-            <Button
-              color="success"
-              startIcon={<CheckCircleIcon />}
-              onClick={() => quickConfirm(detail)}
-              disabled={saving}
-            >
-              Confirm
-            </Button>
+          <Button onClick={() => setDetail(null)} disabled={saving}>Close</Button>
+          {shownStatus(detail) === 'unpaid' ? (
+            detail?.status === 'pending' && (
+              <Button color="error" onClick={() => cancelByDoctor(detail)} disabled={saving}>
+                Cancel appointment
+              </Button>
+            )
+          ) : (
+            <>
+              {canQuickConfirm(detail) && (
+                <Button
+                  color="success"
+                  startIcon={<CheckCircleIcon />}
+                  onClick={() => quickConfirm(detail)}
+                  disabled={saving}
+                >
+                  Confirm
+                </Button>
+              )}
+              <Button variant="contained" disableElevation onClick={saveAppointment} disabled={saving}>Save</Button>
+            </>
           )}
-          <Button variant="contained" disableElevation onClick={saveAppointment} disabled={saving}>Save</Button>
         </DialogActions>
       </Dialog>
 
