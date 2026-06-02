@@ -73,7 +73,7 @@ export default function AdminDashboardPage() {
   return (
     <Container maxWidth="lg">
       <Typography variant="h4" gutterBottom marginTop={4}>Admin Dashboard</Typography>
-      <Box marginTop={2}>
+      <Box marginTop={2} marginBottom={6}>
         <DashboardStats
           counts={counts}
           money={money}
@@ -81,7 +81,13 @@ export default function AdminDashboardPage() {
           onPendingClick={() => navigate('/admin/users?status=pending')}
         />
         <PendingApprovalsList users={pendingUsers} onViewAll={() => navigate('/admin/users?status=pending')} />
-        <DocUpdateRequestsList requests={docRequests} onApprove={approveDocRequest} onReject={rejectDocRequest} />
+        <DocUpdateRequestsList
+          requests={docRequests.slice(0, 3)}
+          total={docRequests.length}
+          onApprove={approveDocRequest}
+          onReject={rejectDocRequest}
+          onViewAll={() => navigate('/admin/documents')}
+        />
       </Box>
     </Container>
   );
