@@ -32,6 +32,9 @@ import DocumentInput, { isDocValue } from '../components/common/DocumentInput.js
 import { GENDERS } from '../schema/schema.js';
 import { initialOf } from '../lib/format.js';
 
+// Today (YYYY-MM-DD) — a birth date can't be in the future.
+const TODAY_ISO = new Date().toISOString().slice(0, 10);
+
 /** Editable form shape from the current user. */
 const formFrom = (u) => ({
   name: u?.name ?? '',
@@ -249,6 +252,7 @@ export default function ProfilePage() {
                   onChange={set('date_of_birth')}
                   fullWidth
                   InputLabelProps={{ shrink: true }}
+                  inputProps={{ max: TODAY_ISO }}
                 />
                 {isDoctor && (
                   <>
