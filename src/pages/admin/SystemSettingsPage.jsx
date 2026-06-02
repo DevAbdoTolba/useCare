@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   Container,
   Stack,
@@ -6,13 +7,37 @@ import {
   CardActionArea,
   CardContent,
   Chip,
+  Snackbar,
+  Alert,
 } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { THEME_OPTIONS } from '../../theme/themes.js';
 import { useThemeMode } from '../../theme/useThemeMode.js';
+import { setSiteTheme } from '../../api/settings.js';
 
 export default function SystemSettingsPage() {
   const { mode, setMode } = useThemeMode();
+  const [saving, setSaving] = useState(false);
+  const [toast, setToast] = useState('');
+  const [severity, setSeverity] = useState('success');
+
+  async function chooseTheme(key) {
+    if (saving || key === mode) return;
+    setSaving(true);
+    const previous = mode;
+    setMode(key); // optimistic — re-skin instantly
+    try {
+      await setSiteTheme(key); // persist for every user, every session
+      setSeverity('success');
+      setToast('Theme saved — it now applies to all users.');
+    } catch (err) {
+      setMode(previous); // roll back the optimistic change
+      setSeverity('warning');
+      setToast(err?.message || 'Could not save the theme.');
+    } finally {
+      setSaving(false);
+    }
+  }
 
   return (
     <Container maxWidth="md">
@@ -21,7 +46,7 @@ export default function SystemSettingsPage() {
           <Typography variant="h4" component="h1">System settings</Typography>
           <Typography variant="body2" color="text.secondary">
             Choose the site theme. It applies to the whole app instantly and is
-            remembered on this device.
+            saved on the server, so every user gets it on every new session.
           </Typography>
         </Stack>
 
@@ -30,7 +55,7 @@ export default function SystemSettingsPage() {
             const active = opt.key === mode;
             return (
               <Card key={opt.key} variant="outlined">
-                <CardActionArea onClick={() => setMode(opt.key)}>
+                <CardActionArea onClick={() => chooseTheme(opt.key)} disabled={saving}>
                   <CardContent>
                     <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
                       <Stack spacing={0.5}>
@@ -50,6 +75,15 @@ export default function SystemSettingsPage() {
           })}
         </Stack>
       </Stack>
+
+      <Snackbar
+        open={Boolean(toast)}
+        autoHideDuration={3000}
+        onClose={() => setToast('')}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity={severity} onClose={() => setToast('')}>{toast}</Alert>
+      </Snackbar>
     </Container>
   );
 }
