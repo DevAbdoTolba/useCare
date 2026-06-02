@@ -23,3 +23,11 @@ export const STATUS_COLOR = {
   cancelled: 'default',
   completed: 'info',
 };
+
+/** MUI Chip color per user account status. */
+export const USER_STATUS_COLOR = {
+  pending: 'warning',
+  approved: 'success',
+  rejected: 'default',
+  banned: 'error',
+};
