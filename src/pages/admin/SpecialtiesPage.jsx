@@ -196,7 +196,8 @@ export default function SpecialtiesPage() {
           >
             <ToggleButton value="specialties">Specialties</ToggleButton>
             <ToggleButton value="suggestions">
-              Suggestions{suggestions.length > 0 ? ` (${suggestions.length})` : ''}
+              {/* non-breaking space so "Suggestions (N)" never wraps to 2 lines */}
+              {suggestions.length > 0 ? `Suggestions (${suggestions.length})` : 'Suggestions'}
             </ToggleButton>
           </ToggleButtonGroup>
         )}
