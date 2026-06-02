@@ -1,7 +1,7 @@
 /**
  * Doctor document-update requests — backed by the Django backend (doctors slice).
  *
- * A doctor can't silently swap their résumé/license; they file a change request
+ * A doctor can't silently swap their resume/license; they file a change request
  * that an admin approves (which patches the profile server-side) or rejects.
  * These helpers are now async (network), unlike the old localStorage mock.
  */
@@ -20,7 +20,7 @@ export async function getPendingRequestForDoctor() {
   return list.find((r) => r.status === 'pending') ?? null;
 }
 
-/** Doctor: file a new résumé/license change request. */
+/** Doctor: file a new resume/license change request. */
 export async function addDocUpdateRequest(_doctor, { resume_url, license_url }) {
   return apiFetch('/doctors/me/update-requests/', {
     method: 'POST',
