@@ -22,6 +22,7 @@ export const STATUS_COLOR = {
   confirmed: 'success',
   cancelled: 'default',
   completed: 'info',
+  outdated: 'error',
 };
 
 /** MUI Chip color per user account status. */
