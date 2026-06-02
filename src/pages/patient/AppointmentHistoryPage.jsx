@@ -71,6 +71,18 @@ export default function AppointmentHistoryPage() {
                   Cancel request
                 </Button>
               )}
+              {/* Completed visits can be rated (or the rating reviewed). */}
+              {a.status === 'completed' && (
+                <Button
+                  size="small"
+                  variant="contained"
+                  disableElevation
+                  component={RouterLink}
+                  to={`/patient/rate/${a.id}`}
+                >
+                  {a.my_rating ? 'View rating' : 'Rate doctor'}
+                </Button>
+              )}
             </Stack>
           )}
         />
