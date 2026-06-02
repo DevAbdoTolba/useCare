@@ -1,6 +1,7 @@
-import { createContext, useCallback, useMemo, useState } from 'react';
+import { createContext, useCallback, useEffect, useMemo, useState } from 'react';
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import { THEMES, DEFAULT_THEME_KEY } from './themes.js';
+import { getSiteTheme } from '../api/settings.js';
 
 const STORAGE_KEY = 'usecare_theme';
 
@@ -19,9 +20,10 @@ function readStoredMode() {
 }
 
 /**
- * Site-wide theme switch. The chosen theme key is persisted in localStorage so
- * it sticks across reloads. Wraps the app in the matching MUI ThemeProvider —
- * changing the mode re-skins the entire UI from the theme config alone.
+ * Site-wide theme switch. The admin's choice lives in the backend (a DB row),
+ * so EVERY user gets it on every session. We paint immediately from the cached
+ * localStorage key to avoid a flash, then reconcile with the server theme on
+ * mount. Changing the mode re-skins the entire UI from the theme config alone.
  */
 export function ThemeModeProvider({ children }) {
   const [mode, setModeState] = useState(readStoredMode);
@@ -31,6 +33,17 @@ export function ThemeModeProvider({ children }) {
     try { localStorage.setItem(STORAGE_KEY, next); } catch { /* ignore */ }
     setModeState(next);
   }, []);
+
+  // Reconcile with the admin-chosen site theme from the backend on load.
+  useEffect(() => {
+    let active = true;
+    getSiteTheme()
+      .then((serverMode) => {
+        if (active && serverMode && THEMES[serverMode]) setMode(serverMode);
+      })
+      .catch(() => { /* offline / no backend -> keep the cached theme */ });
+    return () => { active = false; };
+  }, [setMode]);
 
   const theme = useMemo(() => THEMES[mode] ?? THEMES[DEFAULT_THEME_KEY], [mode]);
 
