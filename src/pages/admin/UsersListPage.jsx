@@ -25,7 +25,6 @@ import {
   banUser,
   unbanUser,
 } from '../../api/users.js';
-import { listPendingRequests } from '../../lib/docUpdateRequestsStore.js';
 import MasterDetailBrowser from '../../components/common/MasterDetailBrowser.jsx';
 import LoadingSpinner from '../../components/common/LoadingSpinner.jsx';
 import { initialOf, USER_STATUS_COLOR } from '../../lib/format.js';
@@ -52,18 +51,11 @@ export default function UsersListPage() {
   const [detail, setDetail] = useState(null); // enriched (doctor docs + rating + stats)
   const [detailLoading, setDetailLoading] = useState(false);
   const [toast, setToast] = useState('');
-  // Doctors with a pending resume/license update request (admin notification).
-  const [pendingDocIds, setPendingDocIds] = useState(() => new Set());
-  const [pendingDocsOnly, setPendingDocsOnly] = useState(false);
 
   useEffect(() => {
     let mounted = true;
-    Promise.all([listUsers(), listPendingRequests().catch(() => [])])
-      .then(([u, reqs]) => {
-        if (!mounted) return;
-        setUsers(Array.isArray(u) ? u : []);
-        setPendingDocIds(new Set((reqs ?? []).map((r) => r.doctor_id)));
-      })
+    listUsers()
+      .then((u) => { if (mounted) setUsers(Array.isArray(u) ? u : []); })
       .finally(() => { if (mounted) setLoading(false); });
     return () => { mounted = false; };
   }, []);
@@ -86,10 +78,9 @@ export default function UsersListPage() {
       const matchesName =
         !term || u.name?.toLowerCase().includes(term) || u.email?.toLowerCase().includes(term);
       const matchesStatus = statusFilter === ALL || u.status === statusFilter;
-      const matchesDocs = !pendingDocsOnly || pendingDocIds.has(u.id);
-      return matchesName && matchesStatus && matchesDocs;
+      return matchesName && matchesStatus;
     });
-  }, [users, search, statusFilter, pendingDocsOnly, pendingDocIds]);
+  }, [users, search, statusFilter]);
 
   const selected = users.find((u) => u.id === selectedId) ?? null;
 
@@ -265,14 +256,6 @@ export default function UsersListPage() {
                 <MenuItem key={s} value={s}>{cap(s)}</MenuItem>
               ))}
             </TextField>
-            {/* Notification + filter: doctors with a pending resume/license request. */}
-            <Chip
-              icon={<DescriptionIcon />}
-              label={`Pending docs${pendingDocIds.size ? ` (${pendingDocIds.size})` : ''}`}
-              color="warning"
-              variant={pendingDocsOnly ? 'filled' : 'outlined'}
-              onClick={() => setPendingDocsOnly((v) => !v)}
-            />
           </Stack>
         )}
       />
