@@ -27,7 +27,7 @@ import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import { useAuth } from '../hooks/useAuth.js';
 import { listSpecialties } from '../api/specialties.js';
 import { addDocUpdateRequest, getPendingRequestForDoctor } from '../lib/docUpdateRequestsStore.js';
-import { updateProfile, splitName, apiFetch } from '../api/http.js';
+import { updateProfile, splitName, apiFetch, me } from '../api/http.js';
 import DocumentInput, { isDocValue } from '../components/common/DocumentInput.jsx';
 import { GENDERS } from '../schema/schema.js';
 import { initialOf } from '../lib/format.js';
@@ -63,6 +63,13 @@ export default function ProfilePage() {
   const [docError, setDocError] = useState('');
   const [reqTick, setReqTick] = useState(0); // bump to re-read the pending request
   const [pendingDocReq, setPendingDocReq] = useState(null);
+
+  // Refresh from the backend so a doctor always sees their own current papers
+  // (resume/license live on DoctorProfile and aren't in a cached old session).
+  useEffect(() => {
+    me().then((fresh) => updateCurrentUser(fresh)).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!isDoctor) return;
