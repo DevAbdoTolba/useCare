@@ -32,6 +32,9 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // Sentinel value for the "propose a new specialty" option in the select.
 const SUGGEST_SPECIALTY = '__suggest__';
 
+// Today (YYYY-MM-DD) — DOB can't be in the future.
+const TODAY_ISO = new Date().toISOString().slice(0, 10);
+
 // Non-breaking space: keeps the helperText line reserved so showing/clearing
 // a validation message never shifts the layout below the field.
 const HELPER_PLACEHOLDER = ' ';
@@ -113,8 +116,6 @@ export default function RegisterPage() {
             Join useCare as a patient or a doctor.
           </Typography>
         </Stack>
-
-        {submitError && <Alert severity="error">{submitError}</Alert>}
 
         <Controller
           name="role"
@@ -208,7 +209,10 @@ export default function RegisterPage() {
         <Controller
           name="date_of_birth"
           control={control}
-          rules={{ required: 'Date of birth is required' }}
+          rules={{
+            required: 'Date of birth is required',
+            validate: (v) => !v || v <= TODAY_ISO || 'Date of birth cannot be in the future',
+          }}
           render={({ field }) => (
             <TextField
               {...field}
@@ -216,6 +220,7 @@ export default function RegisterPage() {
               type="date"
               fullWidth
               InputLabelProps={{ shrink: true }}
+              inputProps={{ max: TODAY_ISO }}
               error={Boolean(errors.date_of_birth)}
               helperText={errors.date_of_birth?.message || HELPER_PLACEHOLDER}
             />
@@ -369,6 +374,8 @@ export default function RegisterPage() {
         >
           Create account
         </Button>
+
+        {submitError && <Alert severity="error">{submitError}</Alert>}
 
         <Divider>Already a member?</Divider>
 
