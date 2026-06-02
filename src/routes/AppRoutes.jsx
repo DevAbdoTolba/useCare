@@ -15,6 +15,7 @@ import AdminDashboardPage from '../pages/admin/AdminDashboardPage.jsx';
 import UsersListPage from '../pages/admin/UsersListPage.jsx';
 import SpecialtiesPage from '../pages/admin/SpecialtiesPage.jsx';
 import AppointmentsPage from '../pages/admin/AppointmentsPage.jsx';
+import PendingDocsPage from '../pages/admin/PendingDocsPage.jsx';
 import SystemSettingsPage from '../pages/admin/SystemSettingsPage.jsx';
 
 import DoctorLayout from '../components/layout/DoctorLayout.jsx';
@@ -53,6 +54,7 @@ export default function AppRoutes() {
           <Route index element={<AdminDashboardPage />} />
           <Route path="users" element={<UsersListPage />} />
           <Route path="specialties" element={<SpecialtiesPage />} />
+          <Route path="documents" element={<PendingDocsPage />} />
           <Route path="appointments" element={<AppointmentsPage />} />
           <Route path="settings" element={<SystemSettingsPage />} />
           <Route path="profile" element={<ProfilePage />} />
