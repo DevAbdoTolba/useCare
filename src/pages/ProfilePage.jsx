@@ -30,7 +30,7 @@ import { addDocUpdateRequest, getPendingRequestForDoctor } from '../lib/docUpdat
 import { updateProfile, splitName, apiFetch, me } from '../api/http.js';
 import DocumentInput, { isDocValue } from '../components/common/DocumentInput.jsx';
 import { GENDERS } from '../schema/schema.js';
-import { initialOf } from '../lib/format.js';
+import { initialOf, isValidPhone } from '../lib/format.js';
 
 // Today (YYYY-MM-DD) — a birth date can't be in the future.
 const TODAY_ISO = new Date().toISOString().slice(0, 10);
@@ -127,6 +127,10 @@ export default function ProfilePage() {
   }
 
   async function save() {
+    if (form.phone_number && !isValidPhone(form.phone_number)) {
+      setToast('Enter a valid phone number (7–15 digits).');
+      return;
+    }
     const { first_name, last_name } = splitName(form.name);
     const patch = {
       first_name,

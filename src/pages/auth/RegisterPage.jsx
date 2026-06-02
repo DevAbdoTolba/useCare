@@ -17,6 +17,7 @@ import { signup as apiSignup } from '../../api/http.js';
 import { listSpecialties } from '../../api/specialties.js';
 import DocumentInput, { isDocValue } from '../../components/common/DocumentInput.jsx';
 import { useAuth } from '../../hooks/useAuth.js';
+import { isValidPhone } from '../../lib/format.js';
 
 // Signup offers only female / male (no "other").
 const SIGNUP_GENDERS = ['female', 'male'];
@@ -193,7 +194,10 @@ export default function RegisterPage() {
         <Controller
           name="phone_number"
           control={control}
-          rules={{ required: 'Phone number is required' }}
+          rules={{
+            required: 'Phone number is required',
+            validate: (v) => isValidPhone(v) || 'Enter a valid phone number (7–15 digits)',
+          }}
           render={({ field }) => (
             <TextField
               {...field}
