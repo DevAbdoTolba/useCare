@@ -7,6 +7,7 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import GroupIcon from '@mui/icons-material/Group';
 import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
 import EventIcon from '@mui/icons-material/Event';
+import DescriptionIcon from '@mui/icons-material/Description';
 import SettingsIcon from '@mui/icons-material/Settings';
 
 /** Where each role lands as its "home". */
@@ -36,6 +37,7 @@ export function getNavItems(role) {
         { label: 'Dashboard', to: '/admin', icon: <DashboardIcon /> },
         { label: 'Users', to: '/admin/users', icon: <GroupIcon /> },
         { label: 'Specialties', to: '/admin/specialties', icon: <MedicalServicesIcon /> },
+        { label: 'Documents', to: '/admin/documents', icon: <DescriptionIcon /> },
         { label: 'Appointments', to: '/admin/appointments', icon: <EventIcon /> },
         { label: 'Settings', to: '/admin/settings', icon: <SettingsIcon /> },
         { label: 'My profile', to: '/admin/profile', icon: <PersonIcon /> },
