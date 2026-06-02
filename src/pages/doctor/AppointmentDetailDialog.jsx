@@ -58,7 +58,10 @@ export default function AppointmentDetailDialog({ open, onClose, appointmentId }
     return () => { mounted = false; };
   }, [open, appointmentId]);
 
-  const isUnpaid = appointment ? shownStatus(appointment) === 'unpaid' : false;
+  const dStatus = appointment ? shownStatus(appointment) : null;
+  const isUnpaid = dStatus === 'unpaid';
+  const isOutdated = dStatus === 'outdated';
+  const locked = isUnpaid || isOutdated; // can't edit status/notes in either state
 
   const handleSave = async () => {
     try {
@@ -118,6 +121,12 @@ export default function AppointmentDetailDialog({ open, onClose, appointmentId }
               />
             </Stack>
 
+            {isOutdated && (
+              <Alert severity="warning">
+                This appointment is outdated — the time passed without confirmation. It can no
+                longer be managed.
+              </Alert>
+            )}
             {isUnpaid && (
               <Alert severity="info">
                 Waiting for the patient to pay. You can&apos;t manage this appointment until it&apos;s
@@ -126,7 +135,7 @@ export default function AppointmentDetailDialog({ open, onClose, appointmentId }
             )}
 
             {/* Status */}
-            <FormControl fullWidth disabled={isUnpaid}>
+            <FormControl fullWidth disabled={locked}>
               <InputLabel id="status-label">Status</InputLabel>
               <Select
                 labelId="status-label"
@@ -166,7 +175,7 @@ export default function AppointmentDetailDialog({ open, onClose, appointmentId }
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               fullWidth
-              disabled={isUnpaid}
+              disabled={locked}
               placeholder="Add your clinical notes here..."
             />
 
@@ -180,7 +189,7 @@ export default function AppointmentDetailDialog({ open, onClose, appointmentId }
 
       <DialogActions>
         <Button onClick={onClose} disabled={saving}>Close</Button>
-        {isUnpaid ? (
+        {isOutdated ? null : isUnpaid ? (
           <Button color="error" onClick={handleCancelAppointment} disabled={loading || saving}>
             {saving ? 'Cancelling…' : 'Cancel appointment'}
           </Button>
