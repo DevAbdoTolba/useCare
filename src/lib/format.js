@@ -18,12 +18,16 @@ export const ageFromDob = (dob) => {
 
 /** MUI Chip color per appointment status. */
 export const STATUS_COLOR = {
-  pending: 'warning',
+  unpaid: 'default', // booked but not paid yet — waiting for the patient to pay
+  pending: 'warning', // paid, waiting for the doctor to confirm
   confirmed: 'success',
   cancelled: 'default',
   completed: 'info',
   outdated: 'error',
 };
+
+/** The payment-aware status to show: 'unpaid' before payment, else the real one. */
+export const shownStatus = (a) => a?.display_status ?? a?.status;
 
 /** MUI Chip color per user account status. */
 export const USER_STATUS_COLOR = {
