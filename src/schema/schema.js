@@ -24,7 +24,7 @@
 /** @typedef {'admin' | 'doctor' | 'patient'} UserRole */
 /** @typedef {'pending' | 'approved' | 'rejected'} UserStatus */ // ADDITION
 /** @typedef {'male' | 'female' | 'other'} Gender */
-/** @typedef {'pending' | 'confirmed' | 'cancelled' | 'completed'} AppointmentStatus */
+/** @typedef {'pending' | 'confirmed' | 'cancelled' | 'completed' | 'outdated'} AppointmentStatus */
 
 /**
  * @typedef {Object} User
@@ -89,5 +89,6 @@ export const APPOINTMENT_STATUSES = /** @type {const} */ ([
   'confirmed',
   'cancelled',
   'completed',
+  'outdated',
 ]);
 export const GENDERS = /** @type {const} */ (['male', 'female', 'other']);
