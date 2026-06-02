@@ -5,10 +5,8 @@ import {
   Typography,
   Button,
   TextField,
-  Card,
-  CardContent,
-  Chip,
-  Divider,
+  ToggleButton,
+  ToggleButtonGroup,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -32,7 +30,9 @@ const EMPTY = { name: '', description: '' };
 
 export default function SpecialtiesPage() {
   const [specialties, setSpecialties] = useState([]);
+  const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [view, setView] = useState('specialties'); // 'specialties' | 'suggestions'
   const [search, setSearch] = useState('');
   const [selectedId, setSelectedId] = useState(null);
 
@@ -42,7 +42,6 @@ export default function SpecialtiesPage() {
   const [addForm, setAddForm] = useState(EMPTY);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [toast, setToast] = useState('');
-  const [suggestions, setSuggestions] = useState([]);
 
   useEffect(() => {
     let mounted = true;
@@ -62,29 +61,25 @@ export default function SpecialtiesPage() {
     setSuggestions(Array.isArray(sugg) ? sugg : []);
   }
 
-  async function approveSuggestion(suggestion) {
-    // The backend approve creates the real Specialty itself — no separate create.
-    await setSuggestionStatus(suggestion.id, 'approved');
-    await refreshLists();
-    setToast(`"${suggestion.name}" approved and added.`);
-  }
-
-  async function rejectSuggestion(suggestion) {
-    await setSuggestionStatus(suggestion.id, 'rejected');
-    setSuggestions((prev) => prev.filter((s) => s.id !== suggestion.id));
-    setToast(`"${suggestion.name}" rejected.`);
-  }
-
-  const rows = useMemo(() => {
-    const term = search.trim().toLowerCase();
-    return specialties.filter((s) => !term || s.name?.toLowerCase().includes(term));
-  }, [specialties, search]);
-
-  const selected = specialties.find((s) => s.id === selectedId) ?? null;
-
-  function selectRow(s) {
-    setSelectedId(s ? s.id : null);
+  function changeView(next) {
+    setView(next);
+    setSelectedId(null);
     setEditing(false);
+    setSearch('');
+  }
+
+  async function approveSuggestion(s) {
+    await setSuggestionStatus(s.id, 'approved'); // backend creates the real Specialty
+    await refreshLists();
+    setSelectedId(null);
+    setToast(`"${s.name}" approved and added.`);
+  }
+
+  async function rejectSuggestion(s) {
+    await setSuggestionStatus(s.id, 'rejected');
+    setSuggestions((prev) => prev.filter((x) => x.id !== s.id));
+    setSelectedId(null);
+    setToast(`"${s.name}" rejected.`);
   }
 
   async function handleAdd() {
@@ -110,6 +105,16 @@ export default function SpecialtiesPage() {
     setToast('Specialty deleted.');
   }
 
+  const isSuggestions = view === 'suggestions';
+  const source = isSuggestions ? suggestions : specialties;
+
+  const rows = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    return source.filter((s) => !term || s.name?.toLowerCase().includes(term));
+  }, [source, search]);
+
+  const selected = source.find((s) => s.id === selectedId) ?? null;
+
   if (loading) {
     return (
       <Container maxWidth="lg">
@@ -118,12 +123,30 @@ export default function SpecialtiesPage() {
     );
   }
 
-  const columns = [
-    { key: 'name', label: 'Name' },
-    { key: 'description', label: 'Description' },
-  ];
+  const columns = isSuggestions
+    ? [
+        { key: 'name', label: 'Suggested specialty' },
+        { key: 'proposed_by', label: 'Proposed by', render: (s) => s.proposed_by || 'a doctor' },
+      ]
+    : [
+        { key: 'name', label: 'Name' },
+        { key: 'description', label: 'Description' },
+      ];
 
-  const renderDetail = (s) => (
+  const renderSuggestion = (s) => (
+    <Stack spacing={2}>
+      <Typography variant="h6">{s.name}</Typography>
+      <Typography variant="body2" color="text.secondary">
+        Proposed by {s.proposed_by || 'a doctor'}. Approving creates it as a real specialty.
+      </Typography>
+      <Stack direction="row" spacing={1} justifyContent="flex-end">
+        <Button color="warning" onClick={() => rejectSuggestion(s)}>Reject</Button>
+        <Button variant="contained" disableElevation onClick={() => approveSuggestion(s)}>Approve</Button>
+      </Stack>
+    </Stack>
+  );
+
+  const renderSpecialty = (s) =>
     editing ? (
       <Stack spacing={2}>
         <TextField label="Name" value={editForm.name} onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))} fullWidth />
@@ -142,61 +165,42 @@ export default function SpecialtiesPage() {
           <Button variant="outlined" onClick={() => { setEditForm({ name: s.name, description: s.description ?? '' }); setEditing(true); }}>Edit</Button>
         </Stack>
       </Stack>
-    )
-  );
+    );
 
   return (
     <>
-      {suggestions.length > 0 && (
-        <Container maxWidth="lg">
-          <Card variant="outlined">
-            <CardContent>
-              <Stack spacing={2}>
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <Typography variant="h6">Specialty suggestions</Typography>
-                  <Chip size="small" color="warning" label={suggestions.length} />
-                </Stack>
-                <Stack divider={<Divider flexItem />} spacing={1}>
-                  {suggestions.map((s) => (
-                    <Stack
-                      key={s.id}
-                      direction={{ xs: 'column', sm: 'row' }}
-                      spacing={1}
-                      alignItems={{ sm: 'center' }}
-                      justifyContent="space-between"
-                    >
-                      <Stack>
-                        <Typography variant="subtitle2">{s.name}</Typography>
-                        <Typography variant="caption" color="text.secondary">Proposed by {s.proposed_by || 'a doctor'}</Typography>
-                      </Stack>
-                      <Stack direction="row" spacing={1}>
-                        <Button size="small" color="warning" onClick={() => rejectSuggestion(s)}>Reject</Button>
-                        <Button size="small" variant="contained" disableElevation onClick={() => approveSuggestion(s)}>Approve</Button>
-                      </Stack>
-                    </Stack>
-                  ))}
-                </Stack>
-              </Stack>
-            </CardContent>
-          </Card>
-        </Container>
-      )}
-
       <MasterDetailBrowser
         title="Specialties"
-        placeholderTitle="No specialty selected"
-        placeholderMessage="Pick a specialty from the table below, or add a new one."
+        placeholderTitle={isSuggestions ? 'No suggestion selected' : 'No specialty selected'}
+        placeholderMessage={
+          isSuggestions
+            ? 'Pick a suggestion to review, then approve or reject it.'
+            : 'Pick a specialty from the table below, or add a new one.'
+        }
         selected={selected}
         selectedId={selectedId}
-        onSelectRow={selectRow}
-        renderDetail={renderDetail}
+        onSelectRow={(s) => { setSelectedId(s ? s.id : null); setEditing(false); }}
+        renderDetail={isSuggestions ? renderSuggestion : renderSpecialty}
         columns={columns}
         rows={rows}
         searchValue={search}
         onSearchChange={setSearch}
-        searchLabel="Search specialties"
-        emptyMessage="No specialties yet"
-        actions={(
+        searchLabel={isSuggestions ? 'Search suggestions' : 'Search specialties'}
+        emptyMessage={isSuggestions ? 'No pending suggestions' : 'No specialties yet'}
+        filters={(
+          <ToggleButtonGroup
+            exclusive
+            color="primary"
+            value={view}
+            onChange={(_e, v) => v && changeView(v)}
+          >
+            <ToggleButton value="specialties">Specialties</ToggleButton>
+            <ToggleButton value="suggestions">
+              Suggestions{suggestions.length > 0 ? ` (${suggestions.length})` : ''}
+            </ToggleButton>
+          </ToggleButtonGroup>
+        )}
+        actions={!isSuggestions && (
           <Button variant="contained" disableElevation startIcon={<AddIcon />} onClick={() => setAddOpen(true)}>
             Add
           </Button>
