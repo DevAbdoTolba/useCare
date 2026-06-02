@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import EmptyState from './EmptyState.jsx';
-import { timeLabel, STATUS_COLOR } from '../../lib/format.js';
+import { timeLabel, STATUS_COLOR, shownStatus } from '../../lib/format.js';
 import { APPOINTMENT_STATUSES } from '../../schema/schema.js';
 
 const ALL = 'all';
@@ -147,7 +147,7 @@ export default function AppointmentHistory({
                             <Typography variant="body2" color="text.secondary">{timeLabel(a.time)}</Typography>
                             <Typography variant="body2">· {a._person}</Typography>
                           </Stack>
-                          <Chip size="small" label={cap(a.status)} color={STATUS_COLOR[a.status] ?? 'default'} />
+                          <Chip size="small" label={cap(shownStatus(a))} color={STATUS_COLOR[shownStatus(a)] ?? 'default'} />
                         </Stack>
                       </AccordionSummary>
                       <AccordionDetails>
