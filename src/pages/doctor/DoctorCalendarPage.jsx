@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import dayjs from 'dayjs';
 import {
   Container,
@@ -22,6 +22,7 @@ import {
 } from '@mui/material';
 import AppointmentCalendar from '../../components/common/AppointmentCalendar.jsx';
 import { listAppointmentsForDoctor, updateAppointment } from '../../api/appointments.js';
+import { listMyAvailability, setDayAvailable, setDayUnavailable } from '../../api/availability.js';
 import { useAuth } from '../../hooks/useAuth.js';
 import { APPOINTMENT_STATUSES } from '../../schema/schema.js';
 import LoadingSpinner from '../../components/common/LoadingSpinner.jsx';
@@ -30,20 +31,15 @@ import DayHourGrid from '../../components/common/DayHourGrid.jsx';
 import { initialOf, timeLabel, hourLabel, ageFromDob, STATUS_COLOR, shownStatus } from '../../lib/format.js';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
-// --- Standalone localStorage store for the doctor's "open" hours (mock). ---
-const AVAIL_KEY = 'usecare_doctor_availability';
-const availKey = (doctorId, date) => `${doctorId}_${date}`;
-function readAvailability() {
-  try { return JSON.parse(localStorage.getItem(AVAIL_KEY)) || {}; } catch { return {}; }
-}
-function getOpenHours(doctorId, date) {
-  return readAvailability()[availKey(doctorId, date)] ?? [];
-}
-function setOpenHours(doctorId, date, hours) {
-  const all = readAvailability();
-  all[availKey(doctorId, date)] = hours;
-  try { localStorage.setItem(AVAIL_KEY, JSON.stringify(all)); } catch { /* ignore */ }
-}
+// The doctor's open hours live in the BACKEND (not localStorage) so a patient
+// can actually see and book them. Each open hour is a 1-hour availability
+// window (HH:00 - HH+1:00); the patient slots endpoint expands windows into
+// bookable whole-hour slots, so what's opened here is exactly what's bookable.
+const pad = (h) => String(h).padStart(2, '0');
+const hourOf = (t) => parseInt(String(t).split(':')[0], 10);
+const startStr = (h) => `${pad(h)}:00`;
+// A window can't end at "24:00"; clamp the final hour's end to 23:59.
+const endStr = (h) => (h >= 24 ? '23:59' : `${pad(h)}:00`);
 
 export default function DoctorCalendarPage() {
   const { user } = useAuth();
@@ -53,7 +49,7 @@ export default function DoctorCalendarPage() {
   const [appointments, setAppointments] = useState([]);
   const [patientById, setPatientById] = useState({});
   const [selectedDay, setSelectedDay] = useState(dayjs());
-  const [openHours, setOpenHoursState] = useState([]);
+  const [availWindows, setAvailWindows] = useState([]); // the doctor's own backend windows
 
   const [confirmHour, setConfirmHour] = useState(null);
   const [confirmRemoveHour, setConfirmRemoveHour] = useState(null);
@@ -83,9 +79,13 @@ export default function DoctorCalendarPage() {
     return () => { mounted = false; };
   }, [doctorId]);
 
-  useEffect(() => {
-    if (doctorId) setOpenHoursState(getOpenHours(doctorId, dateStr));
-  }, [doctorId, dateStr]);
+  // Load the doctor's own open windows from the backend (refetched after edits).
+  const loadAvailability = useCallback(() => {
+    if (!doctorId) return;
+    listMyAvailability().then(setAvailWindows).catch(() => setAvailWindows([]));
+  }, [doctorId]);
+
+  useEffect(() => { loadAvailability(); }, [loadAvailability]);
 
   const apptByHour = useMemo(() => {
     const map = {};
@@ -107,10 +107,19 @@ export default function DoctorCalendarPage() {
 
   const patientName = (id) => patientById[id]?.name ?? `Patient #${id}`;
 
-  function persistOpenHours(hours) {
-    setOpenHoursState(hours);
-    setOpenHours(doctorId, dateStr, hours);
-  }
+  // The selected day's windows + the whole hours they cover (a window may span
+  // several hours; the grid works one hour at a time).
+  const dayWindows = useMemo(
+    () => availWindows.filter((w) => w.date === dateStr && w.is_available !== false),
+    [availWindows, dateStr],
+  );
+  const openHours = useMemo(() => {
+    const hrs = new Set();
+    dayWindows.forEach((w) => {
+      for (let h = hourOf(w.start_time); h < hourOf(w.end_time); h += 1) hrs.add(h);
+    });
+    return [...hrs];
+  }, [dayWindows]);
 
   const getCell = (hour) => {
     const appt = apptByHour[hour];
@@ -153,16 +162,43 @@ export default function DoctorCalendarPage() {
     setConfirmHour(hour);
   };
 
-  function confirmRemoveAvailable() {
+  async function confirmRemoveAvailable() {
     if (confirmRemoveHour == null) return;
-    persistOpenHours(openHours.filter((h) => h !== confirmRemoveHour));
+    const h = confirmRemoveHour;
     setConfirmRemoveHour(null);
+    try {
+      // Delete every window covering this hour, then re-open the leftover
+      // pieces on either side so closing one hour never wipes a whole window.
+      const covering = dayWindows.filter((w) => hourOf(w.start_time) <= h && h < hourOf(w.end_time));
+      for (const w of covering) {
+        await setDayUnavailable(doctorId, dateStr, w.id);
+        const s = hourOf(w.start_time);
+        const e = hourOf(w.end_time);
+        if (s < h) await setDayAvailable(doctorId, dateStr, startStr(s), endStr(h));
+        if (h + 1 < e) await setDayAvailable(doctorId, dateStr, startStr(h + 1), endStr(e));
+      }
+      loadAvailability();
+      setToastSeverity('success');
+      setToast('Hour closed.');
+    } catch (err) {
+      setToastSeverity('warning');
+      setToast(err?.message || 'Could not close that hour.');
+    }
   }
 
-  function confirmSetAvailable() {
+  async function confirmSetAvailable() {
     if (confirmHour == null) return;
-    persistOpenHours([...openHours, confirmHour].sort((a, b) => a - b));
+    const h = confirmHour;
     setConfirmHour(null);
+    try {
+      await setDayAvailable(doctorId, dateStr, startStr(h), endStr(h + 1));
+      loadAvailability();
+      setToastSeverity('success');
+      setToast('Hour opened for booking.');
+    } catch (err) {
+      setToastSeverity('warning');
+      setToast(err?.message || 'Could not open that hour.');
+    }
   }
 
   async function saveAppointment() {
