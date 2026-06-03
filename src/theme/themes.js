@@ -538,33 +538,65 @@ const aiSlopTheme = createTheme({
 /*    bars, the silver window face (#ECE9D8), Tahoma, beveled glossy     */
 /*    buttons, the green Start-button for primary, squared 3px corners. */
 /* ------------------------------------------------------------------ */
-const XP_BLUE = '#2a5bda';
-const XP_TITLE = 'linear-gradient(180deg, #3f8cf3 0%, #2a5bda 48%, #1c46b8 100%)';
-const XP_FACE = '#ece9d8';
-const XP_BTN = 'linear-gradient(180deg, #ffffff 0%, #f2f0e6 45%, #d9d4c0 100%)';
-const XP_GREEN = 'linear-gradient(180deg, #8fd16a 0%, #5cab3f 50%, #3c8a2c 100%)';
-const XP_BORDER = '#7f9db9';
-const XP_FONT = 'Tahoma, "Trebuchet MS", Verdana, Geneva, sans-serif';
+// Fonts per the Luna spec: Tahoma body, Trebuchet MS title bars, Franklin
+// Gothic headings.
+const XP_BODY_FONT = 'Tahoma, "Segoe UI", Geneva, Verdana, sans-serif';
+const XP_TITLE_FONT = '"Trebuchet MS", Tahoma, sans-serif';
+const XP_HEAD_FONT = '"Franklin Gothic Medium", "Arial Narrow", Tahoma, sans-serif';
+
+const XP_BLUE = '#0a51c5';
+const XP_FACE = '#ece9d8';   // the classic silver/beige control + desktop face
+const XP_LINE = '#919b9c';   // sunken control border grey
+
+// Soft-plastic vertical "gel": a bright top half, a crisp highlight->shade step
+// across the midline, then a gentle lift at the bottom. THIS is the XP look —
+// not a single flat gradient. The bevel + drop shadow below sell the 3D.
+const xpGel = (a, b, c, d) => `linear-gradient(180deg, ${a} 0%, ${b} 49%, ${c} 51%, ${d} 100%)`;
+const XP_TITLE_GEL = 'linear-gradient(180deg,#4596f5 0%,#1d6ae0 8%,#0a51c5 46%,#0a4bbf 54%,#1f63d6 92%,#4596f5 100%)';
+const XP_BTN_GEL = xpGel('#ffffff', '#f4f3ec', '#eae8da', '#f1efe3');
+const XP_BTN_GEL_HOVER = xpGel('#ffffff', '#fbf6e6', '#f3edd6', '#f8f4e6');
+// 3D tactile button: white top/left bevel, soft bottom/right shade, 135° drop shadow.
+const XP_BEVEL = 'inset 1px 1px 0 rgba(255,255,255,0.95), inset -1px -1px 0 rgba(0,0,0,0.14), 1px 1px 2px rgba(0,0,0,0.28)';
+const XP_BEVEL_PRESSED = 'inset 1px 1px 3px rgba(0,0,0,0.35)';
+const XP_WINDOW_SHADOW = '2px 3px 7px rgba(0,0,0,0.30)';   // 135° window drop shadow
+const XP_SUNKEN = 'inset 1px 1px 2px rgba(0,0,0,0.16)';    // recessed inputs
+const XP_TEXT_SHADOW = '0 1px 1px rgba(0,0,0,0.45)';        // white-on-gel legibility
+
+// Colour-coded gel action buttons (XP "navigational signage"): blue=neutral,
+// green=go/start, red=destructive/close, yellow=log-off.
+const xpAction = (gel, gelHover, border) => ({
+  backgroundImage: gel,
+  color: '#ffffff',
+  border: `1px solid ${border}`,
+  textShadow: XP_TEXT_SHADOW,
+  boxShadow: XP_BEVEL,
+  '&:hover': { backgroundImage: gelHover, boxShadow: `${XP_BEVEL}, 0 0 4px 1px rgba(255,255,255,0.35)` },
+  '&:active': { boxShadow: XP_BEVEL_PRESSED },
+});
 
 const xpVistaTheme = createTheme({
   palette: {
     mode: 'light',
     primary: { main: XP_BLUE },
-    secondary: { main: '#3c8a2c' },
+    secondary: { main: '#4e9e2e' },
     success: { main: '#3c8a2c' },
-    warning: { main: '#e8a200' },
+    warning: { main: '#e0a200' },
     error: { main: '#c1272d' },
-    info: { main: '#3f8cf3' },
-    background: { default: '#5a7edc', paper: '#ffffff' },
-    text: { primary: '#0a1a3f', secondary: '#3a4a6b' },
-    divider: '#acb9cf',
+    info: { main: '#1d6ae0' },
+    background: { default: XP_FACE, paper: '#ffffff' },
+    text: { primary: '#1b2a44', secondary: '#4a5a72' },
+    divider: '#c4c2b4',
   },
   shape: { borderRadius: 3 },
   typography: {
-    fontFamily: XP_FONT,
+    fontFamily: XP_BODY_FONT,
     fontSize: 13,
-    h1: { fontWeight: 700 },
-    h2: { fontWeight: 700 },
+    h1: { fontFamily: XP_HEAD_FONT, fontWeight: 500 },
+    h2: { fontFamily: XP_HEAD_FONT, fontWeight: 500 },
+    h3: { fontFamily: XP_HEAD_FONT, fontWeight: 500 },
+    h4: { fontFamily: XP_HEAD_FONT, fontWeight: 500 },
+    h5: { fontFamily: XP_HEAD_FONT, fontWeight: 600 },
+    h6: { fontFamily: XP_HEAD_FONT, fontWeight: 600 },
     button: { textTransform: 'none', fontWeight: 700 },
   },
   components: {
@@ -572,63 +604,105 @@ const xpVistaTheme = createTheme({
       styleOverrides: {
         body: {
           minHeight: '100vh',
-          // The nostalgic "Bliss" sky-blue-to-green-hill gradient.
-          background: 'linear-gradient(180deg, #4a90e2 0%, #6aa8e8 45%, #8fc04f 100%)',
-          backgroundAttachment: 'fixed',
+          // Calm solid XP control-silver — no garish sky gradient. White windows
+          // with drop shadows pop against it, exactly like an XP dialog.
+          backgroundColor: XP_FACE,
         },
       },
     },
     MuiAppBar: {
       styleOverrides: {
         root: {
-          backgroundImage: XP_TITLE,
+          backgroundImage: XP_TITLE_GEL,
           color: '#ffffff',
-          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.5)',
-          borderBottom: '1px solid #1c46b8',
+          fontFamily: XP_TITLE_FONT,
+          borderBottom: '1px solid #08367f',
+          // glossy top highlight + a real drop shadow under the title bar
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.55), 0 2px 5px rgba(0,0,0,0.40)',
         },
       },
     },
     MuiPaper: {
       styleOverrides: {
-        root: { backgroundImage: 'none', backgroundColor: '#ffffff', border: '1px solid #a0a7b5', borderRadius: 3, boxShadow: 'none' },
+        root: {
+          backgroundImage: 'none',
+          backgroundColor: '#ffffff',
+          border: '1px solid #d4d0be',
+          borderRadius: 4,
+          boxShadow: XP_WINDOW_SHADOW,
+        },
       },
     },
     MuiCard: {
       styleOverrides: {
-        root: { backgroundColor: '#ffffff', border: '1px solid #a0a7b5', borderRadius: 3, boxShadow: '0 1px 0 #ffffff inset, 0 1px 2px rgba(0,0,0,0.15)' },
+        root: {
+          backgroundColor: '#ffffff',
+          border: '1px solid #d4d0be',
+          borderRadius: 4,
+          boxShadow: `inset 0 1px 0 #ffffff, ${XP_WINDOW_SHADOW}`,
+        },
       },
     },
-    MuiDrawer: { styleOverrides: { paper: { backgroundColor: XP_FACE, borderRight: '1px solid #8c98ab' } } },
+    MuiDrawer: { styleOverrides: { paper: { backgroundColor: XP_FACE, borderRight: '1px solid #9aa0a6', boxShadow: XP_WINDOW_SHADOW } } },
     MuiButton: {
       defaultProps: { disableElevation: true },
       styleOverrides: {
         root: {
           borderRadius: 3,
-          border: '1px solid #003c74',
-          backgroundImage: XP_BTN,
-          color: '#0a1a3f',
-          boxShadow: 'inset 0 0 0 1px #ffffff',
-          '&:hover': { backgroundImage: 'linear-gradient(180deg,#ffffff 0%,#fdfcf6 45%,#e7e3d2 100%)', borderColor: '#e08a00' },
+          border: '1px solid #8a93a5',
+          backgroundImage: XP_BTN_GEL,
+          color: '#1b2a44',
+          boxShadow: XP_BEVEL,
+          // Luna's orange focus glow on hover.
+          '&:hover': { backgroundImage: XP_BTN_GEL_HOVER, borderColor: '#f0a900', boxShadow: `${XP_BEVEL}, 0 0 4px 1px rgba(255,170,0,0.55)` },
+          '&:active': { boxShadow: XP_BEVEL_PRESSED },
         },
-        containedPrimary: {
-          backgroundImage: XP_GREEN,
-          color: '#ffffff',
-          border: '1px solid #2c6a1f',
-          textShadow: '0 1px 1px rgba(0,0,0,0.35)',
-          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.6)',
-          '&:hover': { backgroundImage: 'linear-gradient(180deg,#9bdc77 0%,#65b846 50%,#43972f 100%)' },
-        },
-        outlined: { backgroundImage: 'none', borderColor: '#003c74', color: XP_BLUE },
+        // Blue = neutral primary actions.
+        containedPrimary: xpAction(
+          xpGel('#7db4f6', '#2f80ee', '#0a51c5', '#1a63d8'),
+          xpGel('#92c2f8', '#4490f2', '#1560d4', '#2a72e0'),
+          '#08367f',
+        ),
+        // Green = go / start / submit.
+        containedSuccess: xpAction(
+          xpGel('#b8e986', '#7cc24a', '#54a331', '#4a9a2c'),
+          xpGel('#c6f098', '#8bce58', '#60af3a', '#56a634'),
+          '#2c6a1f',
+        ),
+        // Red = destructive / close.
+        containedError: xpAction(
+          xpGel('#f6a6a0', '#e0584d', '#c5392d', '#b5281d'),
+          xpGel('#f8b6b0', '#e86a5f', '#d2473b', '#c33529'),
+          '#7f1b14',
+        ),
+        // Yellow = log-off / caution.
+        containedWarning: { ...xpAction(
+          xpGel('#ffe9a8', '#ffcf4d', '#f0b400', '#e0a200'),
+          xpGel('#fff0bd', '#ffd866', '#f6bf1a', '#ecae0a'),
+          '#a87a00',
+        ), color: '#3a2c00', textShadow: '0 1px 0 rgba(255,255,255,0.4)' },
+        outlined: { backgroundImage: 'none', borderColor: '#8a93a5', color: XP_BLUE, boxShadow: 'none', '&:hover': { borderColor: '#f0a900', backgroundColor: 'rgba(255,255,255,0.5)' } },
+        text: { color: XP_BLUE, border: 'none', backgroundImage: 'none', boxShadow: 'none' },
       },
     },
     MuiToggleButton: {
       styleOverrides: {
         root: {
           borderRadius: 3,
-          border: '1px solid #003c74',
-          backgroundImage: XP_BTN,
+          border: '1px solid #8a93a5',
+          backgroundImage: XP_BTN_GEL,
+          color: '#1b2a44',
           textTransform: 'none',
-          '&.Mui-selected': { backgroundImage: 'linear-gradient(180deg,#cfe0ff 0%,#9cc0ff 100%)', color: '#0a1a3f', '&:hover': { backgroundImage: 'linear-gradient(180deg,#bcd4ff 0%,#8bb6ff 100%)' } },
+          boxShadow: XP_BEVEL,
+          '&:hover': { backgroundImage: XP_BTN_GEL_HOVER },
+          // Selected = pressed INTO the surface (sunken), XP toolbar style.
+          '&.Mui-selected': {
+            backgroundImage: 'none',
+            backgroundColor: '#d3e3fb',
+            color: '#08367f',
+            boxShadow: XP_BEVEL_PRESSED,
+            '&:hover': { backgroundColor: '#c4d9f8' },
+          },
         },
       },
     },
@@ -637,28 +711,55 @@ const xpVistaTheme = createTheme({
         root: {
           borderRadius: 2,
           backgroundColor: '#ffffff',
-          '& .MuiOutlinedInput-notchedOutline': { borderColor: XP_BORDER },
-          '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#5a7da3' },
+          boxShadow: XP_SUNKEN,   // recessed 3D field
+          '& .MuiOutlinedInput-notchedOutline': { borderColor: XP_LINE },
+          '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#6f7b7d' },
           '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: XP_BLUE, borderWidth: 1 },
         },
       },
     },
-    MuiInputLabel: { styleOverrides: { root: { color: '#3a4a6b', '&.Mui-focused': { color: XP_BLUE } } } },
+    MuiInputLabel: { styleOverrides: { root: { color: '#4a5a72', '&.Mui-focused': { color: XP_BLUE } } } },
     MuiChip: {
       styleOverrides: {
         root: { borderRadius: 3, fontWeight: 700 },
-        colorDefault: { backgroundColor: XP_FACE, border: '1px solid #a0a7b5' },
-        outlined: { borderColor: '#a0a7b5' },
+        colorDefault: { backgroundImage: XP_BTN_GEL, border: '1px solid #b7b3a1', boxShadow: 'inset 1px 1px 0 #ffffff' },
+        outlined: { borderColor: '#b7b3a1' },
       },
     },
-    MuiAlert: { styleOverrides: { root: { borderRadius: 3, border: '1px solid #7f9db9' } } },
-    MuiSnackbarContent: { styleOverrides: { root: { borderRadius: 3, backgroundImage: XP_TITLE, color: '#fff' } } },
-    MuiTooltip: { styleOverrides: { tooltip: { borderRadius: 2, backgroundColor: '#ffffe1', color: '#000', border: '1px solid #000', fontFamily: XP_FONT } } },
-    MuiDivider: { styleOverrides: { root: { borderColor: '#acb9cf' } } },
-    MuiTableCell: { styleOverrides: { root: { borderColor: '#c3cad6' }, head: { fontWeight: 700, backgroundImage: 'linear-gradient(180deg,#fbfbfb,#dfe6f0)', color: '#0a1a3f' } } },
-    MuiTableRow: { styleOverrides: { root: { '&:hover': { backgroundColor: 'rgba(42,91,218,0.06)' }, '&.Mui-selected, &.Mui-selected:hover': { backgroundColor: 'rgba(42,91,218,0.16)' } } } },
-    MuiListItemButton: { styleOverrides: { root: { borderRadius: 2, '&.Mui-selected': { backgroundImage: 'linear-gradient(180deg,#cfe0ff,#9cc0ff)', '&:hover': { backgroundImage: 'linear-gradient(180deg,#bcd4ff,#8bb6ff)' } } } } },
-    MuiTouchRipple: { styleOverrides: { child: { backgroundColor: 'rgba(42,91,218,0.4)' } } },
+    MuiAlert: { styleOverrides: { root: { borderRadius: 4, border: '1px solid #b7b3a1', boxShadow: XP_WINDOW_SHADOW, backgroundColor: '#ffffff' } } },
+    MuiSnackbarContent: { styleOverrides: { root: { borderRadius: 4, backgroundImage: XP_TITLE_GEL, color: '#fff', boxShadow: XP_WINDOW_SHADOW } } },
+    MuiTooltip: { styleOverrides: { tooltip: { borderRadius: 0, backgroundColor: '#ffffe1', color: '#000', border: '1px solid #000', boxShadow: '1px 1px 2px rgba(0,0,0,0.4)', fontFamily: XP_BODY_FONT, fontSize: 11 } } },
+    MuiDivider: { styleOverrides: { root: { borderColor: '#c4c2b4' } } },
+    MuiTableCell: {
+      styleOverrides: {
+        root: { borderColor: '#cfccbd' },
+        // Raised silver column header with a bevel.
+        head: { fontFamily: XP_HEAD_FONT, fontWeight: 600, color: '#1b2a44', backgroundImage: XP_BTN_GEL, boxShadow: 'inset 0 1px 0 #ffffff, inset 0 -1px 0 #c4c0b0' },
+      },
+    },
+    MuiTableRow: {
+      styleOverrides: {
+        root: {
+          '&:hover': { backgroundColor: 'rgba(49,106,197,0.08)' },
+          // Classic XP selection: solid royal-blue highlight.
+          '&.Mui-selected, &.Mui-selected:hover': { backgroundColor: '#316ac5', color: '#fff' },
+        },
+      },
+    },
+    MuiListItemButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 2,
+          '&.Mui-selected': {
+            backgroundColor: '#316ac5',
+            color: '#fff',
+            boxShadow: XP_BEVEL_PRESSED,
+            '&:hover': { backgroundColor: '#2a5cae' },
+          },
+        },
+      },
+    },
+    MuiTouchRipple: { styleOverrides: { child: { backgroundColor: 'rgba(49,106,197,0.4)' } } },
   },
 });
 
