@@ -1,0 +1,13 @@
+/* Day-grid cell states. Clickable cells show a pointer; outdated/disabled
+   cells (e.g. hours already in the past) are greyed out and ignore clicks. */
+.day-hour-cell--clickable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.day-hour-cell--disabled {
+  cursor: default;
+  opacity: 0.4;
+  background-color: rgba(0, 0, 0, 0.04);
+  pointer-events: none;
+}

@@ -9,6 +9,7 @@ import {
   Paper,
 } from '@mui/material';
 import { hourLabel } from '../../lib/format.js';
+import './DayHourGrid.css';
 
 const GRID_ROWS = [0, 1, 2];
 const GRID_COLS = 8; // 8 x 3 = 24 hours
@@ -34,11 +35,17 @@ export default function DayHourGrid({ selectedDay, getCell, onHourClick, caption
                 {Array.from({ length: GRID_COLS }, (_, col) => {
                   const hour = row * GRID_COLS + col;
                   const cell = getCell(hour) || {};
+                  const clickable = Boolean(onHourClick) && !cell.disabled;
                   return (
                     <TableCell
                       key={hour}
                       align="center"
-                      onClick={onHourClick ? () => onHourClick(hour) : undefined}
+                      className={[
+                        'day-hour-cell',
+                        cell.disabled ? 'day-hour-cell--disabled' : '',
+                        clickable ? 'day-hour-cell--clickable' : '',
+                      ].filter(Boolean).join(' ')}
+                      onClick={clickable ? () => onHourClick(hour) : undefined}
                       selected={Boolean(cell.selected)}
                     >
                       <Stack spacing={0.5} alignItems="center">

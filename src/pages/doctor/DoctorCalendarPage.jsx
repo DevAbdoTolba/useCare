@@ -124,6 +124,11 @@ export default function DoctorCalendarPage() {
     if (openHours.includes(hour)) {
       return { selected: true, chip: <Chip size="small" variant="outlined" color="success" label="Open" /> };
     }
+    // An empty hour that's already passed: grey it out and make it unclickable
+    // (the same past-time guard onHourClick enforces, now shown in the grid).
+    if (dayjs(`${dateStr} ${String(hour).padStart(2, '0')}:00`).isBefore(dayjs())) {
+      return { dim: true, disabled: true };
+    }
     return {};
   };
 
