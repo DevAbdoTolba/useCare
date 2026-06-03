@@ -152,7 +152,21 @@ export default function UsersListPage() {
             <Chip label={cap(u.status)} color={USER_STATUS_COLOR[u.status] ?? 'default'} />
           )}
           {isDoctor && u.specialty && <Chip label={u.specialty} variant="outlined" />}
+          {isDoctor && !u.specialty && u.proposed_specialty && (
+            <Chip
+              color="warning"
+              variant="outlined"
+              label={`Proposed specialty: ${u.proposed_specialty}`}
+            />
+          )}
         </Stack>
+
+        {isDoctor && !u.specialty && u.proposed_specialty && u.status === 'pending' && (
+          <Alert severity="info">
+            This doctor proposed a new specialty, <strong>{u.proposed_specialty}</strong>. Approving
+            them also creates and assigns this specialty.
+          </Alert>
+        )}
 
         <Divider />
 
