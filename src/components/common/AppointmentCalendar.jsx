@@ -5,13 +5,16 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
 import { PickersDay } from '@mui/x-date-pickers/PickersDay';
 
-// White badge with a dashed primary-colored ring, so the count never blends
-// into the selected-day color. Themed via the palette.
+// Filled primary badge with a ring in the surface colour so the count both
+// stands out from the selected-day circle AND stays legible in every theme.
+// (A white-on-primary badge broke under themes whose primary is near-white,
+// e.g. shadcn — white text on a white badge. contrastText fixes that by
+// definition: it's always chosen to contrast with primary.main.)
 const CountBadge = styled(Badge)(({ theme }) => ({
   '& .MuiBadge-badge': {
-    backgroundColor: theme.palette.common.white,
-    color: theme.palette.primary.main,
-    border: `1px dashed ${theme.palette.primary.main}`,
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.primary.contrastText,
+    border: `2px solid ${theme.palette.background.paper}`,
     fontWeight: 700,
   },
 }));
