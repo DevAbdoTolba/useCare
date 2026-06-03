@@ -7,7 +7,7 @@ const STORAGE_KEY = 'usecare_theme';
 
 // How often to re-check the admin-chosen theme from the backend (ms). Cheap
 // public GET; keeps every open tab in sync without WebSockets.
-const POLL_MS = 20000;
+const POLL_MS = 3000;
 
 export const ThemeModeContext = createContext({
   mode: DEFAULT_THEME_KEY,
