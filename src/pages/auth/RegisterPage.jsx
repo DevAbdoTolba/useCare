@@ -36,6 +36,14 @@ const SUGGEST_SPECIALTY = '__suggest__';
 // Today (YYYY-MM-DD) — DOB can't be in the future.
 const TODAY_ISO = new Date().toISOString().slice(0, 10);
 
+// Latest DOB that still makes someone 18 today — registration requires 18+.
+// Born exactly on this date = turns 18 today, which counts as eligible.
+const ADULT_MAX_ISO = (() => {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() - 18);
+  return d.toISOString().slice(0, 10);
+})();
+
 // Non-breaking space: keeps the helperText line reserved so showing/clearing
 // a validation message never shifts the layout below the field.
 const HELPER_PLACEHOLDER = ' ';
@@ -215,7 +223,12 @@ export default function RegisterPage() {
           control={control}
           rules={{
             required: 'Date of birth is required',
-            validate: (v) => !v || v <= TODAY_ISO || 'Date of birth cannot be in the future',
+            validate: (v) => {
+              if (!v) return true;
+              if (v > TODAY_ISO) return 'Date of birth cannot be in the future';
+              if (v > ADULT_MAX_ISO) return 'You must be at least 18 years old to register';
+              return true;
+            },
           }}
           render={({ field }) => (
             <TextField
@@ -224,7 +237,7 @@ export default function RegisterPage() {
               type="date"
               fullWidth
               InputLabelProps={{ shrink: true }}
-              inputProps={{ max: TODAY_ISO }}
+              inputProps={{ max: ADULT_MAX_ISO }}
               error={Boolean(errors.date_of_birth)}
               helperText={errors.date_of_birth?.message || HELPER_PLACEHOLDER}
             />
